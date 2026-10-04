@@ -33,12 +33,16 @@ Create a documented, runnable full-stack foundation aligned with the provisional
 ### Excluded
 
 - Instagram or Facebook API integration, OAuth and publishing.
-- LinkedIn generation or publishing.
+- LinkedIn generation or publishing in the first stage; LinkedIn is deferred to a second stage.
 - Image generation, voice interaction and production RAG retrieval.
 - Multi-business or multi-tenant behavior.
 - Production hosting, deployment and operational secrets.
 - Docker or Docker Compose adoption until the pending Issue #34 decision is resolved.
 - Selection of a package manager or local process orchestrator not specified by the source of truth; this is an open decision.
+
+### Channel decision
+
+The first stage prioritizes Instagram and supports Facebook as the second generation/adaptation channel for small-commerce use cases. LinkedIn is explicitly deferred to a second stage. This foundation only prepares the application structure and does not implement channel generation or publishing.
 
 ## Acceptance criteria
 
@@ -69,7 +73,6 @@ No aplica — the official rubric and weights have not been supplied. This found
 - Should local development use two documented terminals or one orchestrated command?
 - Docker/Docker Compose remains pending Issue #34 and is intentionally excluded.
 - Hosting provider and production deployment are not selected.
-- Issue #20 contains older LinkedIn wording, while the current canonical scope and technology-stack document define Facebook as the second generation channel. This foundation does not implement either channel; the inconsistency requires a separate human-approved correction.
 - Provider credentials, quotas and data-handling terms must be rechecked when provider-backed features begin.
 
 ## Approval gate
