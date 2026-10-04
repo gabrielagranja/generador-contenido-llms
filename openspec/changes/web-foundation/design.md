@@ -44,6 +44,7 @@ README or architecture documentation will include prerequisites, setup, environm
 
 - No real secrets are committed.
 - No automatic Instagram or Facebook publishing is added.
+- Instagram is the priority first-stage channel; Facebook is the second generation/adaptation channel.
+- LinkedIn is deferred to a second stage and is not implemented by this change.
 - No production hosting decision is made.
 - Docker remains excluded pending Issue #34.
-- The LinkedIn/Facebook wording discrepancy is recorded as a separate decision; this design does not silently resolve it.
