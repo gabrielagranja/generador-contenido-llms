@@ -1,0 +1,16 @@
+# Tasks: Runnable Web Application Foundation
+
+Implementation MUST NOT begin while the proposal status is Pending.
+
+- [ ] Confirm the package-manager and local-process decisions; record them in the proposal/design and obtain human approval.
+- [ ] Change the proposal status to Approved only after the exact contract and blocking open questions are approved.
+- [ ] Scaffold the Python 3.11+/FastAPI/Pydantic API under `apps/api/` with a deterministic readiness endpoint.
+- [ ] Scaffold the Next.js/React/TypeScript client under `apps/web/` with a foundation page that reads API readiness.
+- [ ] Add environment configuration and a safe `.env.example`; verify no secrets are tracked.
+- [ ] Add the provider-neutral LangChain integration boundary with a deterministic mock adapter.
+- [ ] Add foundation tests for configuration, readiness, client/API boundary and no-network behavior.
+- [ ] Configure `.github/sdd-harness.yml` with `python -m pytest -q` as the authoritative application test command.
+- [ ] Document prerequisites, setup, run, test commands, structure and scope boundaries.
+- [ ] Run OpenSpec validation, required-field validation and `python -m pytest -q`; record evidence.
+- [ ] Perform a clean-checkout smoke test for client and API startup; record evidence.
+- [ ] Update the issue with evidence, synchronize canonical specs if behavior changed, and close only after acceptance criteria are verified.
