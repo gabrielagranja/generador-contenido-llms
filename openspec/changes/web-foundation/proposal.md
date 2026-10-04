@@ -2,12 +2,13 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #21 — [STORY] Create a runnable web application foundation
 - Parent epic: #9 — [EPIC] LLM application foundation
 - Plan phase: Phase 3 — Application foundation
 - Branch: `feat/21-web-foundation`
-- Human approval: The preparation of this change was approved in the project conversation; the exact contract remains Pending until its contents and open decisions are explicitly approved.
+- Human approval: Approved on 2026-10-04 in the project conversation after confirming the exact first-stage channel scope and local-development decisions.
+- Approved decisions: npm is the JavaScript package manager; local development uses two documented terminals (FastAPI and Next.js).
 
 ## Plan objective
 
@@ -38,7 +39,6 @@ Create a documented, runnable full-stack foundation aligned with the provisional
 - Multi-business or multi-tenant behavior.
 - Production hosting, deployment and operational secrets.
 - Docker or Docker Compose adoption until the pending Issue #34 decision is resolved.
-- Selection of a package manager or local process orchestrator not specified by the source of truth; this is an open decision.
 
 ### Channel decision
 
@@ -69,12 +69,10 @@ No aplica — the official rubric and weights have not been supplied. This found
 
 ## Open questions and blockers
 
-- Which package manager is authoritative for the Next.js client (npm, pnpm or another option)?
-- Should local development use two documented terminals or one orchestrated command?
 - Docker/Docker Compose remains pending Issue #34 and is intentionally excluded.
 - Hosting provider and production deployment are not selected.
 - Provider credentials, quotas and data-handling terms must be rechecked when provider-backed features begin.
 
 ## Approval
 
-Implementation tasks MUST remain unchecked while Status is Pending. After the human approves this exact contract and resolves any blocking open decision, the status MAY change to Approved and implementation may start in task order.
+Approved on 2026-10-04. Phase 2 implementation MAY proceed in tasks.md order. The approved contract does not authorize Instagram/Facebook publishing or any LinkedIn work.
