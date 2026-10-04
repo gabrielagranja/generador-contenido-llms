@@ -4,7 +4,8 @@ This directory contains implementation contracts, not the complete project knowl
 
 - Project and process truth: docs/
 - Active change contracts: openspec/changes/
-- Archived contracts: openspec/archive/
+- Archived contracts: openspec/changes/archive/
+- Canonical specifications: openspec/specs/
 - Project configuration: openspec/config.yaml
 
 Every implementation change MUST be linked to a GitHub Issue and contain:

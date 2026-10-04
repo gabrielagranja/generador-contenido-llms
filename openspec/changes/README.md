@@ -7,7 +7,7 @@ openspec/changes/<change-name>/
 Required artifacts:
 
 - proposal.md
-- specs/<capability>.md
+- specs/<capability>/spec.md
 - design.md
 - tasks.md
 
