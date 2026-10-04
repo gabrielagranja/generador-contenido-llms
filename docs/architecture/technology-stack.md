@@ -4,7 +4,7 @@
 
 ## Product scope this stack supports
 
-- Generate platform-specific copy for **Instagram and LinkedIn**.
+- Generate platform-specific copy for **Instagram and Facebook**.
 - Generate one accompanying image and let the content manager preview and revise it.
 - Connect one authorized **Instagram Professional** account for the first publishing integration.
 - Require a clear human confirmation before each Instagram publish. No unattended or scheduled publishing in the first slice.
@@ -12,7 +12,7 @@
 - Use a small RAG pipeline for approved business information.
 - Compare two text model configurations using the same evaluation briefs.
 
-The first functional slice is one representative/authorized business, Instagram feed image posts, and LinkedIn copy. Direct LinkedIn publishing is outside the first slice.
+The first functional slice is one representative/authorized business, Instagram feed-image posts, and Facebook-adapted copy. Instagram is the priority channel; direct Facebook publishing and LinkedIn generation are outside the first slice.
 
 ## Stack
 
@@ -21,12 +21,12 @@ The first functional slice is one representative/authorized business, Instagram 
 | Web client | Next.js, React, TypeScript | Brief editor, channel selector, draft/image preview, voice controls, OAuth connection and human approval UI. |
 | API backend | Python 3.11+, FastAPI, Pydantic | Validates requests, orchestrates generation and retrieval, handles OAuth callbacks, and exposes controlled publishing actions. |
 | LLM application framework | LangChain | Prompt templates, chat-model adapters, and the retrieval chain used for the rubric's framework/RAG evidence. |
-| Primary text model | Groq via `langchain-groq` | Draft and adapt content for Instagram and LinkedIn. Use the free tier during development where current quotas allow. |
+| Primary text model | Groq via `langchain-groq` | Draft and adapt content for Instagram and Facebook. Use the free tier during development where current quotas allow. |
 | Comparison text model | Gemini via `langchain-google-genai` | Run the same brief and prompt set as Groq for a small, documented quality comparison. |
 | RAG | Chroma persistent local store, with local multilingual Sentence Transformers embeddings | Retrieve relevant approved business facts, tone guidance, product details, restrictions, and examples without a separate embeddings API call. |
 | Image generation | Gemini API, `gemini-3.1-flash-image`, through Google's Gen AI SDK | Generate one social image from the approved brief/copy and provide it for preview. |
 | Voice agent | Gemini Live API through the Google Gen AI SDK | Bidirectional voice interaction for entering a brief and asking for revisions. Voice tools can draft, generate an image, and revise; they cannot publish without the explicit approval step. |
-| Initial social connector | Instagram Platform API with OAuth | Connect one client-authorized Business or Creator account and publish approved feed content. Keep LinkedIn generation separate from the initial publishing connector. |
+| Initial social connector | Instagram Platform API with OAuth | Connect one client-authorized Business or Creator account and publish approved feed content. Keep Facebook generation/adaptation separate from the initial publishing connector; LinkedIn is out of scope for the first slice. |
 | Application data | SQLite + SQLAlchemy | Persist the single-business profile, drafts, and connection metadata for the proof of concept. |
 | Secret handling | Environment secrets; encrypt persisted OAuth tokens with a server-side encryption key | Keep API keys and social tokens out of the repository and browser bundle. Never commit `.env`. |
 | Media storage | Persistent local media directory for local development; object-storage adapter for hosted deployment | Preserve generated images and provide the upload flow required by the selected social API. Choose the hosted storage provider when deployment constraints are known. |
@@ -57,4 +57,3 @@ Use the same small set of representative briefs for Groq and Gemini text generat
 - [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing)
 - [Gemini Live API quickstart](https://ai.google.dev/gemini-api/docs/live-api/get-started-sdk)
 - [Meta Instagram API collection](https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api)
-- [LinkedIn Posts API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api?view=li-lms-2026-06)
