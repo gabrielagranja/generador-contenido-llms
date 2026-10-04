@@ -2,9 +2,9 @@
 
 ## Status and human approval
 
-- Status: Pending human approval
+- Status: Approved
 - Issue: #37 — Establish project source of truth and OpenSpec SDD structure
-- Decision record: Pending after Phase 1 review
+- Decision record: 2026-10-04 — human approval recorded in project conversation
 
 ## Plan objective
 
@@ -23,7 +23,7 @@ Add a project-local OpenSpec schema, templates, contract validator and GitHub Ac
 - Required traceability fields: Issue, plan objective, acceptance criteria, rubric, tests/evidence, scope, open questions and human approval.
 - A validator for required fields and approval gates.
 - CI checks for schema validity, active OpenSpec changes, required fields and configured code tests.
-- Contributing guidance for commits, branches and pull requests.
+- Contributing guidance for pull requests; commit and branch conventions are deferred to a separate OpenSpec change.
 
 ### Excluded
 
@@ -56,11 +56,11 @@ No aplica — the official rubric has not been supplied. This governance change 
 
 ## Open questions and blockers
 
-- Which branch events must run CI: pull requests only, push to dev, or both?
+- Resolved: CI runs for pull requests and pushes to dev.
 - Which exact code-test command is authoritative once the application manifests exist?
-- Should commit-body rules be part of this change or a separate contract?
+- Resolved: commit and branch rules are a separate OpenSpec change.
 - The official rubric and Project #1 phase ordering are still unavailable.
 
 ## Approval
 
-Pending. Do not implement the tasks until explicit human approval is recorded.
+Approved on 2026-10-04. Phase 2 implementation may proceed in tasks.md order.
