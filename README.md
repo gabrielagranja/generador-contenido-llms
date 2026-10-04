@@ -73,6 +73,23 @@ The brief presents RAG as an advanced capability while the rubric assigns it sig
 
 Image generation, Instagram OAuth/publishing, Facebook adaptation, and voice mode extend the original text-first project direction. The first implementation slice is deliberately limited to one business, one Instagram professional account, and one Instagram feed-image workflow.
 
+## Project source of truth
+
+The repository uses OpenSpec-based Specification-Driven Development.
+
+- [Project charter](docs/project-charter.md): vision, user, principles and MVP outcome.
+- [MVP scope](docs/scope.md): canonical in-scope and out-of-scope boundary.
+- [Roadmap](docs/roadmap.md): plan-level phases and priorities.
+- [Assumptions and open questions](docs/assumptions.md): unresolved decisions that require human approval.
+- [Decision records](docs/decisions/): approved material decisions.
+- [Evaluation plan](docs/evaluation-plan.md): cases, measures and evidence.
+- [Rubric traceability](docs/rubric-traceability.md): plan, Issue, OpenSpec, tests and rubric evidence.
+- [Daily logs](docs/daily/): operational progress; they do not replace decision records.
+- [OpenSpec workspace](openspec/): implementation contracts and archive.
+- [Contributing workflow](CONTRIBUTING.md): proposal, approval, implementation and verification rules.
+
+No implementation change starts without an approved OpenSpec contract linked to a GitHub Issue. Instagram publication always requires explicit human confirmation.
+
 ## Project workspace
 
 - [GitHub Project — LLM Content Generation MVP](https://github.com/users/gabrielagranja/projects/1): Kanban, work plan, roadmap, phases, and status.
