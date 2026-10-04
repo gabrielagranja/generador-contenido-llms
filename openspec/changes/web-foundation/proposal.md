@@ -58,7 +58,7 @@ The first stage prioritizes Instagram and supports Facebook as the second genera
 
 No aplica — the official rubric and weights have not been supplied. This foundation contract records product and engineering evidence only and MUST be remapped if an official rubric criterion becomes available.
 
-## Tests and evidence
+## Tests and verification
 
 - OpenSpec schema and active-change validation.
 - Required-field contract validation.
@@ -75,6 +75,6 @@ No aplica — the official rubric and weights have not been supplied. This found
 - Hosting provider and production deployment are not selected.
 - Provider credentials, quotas and data-handling terms must be rechecked when provider-backed features begin.
 
-## Approval gate
+## Approval
 
 Implementation tasks MUST remain unchecked while Status is Pending. After the human approves this exact contract and resolves any blocking open decision, the status MAY change to Approved and implementation may start in task order.
