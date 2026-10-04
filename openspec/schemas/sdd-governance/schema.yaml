@@ -1,0 +1,58 @@
+name: sdd-governance
+version: 1
+description: Human-approved, traceable SDD workflow for this repository
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Change intent, traceability and approval gate
+    template: proposal.md
+    instruction: |
+      Create the proposal before implementation.
+      Include Issue, plan objective, acceptance criteria, rubric status, tests,
+      scope, open questions and explicit human approval state.
+      Do not resolve an open question without human approval.
+    requires: []
+
+  - id: specs
+    generates: "specs/**/*.md"
+    description: Delta behavior specifications
+    template: spec.md
+    instruction: |
+      Create one delta specification per capability at specs/<capability>/spec.md.
+      Classify requirements as ADDED, MODIFIED or REMOVED.
+      Use EARS language with SHALL, MUST or SHOULD and BDD scenarios with
+      GIVEN, WHEN and THEN. Describe observable behavior, not implementation.
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: Technical design for approved behavior
+    template: design.md
+    instruction: |
+      Explain the technical approach, trade-offs, verification boundaries,
+      safety and unresolved questions. Do not implement code in this artifact.
+    requires:
+      - proposal
+
+  - id: tasks
+    generates: tasks.md
+    description: Ordered implementation checklist
+    template: tasks.md
+    instruction: |
+      Create ordered checkbox tasks from approved specifications and design.
+      If approval is Pending or Rejected, stop and ask for human approval.
+      Do not mark implementation tasks complete before work is verified.
+    requires:
+      - specs
+      - design
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Verify that proposal approval is Approved before implementation.
+    Work through tasks in order, mark tasks complete only after verification,
+    and stop when blocked by an unresolved scope question.
