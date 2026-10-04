@@ -1,9 +1,9 @@
 # Tasks: Runnable Web Application Foundation
 
-Implementation MUST NOT begin while the proposal status is Pending.
+The contract is Approved on 2026-10-04. Implementation follows this order.
 
-- [ ] Confirm the package-manager and local-process decisions; record them in the proposal/design and obtain human approval.
-- [ ] Change the proposal status to Approved only after the exact contract and blocking open questions are approved.
+- [x] Confirm the package-manager and local-process decisions: npm and two documented terminals.
+- [x] Change the proposal status to Approved after human approval of the exact contract and channel scope.
 - [ ] Scaffold the Python 3.11+/FastAPI/Pydantic API under `apps/api/` with a deterministic readiness endpoint.
 - [ ] Scaffold the Next.js/React/TypeScript client under `apps/web/` with a foundation page that reads API readiness.
 - [ ] Add environment configuration and a safe `.env.example`; verify no secrets are tracked.
