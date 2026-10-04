@@ -8,7 +8,7 @@
 - [x] 4. Verify that invalid active fixtures still fail.
 - [x] 5. Run the complete SDD workflow and record CI evidence.
 - [x] 6. Update Issue #39, traceability and the daily log with verification evidence.
-- [ ] 7. Archive this correction only after CI passes and human verification confirms the acceptance criteria.
+- [x] 7. Archive this correction after CI passes and human verification confirms the acceptance criteria.
 
 ## Preconditions
 

@@ -12,7 +12,7 @@
 - [x] 8. Run the full SDD harness, convention tests and workflow verification.
 - [x] 9. Update traceability, daily log and Issue #38 with evidence.
 - [x] 10. Consider GitHub rulesets only in a separately approved administrative change.
-- [ ] 11. Archive this change only after CI passes and human verification confirms the acceptance criteria.
+- [x] 11. Archive this change after CI passes and human verification confirms the acceptance criteria.
 
 ## Preconditions
 

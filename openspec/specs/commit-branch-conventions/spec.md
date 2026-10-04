@@ -1,10 +1,10 @@
-# Spec Delta
+# Branch and Commit Conventions Specification
 
 ## Purpose
 
 Define the proposed, human-approved repository behavior for branch names, commit titles and commit descriptions, together with non-destructive CI validation.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: traceable branch names
 

@@ -1,10 +1,10 @@
-# Spec Delta
+# SDD Contract Validator Specification
 
 ## Purpose
 
 Preserve the distinction between active OpenSpec change contracts and completed archived contracts in the project-local deterministic validator.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: standard archive exclusion
 
