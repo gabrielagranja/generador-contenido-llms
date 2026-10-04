@@ -1,3 +1,23 @@
-# Project-local OpenSpec configuration.
-# The custom project schema will be added by the approved SDD harness change.
-schema: spec-driven
+schema: sdd-governance
+
+context: |
+  Project: LLM Content Generation MVP for small local businesses.
+  Product scope: Instagram is the priority channel; Facebook is the second
+  generation/adaptation channel; LinkedIn is outside the first slice unless a
+  validated B2B need reopens it.
+  Publishing: only one authorized Instagram Professional account may publish,
+  and every publication requires explicit human confirmation.
+  Governance: plan and backlog set scope and priority; OpenSpec changes are
+  approved implementation contracts. Agents record open questions and do not
+  invent scope decisions.
+
+rules:
+  proposal:
+    - Include Issue, plan objective, acceptance criteria, rubric status,
+      tests/evidence, scope, open questions and approval status.
+    - Do not implement while approval is Pending or Rejected.
+  specs:
+    - Classify changes as ADDED, MODIFIED or REMOVED.
+    - Use EARS keywords and GIVEN/WHEN/THEN scenarios.
+  tasks:
+    - Follow approved tasks in order and mark work complete only after verification.
