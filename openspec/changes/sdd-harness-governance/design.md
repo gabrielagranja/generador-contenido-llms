@@ -6,7 +6,7 @@ The implementation will fork the OpenSpec built-in spec-driven schema into a pro
 
 A small Python validator will inspect active changes in openspec/changes/. It will check field presence, placeholders, rubric form, explicit approval status and the relationship between approval status and completed tasks. The validator will be deterministic and agent-neutral; it will not use an LLM or infer semantic correctness.
 
-GitHub Actions will install the pinned OpenSpec CLI and Python runtime, validate the schema, run OpenSpec validation, run the Python validator and run an application-test adapter. The adapter will fail clearly when there is no approved test command rather than masking the absence of tests.
+GitHub Actions will install the pinned OpenSpec CLI and Python runtime, validate the schema, run OpenSpec validation, run the Python validator and run an application-test adapter. The adapter will emit an explicit GitHub Actions warning and a skipped state when no approved test command exists; it will never claim that code tests passed.
 
 ## Components
 
@@ -34,13 +34,12 @@ The validator will not decide whether a proposal is valuable, whether an accepta
 
 ## CI test-command adapter
 
-The initial adapter will look for an explicitly configured project command. Its exact contract is pending approval:
+The adapter reads an explicit repository configuration file at .github/sdd-harness.yml. This is the approved Option A because it is portable and cannot silently choose an incorrect test suite. Until an application test command is defined, the adapter emits an explicit skipped-with-warning result.
 
-- Option A: a repository file declaring the command.
-- Option B: conventional manifests such as package.json or pyproject.toml.
-- Option C: CI requires an explicit command input before it is enabled.
+## Approved operational decisions
 
-Recommendation: Option A, because it is explicit, portable and cannot silently choose an incorrect test suite.
+- CI runs on pull requests and pushes to dev.
+- Commit and branch conventions are deferred to a separate OpenSpec change.
 
 ## Safety boundaries
 
