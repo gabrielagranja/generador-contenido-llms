@@ -54,9 +54,9 @@ No aplica — the official rubric has not been supplied. This workflow-quality c
 
 ## Open questions and blockers
 
-- Proposed branch pattern: `<type>/<issue-number>-<short-slug>`, with types `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`, `ci`, `build`, `revert` and `spike`.
-- Proposed commit title: `<type>(<optional-scope>): <summary> (#<issue-number>)`; title length is proposed at 72 characters or fewer.
-- Proposed commit description for every validated commit: a substantive `Why:` line and an `Issue: #<issue-number>` line.
+- Proposed branch pattern: `[type]/[issue-number]-[short-slug]`, with types `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`, `ci`, `build`, `revert` and `spike`.
+- Proposed commit title: `[type]([optional-scope]): [summary] (#[issue-number])`; title length is proposed at 72 characters or fewer.
+- Proposed commit description for every validated commit: a substantive `Why:` line and an `Issue: #[issue-number]` line.
 - Human decision required: approve these proposed values, amend them, or request a less strict description rule before implementation.
 - Human decision required: decide later whether proven CI checks should be supplemented with GitHub rulesets.
 
