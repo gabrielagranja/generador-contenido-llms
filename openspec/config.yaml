@@ -1,0 +1,3 @@
+# Project-local OpenSpec configuration.
+# The custom project schema will be added by the approved SDD harness change.
+schema: spec-driven
