@@ -96,6 +96,8 @@ def validate_root(changes_root: Path) -> list[str]:
     for change_dir in sorted(changes_root.iterdir()):
         if not change_dir.is_dir() or change_dir.name.startswith("."):
             continue
+        if change_dir.name == "archive":
+            continue
         if change_dir.name == "README.md":
             continue
         errors.extend(validate_change(change_dir))

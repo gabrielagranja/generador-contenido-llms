@@ -2,7 +2,7 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #39 — Exclude archived OpenSpec changes from contract validation
 - Decision record: The correction is required because standard OpenSpec archiving placed a completed change under `openspec/changes/archive/`, which the project-local validator currently scans as active.
 
@@ -50,8 +50,8 @@ No aplica — the official rubric has not been supplied. This CI reliability cor
 ## Open questions and blockers
 
 - No scope decision is open: excluding the standard archive directory is required to preserve the existing stated meaning of active-change validation.
-- Human approval is required before modifying the validator or its test suite.
+- Human approval recorded on 2026-10-04; implementation may proceed in tasks.md order.
 
 ## Approval
 
-Awaiting human approval of this Phase 1 correction. No implementation task may start while the status is Pending.
+Approved on 2026-10-04. Implementation may proceed in tasks.md order.

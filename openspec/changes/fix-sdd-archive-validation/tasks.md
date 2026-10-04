@@ -2,7 +2,7 @@
 
 ## Phase 2 implementation tasks
 
-- [ ] 1. Confirm the proposal is Approved and retain the archive as historical evidence.
+- [x] 1. Confirm the proposal is Approved and retain the archive as historical evidence.
 - [ ] 2. Add a regression test for a changes root that contains an archive directory and an active change.
 - [ ] 3. Update the validator to skip only the direct archive child.
 - [ ] 4. Verify that invalid active fixtures still fail.
