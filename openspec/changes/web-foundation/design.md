@@ -6,13 +6,13 @@ Build the smallest reproducible full-stack skeleton that satisfies Issue #21 and
 
 The repository will use a clear client/API split:
 
-- `apps/web/`: Next.js, React and TypeScript client.
+- `apps/web/`: Next.js, React and TypeScript client using npm.
 - `apps/api/`: Python 3.11+, FastAPI and Pydantic API.
 - `tests/`: Python tests, including the existing governance tests and new foundation tests.
 - `docs/architecture/`: structure and local-operation notes.
 - `.env.example`: non-secret configuration names and safe examples.
 
-The exact JavaScript package manager and whether local development uses two terminals or one orchestrator remain explicit decisions. The implementation MUST record the selected decision in the setup documentation rather than silently assuming one.
+Local development uses two documented terminals: one for the API and one for the web client. No additional process orchestrator is introduced by this change.
 
 ## API boundary
 
