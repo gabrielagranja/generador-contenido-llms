@@ -1,0 +1,9 @@
+{
+  "branch": "ci/38-enforce-git-conventions",
+  "commits": [
+    {
+      "subject": "ci: add git convention validation (#38)",
+      "body": "Why: enforce traceable repository history.\nIssue: #38"
+    }
+  ]
+}

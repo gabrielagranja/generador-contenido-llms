@@ -1,0 +1,56 @@
+name: Git Conventions
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  validate:
+    name: Validate branch and commit conventions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate pull-request branch
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          python scripts/validate_git_conventions.py
+          --branch "${{ github.head_ref }}"
+          --repository "${{ github.repository }}"
+          --verify-issues
+
+      - name: Validate pull-request commits
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          python scripts/validate_git_conventions.py
+          --range "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          --repository "${{ github.repository }}"
+          --verify-issues
+
+      - name: Validate commits pushed to dev
+        if: github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          python scripts/validate_git_conventions.py
+          --range "${{ github.event.before }}..${{ github.sha }}"
+          --repository "${{ github.repository }}"
+          --verify-issues

@@ -2,7 +2,7 @@
 
 ## Phase 2 implementation tasks
 
-- [ ] 1. Obtain human approval of the proposed branch pattern, commit-title types and commit-description requirement.
+- [x] 1. Obtain human approval of the proposed branch pattern, commit-title types and commit-description requirement.
 - [ ] 2. Add the approved policy configuration and contributor examples.
 - [ ] 3. Implement the deterministic branch, title and description validator.
 - [ ] 4. Add positive and negative fixtures plus unit tests.

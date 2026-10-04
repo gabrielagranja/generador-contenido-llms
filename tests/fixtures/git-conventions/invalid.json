@@ -1,0 +1,17 @@
+{
+  "branch": "feature/fix-stuff",
+  "commits": [
+    {
+      "subject": "update stuff",
+      "body": "Why: ambiguous metadata.\nIssue: #38"
+    },
+    {
+      "subject": "ci: add git convention validation (#38)",
+      "body": "Issue: #38"
+    },
+    {
+      "subject": "ci: add git convention validation (#38)",
+      "body": "Why: inconsistent Issue metadata.\nIssue: #39"
+    }
+  ]
+}

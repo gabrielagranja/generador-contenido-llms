@@ -1,0 +1,32 @@
+{
+  "branch_types": [
+    "feat",
+    "fix",
+    "docs",
+    "test",
+    "refactor",
+    "perf",
+    "chore",
+    "ci",
+    "build",
+    "revert",
+    "spike"
+  ],
+  "commit_types": [
+    "feat",
+    "fix",
+    "docs",
+    "test",
+    "refactor",
+    "perf",
+    "chore",
+    "ci",
+    "build",
+    "revert"
+  ],
+  "max_subject_length": 72,
+  "required_body_fields": [
+    "Why",
+    "Issue"
+  ]
+}

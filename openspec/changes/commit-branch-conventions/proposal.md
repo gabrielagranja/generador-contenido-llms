@@ -2,9 +2,9 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #38 — Define and enforce branch and commit conventions
-- Decision record: Human approval is required before any configuration, CI validator or GitHub ruleset is applied.
+- Decision record: Human approval recorded on 2026-10-04 for the proposed branch, title and description policy; implementation may proceed without GitHub rulesets.
 
 ## Plan objective
 
@@ -62,4 +62,4 @@ No aplica — the official rubric has not been supplied. This workflow-quality c
 
 ## Approval
 
-Awaiting human approval of this Phase 1 contract. No implementation task may start while the status is Pending.
+Approved on 2026-10-04. Implementation may proceed in tasks.md order; GitHub rulesets remain a separate administrative decision.
