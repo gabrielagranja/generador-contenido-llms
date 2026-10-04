@@ -1,0 +1,46 @@
+name: SDD Harness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate OpenSpec governance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install OpenSpec
+        run: npm install --global @fission-ai/openspec@1.13.2
+
+      - name: Validate project schema
+        run: openspec schema validate sdd-governance
+
+      - name: Validate active OpenSpec changes
+        run: openspec validate --all --json
+
+      - name: Validate required contract fields
+        run: python scripts/validate_sdd_contract.py
+
+      - name: Test contract validator
+        run: python -m unittest discover -s tests
+
+      - name: Run configured application tests
+        run: python scripts/run_project_tests.py
