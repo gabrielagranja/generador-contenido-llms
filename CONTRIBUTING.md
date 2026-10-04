@@ -12,4 +12,4 @@ This repository uses OpenSpec-based Specification-Driven Development.
 8. Update evidence and traceability.
 9. Archive the completed OpenSpec change only after verification and CI.
 
-Commit and branch conventions are defined in the approved harness change. Instagram publication always requires explicit human confirmation.
+Pull requests MUST link the Issue, OpenSpec change, verification evidence and any open questions. Commit and branch conventions are deferred to a separate approved OpenSpec change. Instagram publication always requires explicit human confirmation.
