@@ -2,7 +2,7 @@
 
 ## Phase 2 implementation tasks
 
-- [ ] 1. Confirm the CI trigger policy and exact scope of commit/branch validation.
+- [x] 1. Confirm the CI trigger policy and exact scope of commit/branch validation. CI runs on pull requests and pushes to dev; commit/branch rules are deferred.
 - [ ] 2. Fork the built-in OpenSpec spec-driven schema into openspec/schemas/sdd-governance.
 - [ ] 3. Add schema instructions and templates for proposal, delta specs, design and tasks.
 - [ ] 4. Point openspec/config.yaml to the project-local schema.
@@ -10,7 +10,7 @@
 - [ ] 6. Implement the deterministic Python contract validator.
 - [ ] 7. Add valid and invalid validator fixtures and automated tests.
 - [ ] 8. Add a GitHub Actions workflow for schema, OpenSpec, contract and application-test validation.
-- [ ] 9. Update CONTRIBUTING guidance with approved commit, branch and PR rules.
+- [ ] 9. Update CONTRIBUTING guidance with approved PR guidance and a reference to the deferred commit/branch convention change.
 - [ ] 10. Run the full local verification set.
 - [ ] 11. Push the workflow and confirm a GitHub Actions run.
 - [ ] 12. Update traceability, daily log and Issue #37 with evidence.
@@ -18,6 +18,6 @@
 
 ## Preconditions
 
-- Human approval of proposal, delta specification, design and tasks.
-- Decision on CI trigger policy.
-- Decision on whether commit/branch checks belong to this change.
+- Approved on 2026-10-04.
+- CI runs on pull requests and pushes to dev.
+- Commit and branch checks are deferred to a separate OpenSpec change.
