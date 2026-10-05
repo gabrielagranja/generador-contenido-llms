@@ -13,5 +13,6 @@ Bootstrap issue: #37.
 | A-06 | Docker is worth including in the delivery slice. | Pending | Feasibility and Issue #34. |
 | A-07 | A hosted demo needs HTTPS, persistent state/media and WebSocket support. | Pending | Hosting investigation. |
 | A-08 | The official rubric and Project #1 phases are available for import. | Blocked | Human must provide access/export. |
+| A-09 | Initial content formats are single-image feed posts, carousels and Reels; Stories are deferred. Carousel/Reel deliverables are creative plans, not complete generated media. | Approved scope baseline | User approval 2026-10-05; see docs/decisions/2026-10-05-initial-meta-formats.md and Issue #15. |
 
 Agents MUST NOT convert a Pending or Blocked item into a decision without approval.

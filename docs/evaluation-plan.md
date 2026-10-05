@@ -14,7 +14,9 @@ Use a small, fixed set of representative, synthetic or approved briefs covering 
 - factual errors or missing details;
 - platform fit for Instagram and Facebook;
 - editing effort;
-- image usefulness for Instagram;
+- image usefulness for Instagram feed posts;
+- carousel slide progression and creative-plan usefulness;
+- Reel script/scene clarity, subtitle usefulness and sound-off comprehensibility;
 - voice-mode usefulness, if implemented;
 - latency and approximate model/API usage;
 - human editorial assessment.
