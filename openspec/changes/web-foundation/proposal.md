@@ -56,7 +56,9 @@ The first stage prioritizes Instagram and supports Facebook as the second genera
 
 ## Rubric
 
-No aplica — the official rubric and weights have not been supplied. This foundation contract records product and engineering evidence only and MUST be remapped if an official rubric criterion becomes available.
+This contract supports evidence for C2, especially repository use, local-to-remote setup, branches, commit naming and descriptive commits. The related Git-convention evidence is tracked in Issue #38.
+
+The runnable foundation enables later C4 evidence but does not itself complete the C4 requirements. The application implementation must show use of an LLM model, an LLM application framework and a RAG architecture as mapped in docs/rubric-traceability.md.
 
 ## Tests and verification
 

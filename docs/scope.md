@@ -14,7 +14,7 @@ Last reviewed: 2026-10-05.
 - Content packages for single-image feed posts, carousels and Reels on the selected Instagram/Facebook channel(s).
 - For image posts, concise complementary overlay text and visual direction; for carousels, a cover hook and slide-by-slide content/visual direction; for Reels, a concise scene/script outline, on-screen text and subtitle guidance.
 - One Instagram feed-image generation and preview flow. Carousel slides and Reel video are content/creative plans in this slice; generation of complete carousel image sets or rendered videos is not included.
-- Small RAG pipeline over approved business context.
+- Small RAG pipeline over approved business context, required to evidence rubric indicator C4.3.
 - Optional voice interaction for briefing and revisions.
 - One authorized Instagram Professional account.
 - Explicit human confirmation before every Instagram publication.
@@ -28,8 +28,8 @@ Last reviewed: 2026-10-05.
 - Unattended or scheduled publishing.
 - Multiple businesses and multi-tenant administration.
 - Final hosting provider.
-- Exact RAG, image and model-comparison depth required by the academic rubric.
-- Docker inclusion, pending Issue #34 decision.
+- Image-support approach and two-model comparison, pending product decisions in Issues #31 and #33; they are not rubric requirements.
+- Docker inclusion, pending product decision in Issue #34; it is not a rubric requirement.
 - Any external account access not explicitly authorized.
 - Automated engagement guarantees, unsupported performance predictions or automatic learning from account analytics.
 

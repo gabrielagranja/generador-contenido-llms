@@ -52,7 +52,13 @@ The agent should do more than write captions: it should ask focused questions, h
 
 ## Rubric
 
-No aplica — the official rubric and weights remain pending in the repository.
+This contract contributes planned evidence for C4:
+
+- C4.1, use of LLM models (18 %): generation and adaptation behavior will invoke the selected LLM.
+- C4.2, use of an LLM application framework (18 %): the implementation will use the approved framework in the generation flow.
+- C4.3, use of RAG architectures (18 %): the related RAG implementation retrieves approved business context; evidence is tracked in Issue #32 and docs/rubric-traceability.md.
+
+The rubric does not require image generation, comparison of two LLMs or Docker. Those remain separate product decisions.
 
 ## Tests and verification
 

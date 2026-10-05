@@ -2,7 +2,7 @@
 
 Authority: canonical plan-level sequence. GitHub Project #1 remains the operational board for status and ordering.
 Bootstrap issue: #37.
-Status: baseline; Project phases and rubric weights are pending synchronization.
+Status: baseline. The official rubric is transcribed in docs/rubric-traceability.md and is the assessment source of truth.
 
 ## Phase 1 — Discovery and product direction
 
@@ -20,13 +20,13 @@ Issues #9 and #20–#21: stack, runnable web/API foundation, environment handlin
 
 Issues #10 and #22–#24: structured brief, channel-adapted generation, review, editing and regeneration.
 
-## Phase 5 — Conditional assessment enhancements
+## Phase 5 — C4 implementation and product enhancements
 
-Issue #11 and #30–#34: resolve RAG, image, model-comparison and Docker decisions before implementing conditional work.
+Implement the three required C4 indicators through Issues #20, #21, #23, #25 and #32: LLM model, LLM application framework and RAG architecture. Manage image support, two-model comparison and Docker as product decisions in Issues #31, #33 and #34.
 
 ## Phase 6 — Quality, delivery and portfolio
 
-Issues #12–#13 and #25–#29, #35–#36: evaluation, documentation, demo, presentation, portfolio narrative and readiness.
+Issues #12–#13 and #25–#29, #35–#36: evaluation, documentation, demo, presentation, portfolio narrative and readiness. Validate every C1–C4 indicator against docs/rubric-traceability.md.
 
 ## Cross-cutting SDD harness
 
@@ -35,5 +35,5 @@ Issue #37 establishes the source-of-truth structure. A dedicated OpenSpec harnes
 ## Pending synchronization
 
 - Import Project #1 phases, ordering and status.
-- Attach the official rubric and weights.
-- Resolve conditional Issues #30–#34.
+- Record the instructor's answer about the expected evidence depth for RAG in a solo project.
+- Resolve product decisions in Issues #31, #33 and #34.
