@@ -8,7 +8,7 @@ The contract is Approved on 2026-10-04. Implementation follows this order.
 - [x] Scaffold the Next.js/React/TypeScript client under `apps/web/` with a foundation page that reads API readiness.
 - [ ] Add environment configuration and a safe `.env.example`; verify no secrets are tracked.
 - [x] Add the provider-neutral LangChain integration boundary with a deterministic mock adapter.
-- [ ] Add foundation tests for configuration, readiness, client/API boundary and no-network behavior.
+- [x] Add foundation tests for configuration, readiness, client/API boundary and no-network behavior.
 - [ ] Configure `.github/sdd-harness.yml` with `python -m pytest -q` as the authoritative application test command.
 - [ ] Document prerequisites, setup, run, test commands, structure and scope boundaries.
 - [ ] Run OpenSpec validation, required-field validation and `python -m pytest -q`; record evidence.
