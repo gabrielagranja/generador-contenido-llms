@@ -9,7 +9,7 @@ Define how the product guides a content manager from incomplete business informa
 
 ### Requirement: Guided business and audience discovery
 
-The system MUST identify which required facts are missing or ambiguous before it drafts content that depends on them.
+The system SHALL identify which required facts are missing or ambiguous before it drafts content that depends on them.
 
 #### Scenario: Offer or topic is missing
 - GIVEN a user asks for a post without a usable offer or topic
@@ -34,13 +34,13 @@ The system MUST identify which required facts are missing or ambiguous before it
 
 ### Requirement: Evidence and assumption handling
 
-The system MUST distinguish user-confirmed or approved business facts from inference and unknown information.
+The system SHALL distinguish user-confirmed or approved business facts from inference and unknown information.
 
 #### Scenario: Claim lacks evidence
 - GIVEN a proposed claim has no support in the user brief or approved business context
 - WHEN copy is generated
 - THEN the system omits the claim or asks for evidence
-- AND MUST NOT invent a statistic, benefit, testimonial, result, deadline, quantity, credential, or guarantee.
+- AND SHALL NOT invent a statistic, benefit, testimonial, result, deadline, quantity, credential, or guarantee.
 
 #### Scenario: Persuasion uses proof or scarcity
 - GIVEN social proof, anchoring, reciprocity, urgency, or scarcity is considered
@@ -49,7 +49,7 @@ The system MUST distinguish user-confirmed or approved business facts from infer
 
 ### Requirement: Goal-led content strategy
 
-The system MUST select a message angle and CTA based on an explicit or user-confirmed goal and the available audience insight.
+The system SHALL select a message angle and CTA based on an explicit or user-confirmed goal and the available audience insight.
 
 #### Scenario: Goal is missing
 - GIVEN the user's goal is not known and different goals would lead to materially different posts
@@ -69,7 +69,7 @@ The system MUST select a message angle and CTA based on an explicit or user-conf
 
 ### Requirement: Adaptive interview
 
-The system MUST ask the minimum useful follow-up questions needed to generate an accurate draft.
+The system SHALL ask the minimum useful follow-up questions needed to generate an accurate draft.
 
 #### Scenario: Several facts are missing
 - GIVEN more than one detail is unknown
@@ -83,7 +83,7 @@ The system MUST ask the minimum useful follow-up questions needed to generate an
 
 ### Requirement: Instagram and Facebook adaptation
 
-The system MUST generate or adapt content for the selected initial Meta channel or channels, subject to the canonical MVP scope.
+The system SHALL generate or adapt content for the selected initial Meta channel or channels, subject to the canonical MVP scope.
 
 #### Scenario: Both channels are selected
 - GIVEN Instagram and Facebook are both requested
@@ -97,7 +97,7 @@ The system MUST generate or adapt content for the selected initial Meta channel 
 
 ### Requirement: Supported post-format package
 
-The proposed content formats are single-image feed posts, carousels and Reels. Stories are deferred. The final MVP subset MUST match the human-approved canonical scope before implementation.
+The proposed content formats are single-image feed posts, carousels and Reels. Stories are deferred. The final MVP subset SHALL match the human-approved canonical scope before implementation.
 
 #### Scenario: Single-image package
 - GIVEN an image feed post is selected
@@ -121,7 +121,7 @@ The proposed content formats are single-image feed posts, carousels and Reels. S
 
 ### Requirement: Copy and visual guidance
 
-The system MUST use copywriting and design knowledge as contextual guidance rather than guaranteed-performance rules.
+The system SHALL use copywriting and design knowledge as contextual guidance rather than guaranteed-performance rules.
 
 #### Scenario: Caption is generated
 - GIVEN enough facts are available
@@ -136,11 +136,11 @@ The system MUST use copywriting and design knowledge as contextual guidance rath
 #### Scenario: Performance statistic is not verified
 - GIVEN a numeric engagement claim or universal design rule is not supported by a verified source
 - WHEN the system explains its recommendation
-- THEN it presents the advice as a heuristic or omits the statistic; it MUST NOT promise increased clicks, reach or conversion.
+- THEN it presents the advice as a heuristic or omits the statistic; it SHALL NOT promise increased clicks, reach or conversion.
 
 ### Requirement: Brand coherence and accessibility
 
-The system MUST use approved brand guidance when available and provide accessible content cues where applicable.
+The system SHALL use approved brand guidance when available and provide accessible content cues where applicable.
 
 #### Scenario: Brand profile exists
 - GIVEN brand voice and visual identity are available
@@ -159,7 +159,7 @@ The system MUST use approved brand guidance when available and provide accessibl
 
 ### Requirement: Structured editable output
 
-The system MUST return an output package that separates strategy, copy, visual guidance and unresolved assumptions.
+The system SHALL return an output package that separates strategy, copy, visual guidance and unresolved assumptions.
 
 #### Scenario: Draft is ready
 - GIVEN required facts are confirmed or safely bounded
@@ -173,7 +173,7 @@ The system MUST return an output package that separates strategy, copy, visual g
 
 ### Requirement: Human publication control
 
-The content generator MUST preserve the existing human approval rule for publishing to Instagram.
+The content generator SHALL preserve the existing human approval rule for publishing to Instagram.
 
 #### Scenario: Instagram post is ready to publish
 - GIVEN a generated draft is connected to the Instagram publishing flow
