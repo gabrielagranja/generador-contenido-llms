@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from apps.api.config import settings
+
 
 class ReadinessResponse(BaseModel):
     """Stable response returned by the local readiness endpoint."""
