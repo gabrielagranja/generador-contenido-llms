@@ -34,6 +34,10 @@ Issue #37 establishes the source-of-truth structure. A dedicated OpenSpec harnes
 
 ## Pending synchronization
 
+- Issue #21 task 5 is verified: foundation tests cover safe defaults, readiness and OpenAPI endpoints, the client/API contract, provider-free operation, the LangChain boundary, deterministic mocks and no-network behavior.
+
+- Issue #21 task 4 is verified: the API exposes a provider-neutral LangChain core boundary backed by a deterministic offline mock, with no provider credentials or network calls required.
+
 - Import Project #1 phases, ordering and status.
 - Record the instructor's answer about the expected evidence depth for RAG in a solo project.
 - Resolve product decisions in Issues #31, #33 and #34.

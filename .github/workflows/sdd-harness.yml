@@ -27,6 +27,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
       - name: Install OpenSpec
         run: npm install --global @fission-ai/openspec@1.13.2
 

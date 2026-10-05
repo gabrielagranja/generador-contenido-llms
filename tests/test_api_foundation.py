@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import os
+import socket
+import asyncio
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import httpx
+from fastapi.testclient import TestClient
+
+from apps.api.main import ReadinessResponse, app
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CLIENT_PAGE = ROOT / "apps" / "web" / "app" / "page.tsx"
+PROVIDER_ENVIRONMENT_KEYS = (
+    "GROQ_API_KEY",
+    "GOOGLE_API_KEY",
+    "GEMINI_API_KEY",
+    "META_ACCESS_TOKEN",
+)
+
+
+class ApiFoundationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.client = TestClient(app)
+
+    def test_readiness_response_has_safe_deterministic_defaults(self) -> None:
+        response = ReadinessResponse()
+
+        self.assertEqual(response.model_dump(), {"status": "ready", "service": "api"})
+
+    def test_readiness_endpoint_returns_expected_contract(self) -> None:
+        response = self.client.get("/readiness")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ready", "service": "api"})
+
+    def test_openapi_documentation_endpoints_are_available(self) -> None:
+        for path in ("/docs", "/redoc", "/openapi.json"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+
+        openapi = self.client.get("/openapi.json").json()
+        self.assertIn("/readiness", openapi["paths"])
+
+    def test_readiness_is_available_without_provider_credentials(self) -> None:
+        with patch.dict(os.environ, {}, clear=False):
+            for key in PROVIDER_ENVIRONMENT_KEYS:
+                os.environ.pop(key, None)
+            response = self.client.get("/readiness")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ready")
+
+    def test_client_declares_the_readiness_api_contract(self) -> None:
+        page = CLIENT_PAGE.read_text(encoding="utf-8")
+
+        self.assertIn("NEXT_PUBLIC_API_BASE_URL", page)
+        self.assertIn("/readiness", page)
+        self.assertIn('payload.status !== "ready"', page)
+        self.assertIn('payload.service !== "api"', page)
+        self.assertIn('setState("unavailable")', page)
+
+    def test_foundation_readiness_does_not_open_network_connections(self) -> None:
+        async def request_readiness() -> httpx.Response:
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport,
+                base_url="http://testserver",
+            ) as client:
+                return await client.get("/readiness")
+
+        loop = asyncio.new_event_loop()
+        try:
+            with patch.object(
+                socket,
+                "create_connection",
+                side_effect=AssertionError("network access"),
+            ):
+                response = loop.run_until_complete(request_readiness())
+        finally:
+            loop.close()
+
+        self.assertEqual(response.status_code, 200)
+
+
+if __name__ == "__main__":
+    unittest.main()
