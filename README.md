@@ -65,11 +65,18 @@ The detailed rationale, provider documentation, cost notes, privacy boundaries, 
 - **Professional traceability:** decisions, research evidence, tests, and limitations remain visible in the repository.
 - **Privacy-aware evaluation:** use synthetic or explicitly approved business data when testing provider free tiers.
 
-## Academic brief and assessment risks
+## Academic brief and assessment requirements
 
-The bootcamp brief requires a functional content-generation proof of concept, a web interface, generative models and an LLM application framework, low-cost choices, Git/GitHub practices, a Kanban board, documentation, a live demo, a Medium article, and a technical presentation.
+The official rubric is recorded in [Rubric traceability](docs/rubric-traceability.md). It totals 100 points:
 
-The brief presents RAG as an advanced capability while the rubric assigns it significant weight. The initial stack includes **lightweight RAG**, image generation, and a comparison of two text-model configurations to address the assessment direction without introducing a large multi-agent system. Confirm with the instructor what depth of RAG evidence is expected.
+| Competence | Weight |
+|---|---:|
+| C1 Communication | 12 % |
+| C2 Version-control project management | 16 % |
+| C3 Team management | 18 % |
+| C4 NLP/AI model | 54 % |
+
+C4 requires use of LLM models, an LLM application framework and a RAG architecture. Each indicator is worth 18 %. Image generation, two-model comparison and Docker remain product choices; they are not rubric requirements. The project will record the instructor's guidance on the evidence expected for RAG in a solo project.
 
 Image generation, Instagram OAuth/publishing, Facebook adaptation, and voice mode extend the original text-first project direction. The first implementation slice supports single-image, carousel and Reel content packages; generated visual assets remain limited to one Instagram feed-image preview. Stories and LinkedIn are deferred.
 
