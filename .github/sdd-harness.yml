@@ -1,5 +1,3 @@
 tests:
-  # Define the application command here once an application test suite exists.
-  # An empty command produces an explicit CI warning and skipped state.
-  command: ""
-  description: "Application test command is not configured yet."
+  command: "python -m pytest -q"
+  description: "Authoritative application test command for the foundation."
