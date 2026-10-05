@@ -205,6 +205,10 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Next.js local dependencies and build output
+apps/web/node_modules/
+apps/web/.next/
+
 # Ruff stuff:
 .ruff_cache/
 
