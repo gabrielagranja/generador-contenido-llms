@@ -1,6 +1,8 @@
 # LLM Content Generation MVP
 
-> A portfolio project that explores and validates an LLM-assisted social-content workflow for a network of 20+ small businesses.
+> A portfolio project exploring how LLMs can support editorial management for a network of 20+ small businesses—not just generate standalone social posts.
+
+The long-term goal is an **intelligent editorial management tool for local-business networks**: help a content manager maintain reliable business knowledge, decide what to communicate and why, balance content across businesses and themes, create drafts grounded in traceable evidence, and eventually learn from publication history and authorized performance data. The MVP validates a narrow, human-reviewed workflow first; the broader direction will be investigated and delivered in approved stages.
 
 ## Status
 
@@ -40,43 +42,35 @@ The first slice uses one representative/authorized business. Instagram is the pr
 
 ## Product direction beyond the first slice
 
-The first slice validates a human-reviewed workflow for generating accurate, editable content for one representative business. The longer-term product direction is an editorial management tool for local-business networks: it should help a non-technical content manager maintain reliable business information, plan a varied editorial calendar, and create content grounded in traceable evidence.
+A post generator answers “Can AI write this post?” The broader product we are exploring should also help answer: **“What should we communicate, for whom, why now, and what evidence supports it?”** The goal is to grow toward an **intelligent editorial management tool for local-business networks**, with the LLM as a drafting assistant—not the system that independently decides the whole strategy.
 
-This direction is a product hypothesis for future discovery and planning. It does not expand the approved first-slice scope above or claim that these capabilities are implemented.
+This is a long-term product direction, not a claim that these capabilities are already implemented or an expansion of the approved MVP scope above.
 
-### Knowledge that people can maintain
+### Knowledge people can maintain
 
-Business owners and content managers should work through familiar tools—not directly with databases, embeddings, or vector stores. A future workflow may provide a simple web form to add or update a business profile and an import path for existing spreadsheets or CSV files. The application would validate and normalize those inputs, retain their source and approval status, and update its searchable knowledge automatically.
+A non-technical content manager should be able to add and correct business information through familiar workflows, such as a simple web form or spreadsheet/CSV import. The application—not the user—would validate and organize the information and make approved updates searchable.
 
-The knowledge base may include approved business profiles, stories, products and services, values, campaigns, images, local events, and carefully selected local news or public statistics. Retrieval should keep source identifiers and relevant excerpts so reviewers can check what supports a generated claim. Documents, chunks, and embeddings are implementation details hidden behind the application.
+The knowledge base could include business profiles, stories, products and services, values, campaigns, images, local events, and selected local news or public statistics. Retrieved evidence should retain source details so a reviewer can check the basis for a generated claim. Databases, chunks, and embeddings remain internal implementation details.
 
-The current MVP stack below uses a small local Chroma store. A production storage choice—including whether structured records and vector search should share PostgreSQL with pgvector—remains to be evaluated against usability, deployment, cost, privacy, and maintenance needs before it is adopted.
+The current provisional MVP stack uses a small local Chroma store. Whether a later deployment should use PostgreSQL with pgvector or another storage setup remains an open technical decision; this README does not select or commit to it.
 
-### Editorial strategy, history, and feedback
+### Editorial planning and learning
 
-The longer-term workflow separates three responsibilities:
+The longer-term system could bring together three distinct functions:
 
-1. **Knowledge and evidence:** retrieve relevant, approved information and expose its sources.
-2. **Editorial planning:** apply a human-approved line of editorial, content categories, campaign priorities, and deterministic rotation rules to suggest what to cover, which business or topic to feature, and why.
-3. **Performance feedback:** retain publication history and, when authorized analytics are available, relate engagement measures to content type, business, topic, format, and date.
+1. **Knowledge and evidence:** retrieve relevant, approved business and local context and preserve its sources.
+2. **Editorial engine:** use a human-defined line of editorial, content categories, campaigns, calendar, and deterministic rotation rules to suggest what to cover, which business or topic to feature, and why. The aim is a deliberate mix of useful local information, business stories, promotions, educational content, events, and community content—not repetitive promotion alone.
+3. **History and performance feedback:** record what was drafted or published and, when authorized analytics are available, relate outcomes to content type, business, topic, format, and date to inform future planning.
 
-The language model drafts and adapts content from the selected brief and evidence. It does not independently set the editorial strategy, guarantee engagement, or publish without the existing human approval rule. Any future balance targets or automatic use of analytics require validation and an approved scope change.
+The LLM would turn the selected objective and evidence into channel-appropriate drafts. It should not independently govern editorial strategy, promise engagement, or publish without human approval. Any balance targets or use of analytics must be validated before implementation.
 
-### Candidate data sources and integrations
+### Candidate sources and staged evolution
 
-A staged, low-dependency approach is preferred for investigation:
+Initial exploration can prioritize information already available about the businesses, selected RSS/Atom feeds from local institutions and media, and an application-owned calendar for campaigns, local events, and relevant dates. Official public data sources such as INE or datos.gob.es may be evaluated when specific economic or demographic context is useful. Social-platform analytics, trend services, and paid news aggregators should wait until user value, access, terms, privacy, and cost are verified.
 
-- Start with the business information already available, entered through a future form or imported from a spreadsheet.
-- Evaluate selected RSS/Atom feeds from municipal, business-association, and local-news sources for timely local context.
-- Maintain an application-owned editorial calendar for campaigns, local events, and relevant dates; calendar synchronization can be considered if it solves a validated workflow need.
-- Assess official public datasets, such as INE or datos.gob.es, only for specific local economic or demographic context that improves content decisions.
-- Defer social-platform analytics, trend services, and paid news aggregators until access, terms, coverage, privacy, cost, and user value are verified.
+These are candidate sources, not current dependencies. External information must be curated, attributable, dated, and checked before it is used as evidence; no API is assumed to be free for production or automatically suitable for ingestion.
 
-These are candidate sources, not current dependencies. No third-party feed or API is assumed to be available, free for production, or appropriate for automatic ingestion. Retrieved external material must be curated, dated, attributable, and checked before it is used as evidence.
-
-### Possible evolution
-
-A sensible sequence to investigate is: reliable business knowledge and traceable retrieval; a human-controlled editorial taxonomy and calendar; history and deterministic rotation; curated local context; then authorized performance analytics and carefully evaluated feedback. Each stage needs a GitHub Issue and an approved OpenSpec contract before implementation. The official assessment rubric and current first-slice boundary remain authoritative.
+A possible progression is reliable business knowledge and traceable retrieval, followed by human-controlled editorial planning and history, curated local context, and later authorized performance feedback. Each implementation stage requires a GitHub Issue and an approved OpenSpec contract. The official rubric and approved first-slice scope remain authoritative.
 
 ## Approved provisional technology stack
 
