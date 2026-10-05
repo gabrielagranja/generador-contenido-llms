@@ -3,6 +3,7 @@
 Authority: canonical architecture index.
 
 - technology-stack.md records the approved provisional stack.
+- local-development.md records prerequisites, setup, run, test and scope boundaries for the foundation.
 - Future architecture decisions belong here or in a linked decision record.
 - OpenSpec design documents explain the technical approach for an individual change and do not replace the system-level architecture record.
 
