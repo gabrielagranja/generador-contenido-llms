@@ -4,6 +4,8 @@
 
 Define how the product guides a content manager from incomplete business information to truthful, editable, platform-adapted social content.
 
+The system MUST apply each ADDED requirement below.
+
 ## ADDED Requirements
 
 
