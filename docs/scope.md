@@ -14,7 +14,7 @@ Last reviewed: 2026-10-05.
 - Content packages for single-image feed posts, carousels and Reels on the selected Instagram/Facebook channel(s).
 - For image posts, concise complementary overlay text and visual direction; for carousels, a cover hook and slide-by-slide content/visual direction; for Reels, a concise scene/script outline, on-screen text and subtitle guidance.
 - One Instagram feed-image generation and preview flow. Carousel slides and Reel video are content/creative plans in this slice; generation of complete carousel image sets or rendered videos is not included.
-- Small RAG pipeline over approved business context.
+- Small RAG pipeline over approved business context, required to evidence rubric indicator C4.3.
 - Optional voice interaction for briefing and revisions.
 - One authorized Instagram Professional account.
 - Explicit human confirmation before every Instagram publication.
