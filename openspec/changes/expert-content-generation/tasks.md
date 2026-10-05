@@ -2,9 +2,9 @@
 
 ## Implementation
 
-- [ ] 1. Reconcile image, carousel and Reel proposal with the current canonical one-image MVP boundary in docs/scope.md.
-- [ ] 2. Confirm Issue #22 remains the linked story and update its criteria to reference the approved contract.
-- [ ] 3. Obtain explicit human approval for the resolved platform/format scope and OpenSpec contract.
+- [x] 1. Reconcile the approved image, carousel and Reel content packages with the MVP media-generation boundary in docs/scope.md.
+- [x] 2. Confirm Issue #22 as the linked story and update its criteria to reference the approved contract.
+- [x] 3. Obtain explicit human approval for the resolved platform/format scope and OpenSpec contract.
 - [ ] 4. Finalize the guided discovery question map and confirmed/inferred/unknown fact model.
 - [ ] 5. Finalize goal-to-audience-to-message-to-format-to-CTA decision guidance.
 - [ ] 6. Curate copy approaches, formulas, persuasion safeguards and visual heuristics from the approved knowledge sources.

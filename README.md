@@ -30,13 +30,13 @@ The initial functional slice lets the content manager:
 
 1. Capture a structured brief: topic, audience, platform, business context, and optional notes.
 2. Identify missing or ambiguous information before generation.
-3. Generate editable copy adapted to **Instagram and Facebook**.
+3. Generate editable content packages adapted to **Instagram and Facebook** for single-image posts, carousels and Reels.
 4. Retrieve relevant, approved business context through a small RAG pipeline.
-5. Generate and preview one image for an Instagram feed post.
+5. Generate and preview one image for an Instagram feed-image post; carousels and Reels receive slide-by-slide or scene-by-scene creative plans.
 6. Use an optional voice mode to enter briefs and request draft revisions.
 7. Connect one authorized Instagram Professional account and publish only after explicit human approval.
 
-The first slice uses one representative/authorized business. Instagram is the priority channel and Facebook is the second content-generation/adaptation channel. Direct Facebook publishing and LinkedIn content generation are outside the first slice unless later validation approves them. Voice interaction can create and revise drafts, but it cannot publish without the same explicit approval step.
+The first slice uses one representative/authorized business. Instagram is the priority channel and Facebook is the second content-generation/adaptation channel. Initial content formats are single-image posts, carousels and Reels; Stories and LinkedIn are deferred. Direct Facebook publishing is outside the first slice. Voice interaction can create and revise drafts, but it cannot publish without the same explicit approval step.
 
 ## Approved provisional technology stack
 
@@ -71,7 +71,7 @@ The bootcamp brief requires a functional content-generation proof of concept, a 
 
 The brief presents RAG as an advanced capability while the rubric assigns it significant weight. The initial stack includes **lightweight RAG**, image generation, and a comparison of two text-model configurations to address the assessment direction without introducing a large multi-agent system. Confirm with the instructor what depth of RAG evidence is expected.
 
-Image generation, Instagram OAuth/publishing, Facebook adaptation, and voice mode extend the original text-first project direction. The first implementation slice is deliberately limited to one business, one Instagram professional account, and one Instagram feed-image workflow.
+Image generation, Instagram OAuth/publishing, Facebook adaptation, and voice mode extend the original text-first project direction. The first implementation slice supports single-image, carousel and Reel content packages; generated visual assets remain limited to one Instagram feed-image preview. Stories and LinkedIn are deferred.
 
 ## Project source of truth
 

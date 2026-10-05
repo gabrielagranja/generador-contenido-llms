@@ -2,7 +2,7 @@
 
 ## Context
 
-This design supports the pending proposal for Issue #22. It defines an implementation-neutral workflow for turning a business brief and approved business context into an editable, truthful Instagram or Facebook post. It does not authorize implementation or publication.
+This design supports the approved proposal for Issue #22. It defines an implementation-neutral workflow for turning a business brief and approved business context into an editable, truthful Instagram or Facebook post. It does not authorize implementation or publication.
 
 ## Technical approach
 
@@ -41,9 +41,9 @@ Use flexible heuristics: mobile-first composition, legible hierarchy and contras
 
 Keep on-image text brief (about 6–8 words as a starting guideline) and use no more than two typefaces where feasible. Do not duplicate the caption in the image. Provide subtitle guidance for video so it works sound-off and alt-text guidance for important images.
 
-Proposed first formats are single-image feed post, carousel and Reel; Stories are deferred. A single-image package has one focal visual, complementary overlay, caption and CTA. A carousel has a cover hook, coherent per-slide progression, a resolved ending/CTA and optional continuation cue. A Reel has a concise scene/script outline, opening hook, useful development, closing CTA and readable subtitle/on-screen text direction.
+Approved first formats are single-image feed post, carousel and Reel; Stories are deferred. A single-image package has one focal visual, complementary overlay, caption and CTA. A carousel has a cover hook, coherent per-slide progression, a resolved ending/CTA and optional continuation cue. A Reel has a concise scene/script outline, opening hook, useful development, closing CTA and readable subtitle/on-screen text direction.
 
-The current canonical scope allows one Instagram feed-image generation/preview and Facebook adaptation. This format set is a scope conflict that must be resolved before implementation. Do not imply unsupported formats are implemented.
+The approved format set is single-image feed posts, carousels and Reels for Instagram/Facebook content generation and adaptation. The existing rendered-media capability remains one Instagram feed-image generation/preview; carousel and Reel outputs are creative plans, not rendered image sets or video. Stories are deferred.
 
 Treat 4:5, 1:1 and 9:16 dimensions, safe-zone percentages, a two-second stop-scroll target, F/Z pattern claims and any CTR/conversion uplift figures from the conversation as provisional heuristics or unverified claims. Verify current official Meta documentation before enforcing technical values. Do not promise reach, engagement or conversion.
 
@@ -88,7 +88,6 @@ Use fixed synthetic or explicitly approved briefs across businesses/use cases, c
 
 ### Open questions
 
-- Reconcile proposed image/carousel/Reel support with docs/scope.md before implementation.
 - Decide explicit versus inferred content-language selection.
 - Verify live Meta technical and policy constraints from official sources at implementation time.
 - Validate the product hypothesis against user workflow and competitor evidence.

@@ -25,7 +25,7 @@ This is a hypothesis for product discovery, not a claim that no other applicatio
 - Issue #22 and OpenSpec change `openspec/changes/expert-content-generation/` define the proposed behavior and acceptance criteria.
 - `docs/assumptions.md` remains authoritative for unresolved scope and evidence questions.
 - `docs/evaluation-plan.md` should measure question relevance, usefulness of the audience hypothesis, editability, accuracy, platform fit and time to a usable draft.
-- The proposed formats (single-image, carousel and Reel) conflict with the current one-image MVP boundary in `docs/scope.md`; do not change canonical scope until that conflict is resolved.
+- The approved initial content formats are single-image, carousel and Reel; Stories are deferred. See docs/decisions/2026-10-05-initial-meta-formats.md. Carousel/Reel deliverables are creative plans; the only rendered visual asset in scope is one Instagram feed image.
 
 ## Revisit trigger
 

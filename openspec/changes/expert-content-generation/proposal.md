@@ -2,7 +2,8 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
+- Human approval: Approved in the project conversation on 2026-10-05.
 - Issue: #22 — [STORY] Capture a structured content brief
 - Decision record: docs/decisions/2026-10-05-brief-to-post-coach-hypothesis.md
 
@@ -23,7 +24,7 @@ The agent should do more than write captions: it should ask focused questions, h
 - Separation of confirmed, inferred and unknown facts.
 - Goal-led selection of message, copy approach, optional formula, platform format and CTA.
 - Knowledge guidance for copy structure, styles and formulas; visual effectiveness; mobile-first legibility; brand coherence; accessibility; social-search wording; testing; and truthful persuasion.
-- Proposed first formats: single-image post, carousel and Reel. Stories are deferred.
+- Approved first formats: single-image post, carousel and Reel. Stories are deferred. Carousel and Reel outputs are content/creative plans; full carousel image-set or video rendering is out of scope.
 - Editable output with per-platform copy, CTA, visual direction, relevant overlay/script, assumptions, and optional test variant.
 - Human approval before Instagram publication remains required.
 
@@ -47,7 +48,7 @@ The agent should do more than write captions: it should ask focused questions, h
 - The output separates platform/format/goal, audience status, evidence, message, copy, CTA, visual direction, assumptions and optional A/B hypothesis.
 - Numeric Meta format and safe-zone rules are verified against current official guidance before enforcement.
 - Evaluation measures accuracy, audience hypothesis quality, relevance of questions, platform/format fit, editability, revision effort and time to useful draft.
-- The final supported format set is reconciled with canonical docs/scope.md before implementation. The current canonical boundary is one Instagram feed-image generation/preview plus Facebook adaptation; this proposal does not silently change it.
+- The approved format set is single-image feed post, carousel and Reel for Instagram/Facebook content generation/adaptation; Stories are deferred. The existing Instagram single-image generation/preview remains the only rendered visual asset capability in this slice.
 
 ## Rubric
 
@@ -62,11 +63,10 @@ No aplica — the official rubric and weights remain pending in the repository.
 
 ## Open questions and blockers
 
-- Scope blocker: resolve whether carousel and Reel are part of this MVP, given the existing canonical one-image boundary.
 - Confirm whether the user chooses language explicitly or the agent defaults to the language of the brief/profile.
 - Verify current official Meta requirements for placements, dimensions, safe zones and media constraints at implementation time.
 - Keep the differentiator as a hypothesis until competitor and user-workflow validation is complete.
 
 ## Approval
 
-Pending. Do not implement until the format scope and acceptance criteria are reviewed and an authorized human changes this status to Approved.
+Approved on 2026-10-05 after the user approved the consolidated scope and criteria in the project conversation. Implementation MAY proceed in tasks.md order. This approval includes content/creative plans for single-image posts, carousels and Reels; it does not include complete carousel media rendering, video generation, Stories or Facebook publishing.
