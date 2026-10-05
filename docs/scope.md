@@ -28,8 +28,8 @@ Last reviewed: 2026-10-05.
 - Unattended or scheduled publishing.
 - Multiple businesses and multi-tenant administration.
 - Final hosting provider.
-- Exact RAG, image and model-comparison depth required by the academic rubric.
-- Docker inclusion, pending Issue #34 decision.
+- Image-support approach and two-model comparison, pending product decisions in Issues #31 and #33; they are not rubric requirements.
+- Docker inclusion, pending product decision in Issue #34; it is not a rubric requirement.
 - Any external account access not explicitly authorized.
 - Automated engagement guarantees, unsupported performance predictions or automatic learning from account analytics.
 
