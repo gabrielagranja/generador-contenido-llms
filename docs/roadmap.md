@@ -14,7 +14,7 @@ Issues #7–#8 and #14–#19: scope, traceability, workflow, wireframes, prototy
 
 ## Phase 3 — Application foundation
 
-Issues #9 and #20–#21: stack, runnable web/API foundation, environment handling and setup. Issue #21 task 1 is verified: the minimal FastAPI/Pydantic API scaffold and deterministic `/readiness` endpoint run without provider credentials. Task 2 is also verified: the minimal Next.js/React/TypeScript client builds successfully and reads the local readiness endpoint with explicit ready/unavailable states.
+Issues #9 and #20–#21: stack, runnable web/API foundation, environment handling and setup. Issue #21 task 1 is verified: the minimal FastAPI/Pydantic API scaffold and deterministic `/readiness` endpoint run without provider credentials. Task 2 is also verified: the minimal Next.js/React/TypeScript client builds successfully and reads the local readiness endpoint with explicit ready/unavailable states. Task 3 is verified: safe local environment examples and ignored secret files are in place without provider credentials.
 
 ## Phase 4 — Content-generation slice
 

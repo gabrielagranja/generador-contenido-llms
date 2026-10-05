@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from apps.api.config import Settings
+
 
 class ReadinessResponse(BaseModel):
     """Stable response returned by the local readiness endpoint."""
@@ -19,9 +21,11 @@ app = FastAPI(
     version="0.1.0",
 )
 
+settings = Settings.from_environment()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=list(settings.cors_origins),
     allow_credentials=False,
     allow_methods=["GET"],
     allow_headers=[],
