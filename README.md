@@ -38,6 +38,46 @@ The initial functional slice lets the content manager:
 
 The first slice uses one representative/authorized business. Instagram is the priority channel and Facebook is the second content-generation/adaptation channel. Initial content formats are single-image posts, carousels and Reels; Stories and LinkedIn are deferred. Direct Facebook publishing is outside the first slice. Voice interaction can create and revise drafts, but it cannot publish without the same explicit approval step.
 
+## Product direction beyond the first slice
+
+The first slice validates a human-reviewed workflow for generating accurate, editable content for one representative business. The longer-term product direction is an editorial management tool for local-business networks: it should help a non-technical content manager maintain reliable business information, plan a varied editorial calendar, and create content grounded in traceable evidence.
+
+This direction is a product hypothesis for future discovery and planning. It does not expand the approved first-slice scope above or claim that these capabilities are implemented.
+
+### Knowledge that people can maintain
+
+Business owners and content managers should work through familiar tools—not directly with databases, embeddings, or vector stores. A future workflow may provide a simple web form to add or update a business profile and an import path for existing spreadsheets or CSV files. The application would validate and normalize those inputs, retain their source and approval status, and update its searchable knowledge automatically.
+
+The knowledge base may include approved business profiles, stories, products and services, values, campaigns, images, local events, and carefully selected local news or public statistics. Retrieval should keep source identifiers and relevant excerpts so reviewers can check what supports a generated claim. Documents, chunks, and embeddings are implementation details hidden behind the application.
+
+The current MVP stack below uses a small local Chroma store. A production storage choice—including whether structured records and vector search should share PostgreSQL with pgvector—remains to be evaluated against usability, deployment, cost, privacy, and maintenance needs before it is adopted.
+
+### Editorial strategy, history, and feedback
+
+The longer-term workflow separates three responsibilities:
+
+1. **Knowledge and evidence:** retrieve relevant, approved information and expose its sources.
+2. **Editorial planning:** apply a human-approved line of editorial, content categories, campaign priorities, and deterministic rotation rules to suggest what to cover, which business or topic to feature, and why.
+3. **Performance feedback:** retain publication history and, when authorized analytics are available, relate engagement measures to content type, business, topic, format, and date.
+
+The language model drafts and adapts content from the selected brief and evidence. It does not independently set the editorial strategy, guarantee engagement, or publish without the existing human approval rule. Any future balance targets or automatic use of analytics require validation and an approved scope change.
+
+### Candidate data sources and integrations
+
+A staged, low-dependency approach is preferred for investigation:
+
+- Start with the business information already available, entered through a future form or imported from a spreadsheet.
+- Evaluate selected RSS/Atom feeds from municipal, business-association, and local-news sources for timely local context.
+- Maintain an application-owned editorial calendar for campaigns, local events, and relevant dates; calendar synchronization can be considered if it solves a validated workflow need.
+- Assess official public datasets, such as INE or datos.gob.es, only for specific local economic or demographic context that improves content decisions.
+- Defer social-platform analytics, trend services, and paid news aggregators until access, terms, coverage, privacy, cost, and user value are verified.
+
+These are candidate sources, not current dependencies. No third-party feed or API is assumed to be available, free for production, or appropriate for automatic ingestion. Retrieved external material must be curated, dated, attributable, and checked before it is used as evidence.
+
+### Possible evolution
+
+A sensible sequence to investigate is: reliable business knowledge and traceable retrieval; a human-controlled editorial taxonomy and calendar; history and deterministic rotation; curated local context; then authorized performance analytics and carefully evaluated feedback. Each stage needs a GitHub Issue and an approved OpenSpec contract before implementation. The official assessment rubric and current first-slice boundary remain authoritative.
+
 ## Approved provisional technology stack
 
 | Layer | Choice | Responsibility |
