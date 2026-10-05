@@ -11,6 +11,6 @@ The contract is Approved on 2026-10-04. Implementation follows this order.
 - [x] Add foundation tests for configuration, readiness, client/API boundary and no-network behavior.
 - [x] Configure `.github/sdd-harness.yml` with `python -m pytest -q` as the authoritative application test command.
 - [x] Document prerequisites, setup, run, test commands, structure and scope boundaries.
-- [ ] Run OpenSpec validation, required-field validation and `python -m pytest -q`; record evidence.
-- [ ] Perform a clean-checkout smoke test for client and API startup; record evidence.
-- [ ] Update the issue with evidence, synchronize canonical specs if behavior changed, and close only after acceptance criteria are verified.
+- [x] Run OpenSpec validation, required-field validation and `python -m pytest -q`; record evidence.
+- [x] Perform a clean-checkout smoke test for client and API startup; record evidence.
+- [x] Update the issue with evidence, synchronize canonical specs if behavior changed, and close only after acceptance criteria are verified.
