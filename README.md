@@ -1,186 +1,105 @@
-# LLM Content Generation MVP
+# Generador de contenido con LLMs
 
-> A portfolio project exploring how LLMs can support editorial management for a network of 20+ small businesses—not just generate standalone social posts.
+![Estado](https://img.shields.io/badge/estado-en_desarrollo-orange)
+[![Rama dev](https://img.shields.io/badge/rama-dev-blue)](https://github.com/gabrielagranja/generador-contenido-llms/tree/dev)
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Web-Next.js-000000?logo=nextdotjs&logoColor=white)
+![LangChain](https://img.shields.io/badge/LLM-LangChain-1C3C3C)
+![SDD](https://img.shields.io/badge/SDD-OpenSpec-6D28D9)
 
-The long-term goal is an **intelligent editorial management tool for local-business networks**: help a content manager maintain reliable business knowledge, decide what to communicate and why, balance content across businesses and themes, create drafts grounded in traceable evidence, and eventually learn from publication history and authorized performance data. The MVP validates a narrow, human-reviewed workflow first; the broader direction will be investigated and delivered in approved stages.
+Una aplicación para transformar un brief y la información de un negocio en **borradores de contenido para Instagram y Facebook**, con revisión humana antes de publicar.
 
-## Status
+Está pensada para una **gestora de contenidos y copywriter que coordina una red de más de 20 pequeños negocios locales**. El MVP comienza con un negocio representativo y busca reducir el trabajo de redacción y adaptación, manteniendo el control editorial y la trazabilidad de la información.
 
-**Current phase: Discovery & validation.** The initial channels and a provisional implementation stack have been selected; implementation scope and external account access still need to be made reproducible.
+## Qué hará el MVP
 
-This repository documents an end-to-end solo product-development process: marketing and product discovery, UX/UI design, LLM application development, evaluation, and portfolio communication.
+- Recoger un brief con tema, público, canal y contexto del negocio.
+- Crear y revisar textos para publicaciones, carruseles y Reels.
+- Recuperar información aprobada del negocio mediante **RAG** para fundamentar los borradores.
+- Generar una imagen para previsualizar un post de Instagram; los carruseles y Reels reciben planes creativos.
+- Permitir introducir briefs y solicitar revisiones por voz.
+- Conectar una cuenta profesional de Instagram mediante OAuth y publicar **solo tras una aprobación humana explícita**.
 
-## Real-world context
+Facebook se utiliza para generar y adaptar contenido; su publicación directa queda fuera del MVP. Stories y LinkedIn quedan para una etapa posterior.
 
-The project is grounded in a real content-management workflow for a network of more than 20 small local businesses.
+## Stack y APIs previstos
 
-- **Primary user:** a digital content manager and copywriter who coordinates social communication across the network.
-- **Potential secondary users:** business owners or staff with limited social-media confidence. Their role—information contributor, reviewer, approver, or direct user—must be validated.
-- **Content audience:** each business's customers and local community. They consume the content but are not expected to use the MVP directly.
+| Capa | Tecnología | Uso |
+|---|---|---|
+| Frontend | Next.js · React · TypeScript | Brief, edición, previsualización y aprobación |
+| Backend | Python 3.11+ · FastAPI · Pydantic | Validación y coordinación de servicios |
+| Framework LLM | LangChain | Prompts, proveedores y flujo RAG |
+| Texto | Groq API · Gemini API | Groq como proveedor principal; Gemini para comparación |
+| RAG | Chroma local · embeddings multilingües locales | Recuperar contexto aprobado del negocio |
+| Datos | SQLite · SQLAlchemy | Perfiles, borradores y metadatos |
+| Imágenes | Gemini API · Gemini 3.1 Flash Image | Generar una imagen para revisión |
+| Voz | Gemini Live API | Crear briefs y revisar borradores hablando |
+| Publicación | Instagram Platform API · OAuth | Publicar contenido aprobado en una cuenta profesional |
+| Calidad y entorno | pytest · GitHub Actions · Docker Compose | Pruebas y ejecución reproducible |
 
-## Problem hypothesis
+**LangChain coordina el flujo; Groq y Gemini ejecutan los modelos.** Las integraciones se incorporan por fases según los contratos aprobados. Los detalles están en [Stack tecnológico](docs/architecture/technology-stack.md).
 
-Business information can arrive incomplete, unstructured, or late. Turning it into accurate, channel-appropriate copy may require repeated clarification, adaptation, review, and rework.
+## Cómo funciona
 
-The hypothesis is that a guided, human-in-the-loop workflow with reusable business context can help the content manager transform a lightweight brief into editable, platform-specific content more efficiently than the current process or generic AI prompting alone.
+Flujo objetivo del MVP:
 
-This is a hypothesis, not a conclusion. The project will compare the proposed workflow with current workarounds and general AI tools.
+```mermaid
+flowchart TD
+    U["Gestora de contenidos"] --> W["Next.js: brief y revisión"]
+    W --> A["FastAPI"]
+    A --> L["LangChain"]
+    R["RAG: contexto aprobado"] --> L
+    L --> M["Groq / Gemini"]
+    M --> D["Borrador de texto"]
+    A --> V["Gemini: imagen y voz"]
+    V --> D
+    D --> H["Revisión y aprobación humana"]
+    H --> I["Instagram API: publicación"]
+    H --> F["Facebook: contenido para uso manual"]
+```
 
-## MVP scope
+El RAG añade evidencia del negocio al proceso de generación:
 
-The initial functional slice lets the content manager:
+```mermaid
+flowchart TD
+    B["Información aprobada del negocio"] --> E["Fragmentos y embeddings locales"]
+    E --> C["Chroma"]
+    Q["Consulta del brief"] --> S["Búsqueda semántica"]
+    C --> S
+    S --> K["Contexto relevante y fuentes"]
+    K --> L["LangChain + LLM"]
+    Q --> L
+    L --> D["Borrador fundamentado para revisión"]
+```
 
-1. Capture a structured brief: topic, audience, platform, business context, and optional notes.
-2. Identify missing or ambiguous information before generation.
-3. Generate editable content packages adapted to **Instagram and Facebook** for single-image posts, carousels and Reels.
-4. Retrieve relevant, approved business context through a small RAG pipeline.
-5. Generate and preview one image for an Instagram feed-image post; carousels and Reels receive slide-by-slide or scene-by-scene creative plans.
-6. Use an optional voice mode to enter briefs and request draft revisions.
-7. Connect one authorized Instagram Professional account and publish only after explicit human approval.
+## Estado actual
 
-The first slice uses one representative/authorized business. Instagram is the priority channel and Facebook is the second content-generation/adaptation channel. Initial content formats are single-image posts, carousels and Reels; Stories and LinkedIn are deferred. Direct Facebook publishing is outside the first slice. Voice interaction can create and revise drafts, but it cannot publish without the same explicit approval step.
+La base web/API está implementada: **FastAPI/Pydantic, cliente Next.js y endpoint de readiness**. Existe una frontera neutral con **LangChain Core y un mock determinista offline**, acompañada de pruebas sin proveedores reales ni credenciales.
 
-## Product direction beyond the first slice
+La generación con proveedores reales, el RAG y las integraciones de imágenes, voz y publicación forman parte del alcance previsto; no se presentan aquí como funcionalidades terminadas. El avance se consulta en el [roadmap](docs/roadmap.md) y el [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
 
-A post generator answers “Can AI write this post?” The broader product we are exploring should also help answer: **“What should we communicate, for whom, why now, and what evidence supports it?”** The goal is to grow toward an **intelligent editorial management tool for local-business networks**, with the LLM as a drafting assistant—not the system that independently decides the whole strategy.
+## Desarrollo y fuente de verdad
 
-This is a long-term product direction, not a claim that these capabilities are already implemented or an expansion of the approved MVP scope above.
+Trabajamos sobre **`dev`**, con OpenSpec y Specification-Driven Development: **Issue → contrato aprobado → implementación → pruebas y evidencia**. Cada publicación en Instagram requiere confirmación humana.
 
-### Knowledge people can maintain
+La **rúbrica oficial forma parte de la fuente de verdad** y guía la trazabilidad del proyecto:
 
-A non-technical content manager should be able to add and correct business information through familiar workflows, such as a simple web form or spreadsheet/CSV import. The application—not the user—would validate and organize the information and make approved updates searchable.
-
-The knowledge base could include business profiles, stories, products and services, values, campaigns, images, local events, and selected local news or public statistics. Retrieved evidence should retain source details so a reviewer can check the basis for a generated claim. Databases, chunks, and embeddings remain internal implementation details.
-
-The current provisional MVP stack uses a small local Chroma store. Whether a later deployment should use PostgreSQL with pgvector or another storage setup remains an open technical decision; this README does not select or commit to it.
-
-### Editorial planning and learning
-
-The longer-term system could bring together three distinct functions:
-
-1. **Knowledge and evidence:** retrieve relevant, approved business and local context and preserve its sources.
-2. **Editorial engine:** use a human-defined line of editorial, content categories, campaigns, calendar, and deterministic rotation rules to suggest what to cover, which business or topic to feature, and why. The aim is a deliberate mix of useful local information, business stories, promotions, educational content, events, and community content—not repetitive promotion alone.
-3. **History and performance feedback:** record what was drafted or published and, when authorized analytics are available, relate outcomes to content type, business, topic, format, and date to inform future planning.
-
-The LLM would turn the selected objective and evidence into channel-appropriate drafts. It should not independently govern editorial strategy, promise engagement, or publish without human approval. Any balance targets or use of analytics must be validated before implementation.
-
-### Candidate sources and staged evolution
-
-Initial exploration can prioritize information already available about the businesses, selected RSS/Atom feeds from local institutions and media, and an application-owned calendar for campaigns, local events, and relevant dates. Official public data sources such as INE or datos.gob.es may be evaluated when specific economic or demographic context is useful. Social-platform analytics, trend services, and paid news aggregators should wait until user value, access, terms, privacy, and cost are verified.
-
-These are candidate sources, not current dependencies. External information must be curated, attributable, dated, and checked before it is used as evidence; no API is assumed to be free for production or automatically suitable for ingestion.
-
-A possible progression is reliable business knowledge and traceable retrieval, followed by human-controlled editorial planning and history, curated local context, and later authorized performance feedback. Each implementation stage requires a GitHub Issue and an approved OpenSpec contract. The official rubric and approved first-slice scope remain authoritative.
-
-## Approved provisional technology stack
-
-| Layer | Choice | Responsibility |
-| --- | --- | --- |
-| Web client | Next.js, React, TypeScript | Brief and draft UI, image preview, voice controls, OAuth connection, and approval flow. |
-| Backend | Python 3.11+, FastAPI, Pydantic | Request validation, generation/RAG orchestration, OAuth callbacks, and controlled publishing actions. |
-| LLM framework | LangChain | Prompt templates, model adapters, and RAG workflow. |
-| Text models | Groq primary; Gemini comparison | Generate channel-specific drafts and compare both providers on the same briefs. Free quotas are limited and must be checked. |
-| RAG | Chroma local store + local multilingual embeddings | Retrieve business facts, tone, products, restrictions, and approved examples. |
-| Image generation | Gemini API, Gemini 3.1 Flash Image | Generate a draft image for preview. Current API pricing is about $0.067 per 1K image; verify pricing before implementation. |
-| Voice | Gemini Live API | Bidirectional voice interaction for creating and revising content. |
-| Social integration | Instagram Platform API with OAuth | Connect one authorized Business or Creator account; user confirms each publish. |
-| Persistence and delivery | SQLite, encrypted OAuth tokens, persistent media storage, pytest, GitHub Actions, Docker Compose | Store MVP data safely, test the application, and make local setup reproducible. |
-
-The detailed rationale, provider documentation, cost notes, privacy boundaries, and evaluation plan are in [Technology Stack](docs/architecture/technology-stack.md).
-
-**Decision boundary:** Instagram and Facebook are the initial content-generation channels. Instagram is the priority channel and the only direct-publishing integration in the first slice. Facebook content is generated/adapted but not published automatically. LinkedIn is out of scope unless a validated B2B need reopens it. Human approval is required for each Instagram post; there is no unattended or scheduled publishing in the first slice.
-
-## Product principles
-
-- **Human editorial control:** AI assists; the content manager makes the final decision.
-- **Accuracy before speed:** unclear or missing business information should be surfaced.
-- **Low-cost and extensible:** select technology deliberately, prioritising local or free-tier options where feasible.
-- **Evidence-led scope:** validate the user problem before expanding features.
-- **Professional traceability:** decisions, research evidence, tests, and limitations remain visible in the repository.
-- **Privacy-aware evaluation:** use synthetic or explicitly approved business data when testing provider free tiers.
-
-## Academic brief and assessment requirements
-
-The official rubric is recorded in [Rubric traceability](docs/rubric-traceability.md). It totals 100 points:
-
-| Competence | Weight |
+| Competencia | Peso |
 |---|---:|
-| C1 Communication | 12 % |
-| C2 Version-control project management | 16 % |
-| C3 Team management | 18 % |
-| C4 NLP/AI model | 54 % |
+| C1 · Comunicación | 12 % |
+| C2 · Gestión del proyecto con control de versiones | 16 % |
+| C3 · Gestión de equipos | 18 % |
+| C4 · Modelo NLP/IA | 54 % |
 
-C4 requires use of LLM models, an LLM application framework and a RAG architecture. Each indicator is worth 18 %. Image generation, two-model comparison and Docker remain product choices; they are not rubric requirements. The project will record the instructor's guidance on the evidence expected for RAG in a solo project.
+C4 exige **modelos LLM, un framework de aplicaciones LLM y arquitectura RAG**: tres indicadores de 18 % cada uno. La generación de imágenes, la comparación de modelos y Docker son decisiones del producto.
 
-Image generation, Instagram OAuth/publishing, Facebook adaptation, and voice mode extend the original text-first project direction. The first implementation slice supports single-image, carousel and Reel content packages; generated visual assets remain limited to one Instagram feed-image preview. Stories and LinkedIn are deferred.
+Documentación de referencia:
 
-## Project source of truth
+- [Visión y usuario](docs/project-charter.md) · [Alcance del MVP](docs/scope.md)
+- [Rúbrica y trazabilidad](docs/rubric-traceability.md) · [Plan de evaluación](docs/evaluation-plan.md)
+- [Roadmap](docs/roadmap.md) · [Decisiones](docs/decisions/) · [Preguntas abiertas](docs/assumptions.md)
+- [Contratos OpenSpec](openspec/) · [Guía de contribución](CONTRIBUTING.md) · [Dailies](docs/daily/)
+- [Issues](https://github.com/gabrielagranja/generador-contenido-llms/issues) · [Tablero del proyecto](https://github.com/users/gabrielagranja/projects/1)
 
-The repository uses OpenSpec-based Specification-Driven Development.
-
-- [Project charter](docs/project-charter.md): vision, user, principles and MVP outcome.
-- [MVP scope](docs/scope.md): canonical in-scope and out-of-scope boundary.
-- [Roadmap](docs/roadmap.md): plan-level phases and priorities.
-- [Assumptions and open questions](docs/assumptions.md): unresolved decisions that require human approval.
-- [Decision records](docs/decisions/): approved material decisions.
-- [Evaluation plan](docs/evaluation-plan.md): cases, measures and evidence.
-- [Rubric traceability](docs/rubric-traceability.md): plan, Issue, OpenSpec, tests and rubric evidence.
-- [Daily logs](docs/daily/): operational progress; they do not replace decision records.
-- [OpenSpec workspace](openspec/): implementation contracts and archive.
-- [Contributing workflow](CONTRIBUTING.md): proposal, approval, implementation and verification rules.
-
-No implementation change starts without an approved OpenSpec contract linked to a GitHub Issue. Instagram publication always requires explicit human confirmation.
-
-## Project workspace
-
-- [GitHub Project — LLM Content Generation MVP](https://github.com/users/gabrielagranja/projects/1): Kanban, work plan, roadmap, phases, and status.
-- [Backlog](https://github.com/gabrielagranja/generador-contenido-llms/issues): epics, stories, tasks, research, and decision spikes.
-- [Milestones](https://github.com/gabrielagranja/generador-contenido-llms/milestones): delivery and presentation deadlines.
-- [Labels](https://github.com/gabrielagranja/generador-contenido-llms/labels): work type and priority classification.
-- [Project workflows](https://github.com/users/gabrielagranja/projects/1/workflows): automation rules for issue and pull-request status changes.
-
-## Project automation
-
-GitHub Project workflows reduce administrative work while keeping product decisions manual:
-
-- Open repository Issues are automatically added to the Project as `Todo`.
-- Sub-issues are added automatically.
-- Linking or reopening work moves it to `In Progress`.
-- Merged pull requests and closed items move work to `Done`.
-- Moving an item to `Done` closes the linked Issue.
-
-Phase, priority, scope, and product decisions are intentionally not automated.
-
-## Key dates
-
-| Milestone | Date | Notes |
-| --- | --- | --- |
-| MVP delivery | **13 October 2026, 12:00 PM** | Europe/Madrid (CEST) |
-| Repository presentation | **14 October 2026** | 10-minute technical presentation |
-
-## Planned evaluation
-
-The MVP will be assessed against the existing workflow using a real or representative content request. Candidate measures include:
-
-- time to an editorially useful draft;
-- number of clarification questions and revision rounds;
-- factual errors or missing details;
-- adaptation to selected platform and audience;
-- image usefulness and suitability for the Instagram channel;
-- voice-mode usefulness for entering or revising a brief;
-- editorial quality assessment by the primary user;
-- latency and approximate model/API usage for the compared configurations.
-
-Automated tests should mock external API calls. Real image/voice/social API smoke tests should use an authorized test account and approved sample data.
-
-## Repository conventions
-
-- GitHub Issues are the source of truth for planned work.
-- The Project tracks status and phase; issues hold the acceptance criteria and evidence.
-- Work is organised as **Epic → Story → Task/Spike** where useful.
-- Branches and descriptive commits will accompany implementation.
-- Documentation, research, design, implementation, testing, and presentation materials will be added as the project evolves.
-
-## Current next step
-
-Turn the approved stack into runnable local setup and implementation tasks. Verify access requirements for the Instagram test account, provider quotas and terms, and hosting support for HTTPS, WebSockets, and persistent media before deploying the live demo.
+**Entrega:** 13 de octubre de 2026 a las 12:00, Europe/Madrid. **Presentación técnica:** 14 de octubre de 2026.
