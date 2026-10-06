@@ -18,7 +18,7 @@ Issues #9 and #20–#21: stack, runnable web/API foundation, environment handlin
 
 ## Phase 4 — Content-generation slice
 
- Issues #10 and #22–#24: structured brief, channel-adapted generation, review, editing and regeneration. Issue #24 now has a prepared, not-yet-approved OpenSpec contract; implementation remains pending.
+ Issues #10 and #22–#24: structured brief, channel-adapted generation, review, editing and regeneration. Issue #24.1 human-review state and transition work is implemented on a branch/PR; #24.2 regeneration and #24.3 copy/export remain pending.
 
 ## Phase 5 — C4 implementation and product enhancements
 
