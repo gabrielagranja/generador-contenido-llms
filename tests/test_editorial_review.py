@@ -189,6 +189,36 @@ class EditorialReviewServiceTests(unittest.TestCase):
         self.assertEqual(with_feedback.state, "pending_human_review")
         self.assertIsNone(with_feedback.lineage)
 
+    def test_copy_and_export_return_exact_approved_text_and_metadata(self) -> None:
+        pending = EditorialReviewService.submit_for_review(make_content())
+        approved = EditorialReviewService.approve(pending, reviewer_ref="reviewer-1")
+
+        copied = EditorialReviewService.copy_final(approved)
+        exported = EditorialReviewService.export_final(approved)
+
+        for artifact in (copied, exported):
+            self.assertEqual(artifact.content_id, approved.content_id)
+            self.assertEqual(artifact.text, approved.draft.caption)
+            self.assertEqual(artifact.channel, approved.draft.channel)
+            self.assertEqual(artifact.format, approved.draft.format)
+            self.assertEqual(
+                set(artifact.model_dump()), {"content_id", "text", "channel", "format"}
+            )
+        self.assertEqual(approved.state, "approved_final")
+
+    def test_copy_and_export_reject_unapproved_content_without_mutating_state(self) -> None:
+        generated = make_content()
+        pending = EditorialReviewService.submit_for_review(generated)
+
+        for content in (generated, pending):
+            for operation in (
+                EditorialReviewService.copy_final,
+                EditorialReviewService.export_final,
+            ):
+                with self.assertRaisesRegex(EditorialTransitionError, "approved_final"):
+                    operation(content)
+            self.assertIn(content.state, {"generated_draft", "pending_human_review"})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field, model_validator
 
 from apps.api.drafting import EditableTextDraft
+from apps.api.models import Platform
 
 
 EditorialState = Literal[
@@ -92,8 +93,17 @@ class EditorialContent(BaseModel):
     lineage: EditorialLineage | None = None
 
 
+class FinalTextArtifact(BaseModel):
+    """Safe copy/export payload for an explicitly approved final text."""
+
+    content_id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    channel: Platform
+    format: str = Field(min_length=1)
+
+
 class EditorialReviewService:
-    """Apply the Issue #24.1 review and #24.2 regeneration transitions."""
+    """Apply the Issue #24 editorial lifecycle and final text handoff."""
 
     @classmethod
     def from_generated_draft(
@@ -218,6 +228,30 @@ class EditorialReviewService:
         )
         return cls.submit_for_review(regenerated).model_copy(update={"lineage": lineage})
 
+    @classmethod
+    def copy_final(cls, content: EditorialContent) -> FinalTextArtifact:
+        """Return only approved text and its channel/format metadata for copying."""
+
+        return cls._final_text_artifact(content, "copy")
+
+    @classmethod
+    def export_final(cls, content: EditorialContent) -> FinalTextArtifact:
+        """Return only approved text and its channel/format metadata for export."""
+
+        return cls._final_text_artifact(content, "export")
+
+    @classmethod
+    def _final_text_artifact(
+        cls, content: EditorialContent, operation: str
+    ) -> FinalTextArtifact:
+        cls._require_state(content, "approved_final", operation)
+        return FinalTextArtifact(
+            content_id=content.content_id,
+            text=content.draft.caption,
+            channel=content.draft.channel,
+            format=content.draft.format,
+        )
+
     @staticmethod
     def text_fingerprint(content: EditorialContent) -> str:
         """Return a stable fingerprint for the exact reviewable draft payload."""
@@ -245,6 +279,7 @@ __all__ = [
     "EditorialReviewService",
     "EditorialState",
     "EditorialTransitionError",
+    "FinalTextArtifact",
     "HumanReview",
     "RegenerationRequest",
 ]
