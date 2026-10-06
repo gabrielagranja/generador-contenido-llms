@@ -2,11 +2,11 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #23 — [STORY] Generate channel-adapted content
 - Parent epic: #10
 - Depends on: approved Issue #22 contract in `openspec/changes/expert-content-generation/`
-- Human approval: Pending
+- Human approval: Approved in the project conversation; implementation is authorized.
 
 ## Plan objective
 
@@ -50,16 +50,16 @@ This contract scopes content-generation behavior related to Issue #22. It does n
 
 ## Tests and verification
 
-- Run OpenSpec active-change and SDD required-field validation.
-- After approval and implementation, test each template version with F-01, F-02 and F-03 using mocked providers.
+- OpenSpec active-change and SDD required-field validation passed.
+- The service and focused tests for template selection and channel adaptation passed with mocked providers.
 - Review grounding, channel fit, editability and excluded capabilities.
 
 ## Open questions and blockers
 
-- Explicit human approval is required before implementation.
+- Evaluation against F-01, F-02 and F-03 remains pending.
 - Language selection remains inherited from the open question in Issue #22.
 - Unverified numeric platform constraints must not become fixed template rules.
 
 ## Approval
 
-Pending explicit human approval. Implementation may begin only after approval and must follow `tasks.md`.
+Approved for implementation. The contract remains active until fixture evaluation and Issue #23 closure evidence are complete.
