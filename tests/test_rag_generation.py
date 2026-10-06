@@ -48,12 +48,12 @@ class FakeClient:
         return self.collection
 
 
-def make_brief(claim: str) -> GuidedBrief:
+def make_brief(claim: str, platforms: list[str] | None = None) -> GuidedBrief:
     return GuidedBrief(
         topic_or_offer="weekday breakfast box",
         objective="explain the offer accurately",
         audience_context="local residents",
-        platforms=["instagram"],
+        platforms=platforms or ["instagram"],
         format="single_image",
         brand_and_constraints="clear and factual",
         facts=[
@@ -78,6 +78,38 @@ def make_index(client: FakeClient) -> LocalChromaIndex:
 
 
 class RagGenerationEndToEndTests(unittest.TestCase):
+    def test_pdf_evidence_flows_to_instagram_and_facebook_drafts(self) -> None:
+        client = FakeClient()
+        chunks = parse_pdf_to_canonical_chunks(
+            PDF_FIXTURE,
+            business_id="synthetic-bakery-a",
+            source_id="business-guide",
+            source_version="v1",
+            consent_ref="synthetic-fixture",
+        )
+        index = make_index(client)
+        index.ingest(chunks)
+        generator = Mock()
+        generator.generate.side_effect = [
+            "Instagram breakfast box draft.",
+            "Facebook breakfast box draft.",
+        ]
+
+        drafts = RagGroundedDraftService(index, generator).draft(
+            make_brief(
+                "Weekday breakfast box includes bread and fruit.",
+                platforms=["instagram", "facebook"],
+            ),
+            business_id="synthetic-bakery-a",
+            top_k=1,
+        )
+
+        self.assertEqual([draft.channel for draft in drafts], ["instagram", "facebook"])
+        self.assertEqual(len(drafts[0].evidence_provenance), 1)
+        self.assertEqual(drafts[0].evidence_provenance, drafts[1].evidence_provenance)
+        self.assertIn("Channel: instagram", generator.generate.call_args_list[0].args[0])
+        self.assertIn("Channel: facebook", generator.generate.call_args_list[1].args[0])
+
     def test_pdf_brief_retrieval_generation_and_evidence(self) -> None:
         client = FakeClient()
         chunks = parse_pdf_to_canonical_chunks(

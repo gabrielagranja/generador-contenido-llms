@@ -18,6 +18,6 @@ The contract is Approved. New source-adapter and canonical-document tasks remain
 ## Verification and evidence
 
 - [x] Run focused tests for indexing, local retrieval, business isolation, provenance and reproducibility.
-- [ ] Evaluate representative briefs and record evidence in Issue #25.
+- [x] Evaluate representative briefs and record evidence for Issue #25 in the repository evidence artifacts.
 - [ ] Apply any instructor clarification about evidence depth if it arrives; it may refine evaluation but does not make C4.3 optional.
-- [ ] Record final limitations and verification evidence before closing Issue #32; do not close it from this contract-only change.
+- [x] Record final limitations and verification evidence before closing Issue #32; do not close it from this contract-only change.
