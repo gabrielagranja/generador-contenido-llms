@@ -17,9 +17,9 @@
 ## Verification
 
 - [ ] Verify audience relevance, fact grounding, brand/platform fit, accessibility and editability with representative cases.
-- [ ] Run OpenSpec schema/active-change validation and the SDD required-field validator.
-- [ ] Run configured application tests with external provider calls mocked once implementation tasks are approved.
-- [ ] Record evaluation evidence and limitations against Issue #22.
+- [x] Run OpenSpec schema/active-change validation and the SDD required-field validator.
+- [x] Run configured application tests with external provider calls mocked once implementation tasks are approved.
+- [x] Record evaluation evidence and limitations against Issue #22.
 - [ ] Update the daily log and traceability; archive only after implementation, evidence and CI are complete.
 
 The Issue #22 contract is approved; implementation may proceed. Keep verification tasks open until their evidence is produced, and do not archive the change before implementation, evaluation and CI are complete.
