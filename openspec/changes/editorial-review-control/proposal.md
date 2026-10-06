@@ -2,11 +2,11 @@
 
 ## Status and human approval
 
-- Status: Pending
-- Human approval: Pending; this change prepares the contract and does not authorize application implementation until an authorized human approves it.
+- Status: Approved
+- Human approval: Approved by the user instruction for the #24.1 implementation after contract merge PR #62.
 - Issue: #24 — [STORY] Review, edit and regenerate content
 - Parent epic: #10 — [EPIC] Content generation MVP
-- Decision record: Pending
+- Decision record: PR #62 and the current #24.1 implementation instruction.
 
 ## Plan objective
 
@@ -63,4 +63,6 @@ No new rubric indicator is introduced. The contract provides traceable evidence 
 
 ## Approval
 
-Pending. Do not implement application behavior or mark implementation tasks complete until an authorized human approves this contract.
+Approved for the #24.1 task set only. Implementation may proceed for explicit
+human review, review feedback records, invalid-transition handling and manual
+editing without implicit approval. #24.2 and #24.3 remain pending.
