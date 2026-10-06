@@ -38,6 +38,17 @@ The system MUST and SHALL extract PDF text page by page with a maintained text-o
 - THEN it returns the same text, page provenance and chunk identifiers
 - AND a completely empty page produces no chunk.
 
+### Requirement: Authorized API source connector
+
+The system MUST and SHALL provide a small connector boundary for an authorized, documented JSON API that builds its request, validates the response, and maps useful textual fields to `CanonicalDocumentChunk`. The connector MUST preserve `business_id`, `source_type`, `source_id`, `source_version`, `source_uri`, `retrieved_at`, `chunk_id` and `consent_ref`, and MUST use the shared embeddings, Chroma, retrieval and grounding pipeline after normalization.
+
+#### Scenario: Mocked API ingestion
+
+- GIVEN a mocked JSONPlaceholder `GET /posts/{id}` response containing `id`, `title` and `body`
+- WHEN the connector fetches and normalizes the response
+- THEN it produces an API `CanonicalDocumentChunk` with deterministic source identity and endpoint provenance
+- AND the test does not access the Internet.
+
 ### Requirement: Consent-scoped local index
 
 The system MUST and SHALL index only synthetic or explicitly consented business-context records in a local Chroma collection.

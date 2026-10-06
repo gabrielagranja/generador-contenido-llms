@@ -82,6 +82,7 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "RAG_EMBEDDING_REVISION",
                 "RAG_CHROMA_COLLECTION",
                 "RAG_CHROMA_PERSIST_DIRECTORY",
+                "RAG_API_BASE_URL",
             },
         )
         self.assertNotRegex(assignment_text, r"(?i)(api[_-]?key|token|secret|password)")

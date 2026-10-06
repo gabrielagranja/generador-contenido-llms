@@ -7,7 +7,7 @@ This change adds a local retrieval boundary for approved business context. It co
 ## Minimal local architecture
 
 1. **Consent gate:** accept only synthetic or explicitly consented records with a stable `business_id`, `source_id`, `source_version` and `consent_ref`.
-2. **Source adapters:** the PDF parser uses the lightweight `pypdf` text extractor page by page and produces text, page number, source file and document metadata; an authorized API caller supplies already retrieved textual response items, endpoint/origin and optional retrieval time. Neither adapter performs network access in this change.
+2. **Source adapters:** the PDF parser uses the lightweight `pypdf` text extractor page by page and produces text, page number, source file and document metadata. The minimal API connector targets the documented public JSONPlaceholder `GET /posts/{id}` resource, maps its `title` and `body` to text, and records endpoint/origin plus retrieval time. Its HTTP client is injectable for offline tests; the RAG core remains independent of both origins.
 3. **Normalization and chunking:** normalize both adapter outputs to canonical chunks. PDF text is normalized to whitespace, split deterministically at word boundaries with a 500-character maximum and 50-character overlap by default, and assigned a `chunk_id` in the form `{source_id}-{source_version}-p{page_number:04d}-c{chunk_position:04d}`. Both size and overlap are configurable.
 4. **Embedding:** encode chunks with one configured multilingual embedding model executed locally. The model identifier and revision are stored with the index configuration.
 5. **Chroma store:** persist vectors in a local Chroma collection scoped by environment and business. No remote vector database is required for the initial slice.

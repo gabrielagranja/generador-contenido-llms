@@ -18,6 +18,7 @@ DEFAULT_RAG_EMBEDDING_MODEL = (
 DEFAULT_RAG_EMBEDDING_REVISION = "main"
 DEFAULT_RAG_CHROMA_COLLECTION = "business-context"
 DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY = Path(".local") / "chroma"
+DEFAULT_RAG_API_BASE_URL = "https://jsonplaceholder.typicode.com"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class RagLocalSettings:
     embedding_revision: str = DEFAULT_RAG_EMBEDDING_REVISION
     chroma_collection: str = DEFAULT_RAG_CHROMA_COLLECTION
     chroma_persist_directory: Path = DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY
+    api_base_url: str = DEFAULT_RAG_API_BASE_URL
 
     @classmethod
     def from_environment(cls) -> "RagLocalSettings":
@@ -47,6 +49,7 @@ class RagLocalSettings:
                     str(DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY),
                 )
             ),
+            api_base_url=os.getenv("RAG_API_BASE_URL", DEFAULT_RAG_API_BASE_URL),
         )
         settings.validate()
         return settings
@@ -60,6 +63,11 @@ class RagLocalSettings:
             raise ValueError("RAG_CHROMA_COLLECTION must not be empty")
         if self.chroma_persist_directory == Path("."):
             raise ValueError("RAG_CHROMA_PERSIST_DIRECTORY must not be the current directory")
+        parsed_url = urlsplit(self.api_base_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.hostname:
+            raise ValueError("RAG_API_BASE_URL must be an HTTP(S) URL")
+        if parsed_url.username or parsed_url.password:
+            raise ValueError("RAG_API_BASE_URL must not contain credentials")
 
 
 @dataclass(frozen=True)

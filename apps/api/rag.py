@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 import re
 import unicodedata
@@ -225,6 +226,82 @@ def api_response_to_canonical_chunks(
     ]
 
 
+def jsonplaceholder_post_to_canonical_chunks(
+    *,
+    business_id: str,
+    post: dict[str, Any],
+    source_version: str,
+    consent_ref: str,
+    source_uri: str,
+    retrieved_at: str,
+) -> list[CanonicalDocumentChunk]:
+    """Turn one structured JSONPlaceholder post into one text document chunk."""
+
+    if "id" not in post or "title" not in post or "body" not in post:
+        raise ValueError("JSONPlaceholder posts require id, title and body")
+    text = f"Title: {post['title']}\n\nBody: {post['body']}"
+    return api_response_to_canonical_chunks(
+        business_id=business_id,
+        source_id=f"jsonplaceholder-post-{post['id']}",
+        source_version=source_version,
+        consent_ref=consent_ref,
+        response=[{"text": text}],
+        source_uri=source_uri,
+        retrieved_at=retrieved_at,
+    )
+
+
+class JsonPlaceholderApiConnector:
+    """Fetch documented public posts and normalize them into RAG chunks.
+
+    The HTTP client is injectable so tests never need Internet access. This
+    connector performs retrieval only; embeddings, Chroma and grounding remain
+    in the shared local RAG pipeline.
+    """
+
+    def __init__(self, settings: RagLocalSettings, http_client: Any | None = None) -> None:
+        settings.validate()
+        self.settings = settings
+        self.base_url = settings.api_base_url.rstrip("/")
+        if http_client is None:
+            import httpx
+
+            http_client = httpx.Client(base_url=self.base_url, timeout=10.0)
+        self.http_client = http_client
+
+    def build_post_path(self, post_id: int) -> str:
+        if not isinstance(post_id, int) or isinstance(post_id, bool) or post_id <= 0:
+            raise ValueError("post_id must be a positive integer")
+        return f"/posts/{post_id}"
+
+    def fetch_post(
+        self,
+        *,
+        post_id: int,
+        business_id: str,
+        source_version: str,
+        consent_ref: str,
+        retrieved_at: str | None = None,
+    ) -> list[CanonicalDocumentChunk]:
+        """Fetch one post and return canonical chunks, without indexing it."""
+
+        path = self.build_post_path(post_id)
+        response = self.http_client.get(path)
+        response.raise_for_status()
+        post = response.json()
+        if not isinstance(post, dict):
+            raise ValueError("JSONPlaceholder response must be an object")
+        timestamp = retrieved_at or datetime.now(timezone.utc).isoformat()
+        return jsonplaceholder_post_to_canonical_chunks(
+            business_id=business_id,
+            post=post,
+            source_version=source_version,
+            consent_ref=consent_ref,
+            source_uri=f"{self.base_url}{path}",
+            retrieved_at=timestamp,
+        )
+
+
 def _legacy_record_to_chunk(record: CanonicalBusinessRecord) -> CanonicalDocumentChunk:
     """Keep the original synthetic fixture shape ingestible during migration."""
 
@@ -335,6 +412,8 @@ class GroundingProvenance:
     source_type: SourceType | None = None
     source_file: str | None = None
     page_number: int | None = None
+    source_uri: str | None = None
+    retrieved_at: str | None = None
 
 
 @dataclass(frozen=True)
@@ -390,6 +469,8 @@ def ground_claim(
                     source_type=context.source_type,
                     source_file=context.source_file,
                     page_number=context.page_number,
+                    source_uri=context.source_uri,
+                    retrieved_at=context.retrieved_at,
                 ),
                 reason="All claim terms are present in the retrieved evidence.",
             )
@@ -594,11 +675,13 @@ __all__ = [
     "GroundingResult",
     "LocalChromaIndex",
     "LocalEmbeddingFunction",
+    "JsonPlaceholderApiConnector",
     "RetrievedBusinessContext",
     "canonical_api_chunk",
     "canonical_pdf_chunk",
     "build_local_embedding",
     "api_response_to_canonical_chunks",
+    "jsonplaceholder_post_to_canonical_chunks",
     "chunk_id_for",
     "ground_claim",
     "normalize_documents",
