@@ -31,6 +31,7 @@ class GuidedBrief(BaseModel):
     platforms: list[Platform] = Field(min_length=1)
     format: BriefFormat
     brand_and_constraints: str | None = Field(default=None, min_length=1)
+    notes: str | None = None
     facts: list[BriefFact] = Field(default_factory=list)
 
     @field_validator("platforms")

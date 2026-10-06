@@ -43,7 +43,21 @@ class GuidedBriefModelTests(unittest.TestCase):
         )
 
         self.assertEqual(brief.format, "single_image")
+        self.assertIsNone(brief.notes)
         self.assertEqual([fact.status for fact in brief.facts], ["CONFIRMED", "INFERRED", "UNKNOWN"])
+
+    def test_accepts_optional_notes_without_affecting_existing_fields(self) -> None:
+        brief = GuidedBrief(
+            topic_or_offer="Breakfast menu",
+            objective="inform",
+            platforms=["instagram"],
+            format="single_image",
+            notes="Mention the seasonal option if relevant.",
+        )
+
+        self.assertEqual(brief.notes, "Mention the seasonal option if relevant.")
+        self.assertEqual(brief.topic_or_offer, "Breakfast menu")
+        self.assertEqual(brief.platforms, ["instagram"])
 
     def test_requires_at_least_one_approved_platform(self) -> None:
         with self.assertRaises(ValidationError):
