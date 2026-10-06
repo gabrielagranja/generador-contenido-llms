@@ -12,6 +12,7 @@
 - [x] 8. Finalize structured input/output schemas in line with the approved application architecture.
 - [x] 9. Define the transparent brief-to-post differentiator hypothesis and its validation method.
 - [x] 10. Add fixed synthetic or explicitly approved test briefs for the agreed formats and channels.
+- [x] 11. Implement the Pydantic `GuidedBrief` model and focused validation tests for required fields, approved platforms/formats and fact statuses.
 
 ## Verification
 
@@ -21,4 +22,4 @@
 - [ ] Record evaluation evidence and limitations against Issue #22.
 - [ ] Update the daily log and traceability; archive only after implementation, evidence and CI are complete.
 
-Do not start implementation tasks until proposal approval is Approved.
+The Issue #22 contract is approved; implementation may proceed. Keep verification tasks open until their evidence is produced, and do not archive the change before implementation, evaluation and CI are complete.
