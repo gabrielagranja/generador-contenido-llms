@@ -18,7 +18,7 @@ Issues #9 and #20–#21: stack, runnable web/API foundation, environment handlin
 
 ## Phase 4 — Content-generation slice
 
- Issues #10 and #22–#24: structured brief, channel-adapted generation, review, editing and regeneration. Issue #24.1 human-review and #24.2 regeneration work is implemented on a branch/PR; #24.3 copy/export remains pending.
+ Issues #10 and #22–#24: structured brief, channel-adapted generation, review, editing and regeneration. Issue #24.1 human-review, #24.2 regeneration and #24.3 copy/export work is implemented on a branch/PR; final Issue #24 validation remains pending.
 
 ## Phase 5 — C4 implementation and product enhancements
 

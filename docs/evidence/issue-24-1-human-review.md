@@ -2,7 +2,7 @@
 
 This evidence covers the editorial state, review and manual-edit boundary from
 #24.1. Regeneration lineage (#24.2) is now covered by the focused evidence in
-`tests/test_editorial_review.py`; copy/export (#24.3) remains unimplemented.
+`tests/test_editorial_review.py`; copy/export (#24.3) is covered by `docs/evidence/issue-24-3-copy-export.md`.
 
 ## Implemented lifecycle
 
