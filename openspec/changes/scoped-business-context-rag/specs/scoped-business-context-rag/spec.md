@@ -6,6 +6,49 @@ Define a local, traceable RAG boundary for consented business context required b
 
 ## ADDED Requirements
 
+### Requirement: Canonical documentary source model
+
+The system MUST and SHALL operate on chunkable documentary/textual content and normalize every PDF or authorized API source to one canonical document-chunk model before indexing. The RAG core MUST NOT depend on the source origin.
+
+#### Scenario: Source normalization
+
+- GIVEN a PDF parser output or an already retrieved authorized API response
+- WHEN the source is prepared for ingestion
+- THEN it produces the same canonical chunk structure with `business_id`, `source_type`, `source_id`, `source_version`, `consent_ref`, `text` and stable `chunk_id`
+- AND no HTTP call is required by the normalization boundary.
+
+### Requirement: Origin-specific provenance
+
+The system MUST and SHALL preserve source provenance through indexing and retrieval. PDF chunks MUST retain source file and page number. API chunks MUST retain endpoint/origin URI and `retrieved_at` or an equivalent reproducible version marker when available.
+
+#### Scenario: Provenance survives indexing
+
+- GIVEN canonical PDF and API chunks
+- WHEN they are indexed and retrieved
+- THEN their origin-specific provenance remains available with the passage and common source metadata.
+
+### Requirement: Deterministic PDF extraction and chunking
+
+The system MUST and SHALL extract PDF text page by page with a maintained text-only PDF parser, ignore completely empty pages, and produce deterministic chunks without OCR or an LLM. Chunk size and overlap MUST be configurable and have documented defaults. PDF chunk identifiers MUST include source identity, page number and chunk position.
+
+#### Scenario: Repeatable local PDF parsing
+
+- GIVEN the same local PDF and the same chunk-size and overlap configuration
+- WHEN the parser runs twice
+- THEN it returns the same text, page provenance and chunk identifiers
+- AND a completely empty page produces no chunk.
+
+### Requirement: Authorized API source connector
+
+The system MUST and SHALL provide a small connector boundary for an authorized, documented JSON API that builds its request, validates the response, and maps useful textual fields to `CanonicalDocumentChunk`. The connector MUST preserve `business_id`, `source_type`, `source_id`, `source_version`, `source_uri`, `retrieved_at`, `chunk_id` and `consent_ref`, and MUST use the shared embeddings, Chroma, retrieval and grounding pipeline after normalization.
+
+#### Scenario: Mocked API ingestion
+
+- GIVEN a mocked JSONPlaceholder `GET /posts/{id}` response containing `id`, `title` and `body`
+- WHEN the connector fetches and normalizes the response
+- THEN it produces an API `CanonicalDocumentChunk` with deterministic source identity and endpoint provenance
+- AND the test does not access the Internet.
+
 ### Requirement: Consent-scoped local index
 
 The system MUST and SHALL index only synthetic or explicitly consented business-context records in a local Chroma collection.
@@ -55,6 +98,17 @@ The system MUST and SHALL return passage text and provenance sufficient to trace
 - WHEN grounding is checked
 - THEN the claim is flagged or omitted
 - AND SHALL NOT be presented as retrieved business fact.
+
+### Requirement: Grounded generation handoff
+
+The system MUST and SHALL allow a brief to retrieve evidence for one requested `business_id` and pass only that evidence, including its source metadata, to the provider-neutral generation boundary. Context from another business MUST be rejected and unsupported claims MUST be surfaced as unsupported or excluded from factual evidence.
+
+#### Scenario: Business-scoped grounded draft
+
+- GIVEN a brief, a requested `business_id` and a local RAG index
+- WHEN the grounded drafting service retrieves context and invokes the generator
+- THEN every evidence reference passed to generation belongs to the requested business
+- AND the generated draft retains references to the chunks used.
 
 ### Requirement: Reproducible local verification
 

@@ -73,7 +73,17 @@ class EnvironmentConfigTests(unittest.TestCase):
 
         self.assertEqual(
             assignments,
-            {"APP_ENV", "API_HOST", "API_PORT", "NEXT_PUBLIC_API_BASE_URL"},
+            {
+                "APP_ENV",
+                "API_HOST",
+                "API_PORT",
+                "NEXT_PUBLIC_API_BASE_URL",
+                "RAG_EMBEDDING_MODEL",
+                "RAG_EMBEDDING_REVISION",
+                "RAG_CHROMA_COLLECTION",
+                "RAG_CHROMA_PERSIST_DIRECTORY",
+                "RAG_API_BASE_URL",
+            },
         )
         self.assertNotRegex(assignment_text, r"(?i)(api[_-]?key|token|secret|password)")
         self.assertNotRegex(assignment_text, r"(?i)(sk-[a-z0-9]|ghp_[a-z0-9]|ya29\.[a-z0-9])")

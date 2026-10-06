@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from urllib.parse import urlsplit
 
 
@@ -11,6 +12,62 @@ DEFAULT_APP_ENV = "development"
 DEFAULT_API_HOST = "127.0.0.1"
 DEFAULT_API_PORT = 8000
 DEFAULT_API_BASE_URL = "http://127.0.0.1:8000"
+DEFAULT_RAG_EMBEDDING_MODEL = (
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+)
+DEFAULT_RAG_EMBEDDING_REVISION = "main"
+DEFAULT_RAG_CHROMA_COLLECTION = "business-context"
+DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY = Path(".local") / "chroma"
+DEFAULT_RAG_API_BASE_URL = "https://jsonplaceholder.typicode.com"
+
+
+@dataclass(frozen=True)
+class RagLocalSettings:
+    """Explicit, provider-free configuration for the local RAG boundary."""
+
+    embedding_model: str = DEFAULT_RAG_EMBEDDING_MODEL
+    embedding_revision: str = DEFAULT_RAG_EMBEDDING_REVISION
+    chroma_collection: str = DEFAULT_RAG_CHROMA_COLLECTION
+    chroma_persist_directory: Path = DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY
+    api_base_url: str = DEFAULT_RAG_API_BASE_URL
+
+    @classmethod
+    def from_environment(cls) -> "RagLocalSettings":
+        settings = cls(
+            embedding_model=os.getenv(
+                "RAG_EMBEDDING_MODEL", DEFAULT_RAG_EMBEDDING_MODEL
+            ),
+            embedding_revision=os.getenv(
+                "RAG_EMBEDDING_REVISION", DEFAULT_RAG_EMBEDDING_REVISION
+            ),
+            chroma_collection=os.getenv(
+                "RAG_CHROMA_COLLECTION", DEFAULT_RAG_CHROMA_COLLECTION
+            ),
+            chroma_persist_directory=Path(
+                os.getenv(
+                    "RAG_CHROMA_PERSIST_DIRECTORY",
+                    str(DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY),
+                )
+            ),
+            api_base_url=os.getenv("RAG_API_BASE_URL", DEFAULT_RAG_API_BASE_URL),
+        )
+        settings.validate()
+        return settings
+
+    def validate(self) -> None:
+        if not self.embedding_model.strip():
+            raise ValueError("RAG_EMBEDDING_MODEL must not be empty")
+        if not self.embedding_revision.strip():
+            raise ValueError("RAG_EMBEDDING_REVISION must not be empty")
+        if not self.chroma_collection.strip():
+            raise ValueError("RAG_CHROMA_COLLECTION must not be empty")
+        if self.chroma_persist_directory == Path("."):
+            raise ValueError("RAG_CHROMA_PERSIST_DIRECTORY must not be the current directory")
+        parsed_url = urlsplit(self.api_base_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.hostname:
+            raise ValueError("RAG_API_BASE_URL must be an HTTP(S) URL")
+        if parsed_url.username or parsed_url.password:
+            raise ValueError("RAG_API_BASE_URL must not contain credentials")
 
 
 @dataclass(frozen=True)
@@ -65,4 +122,4 @@ def _read_port() -> int:
 settings = EnvironmentSettings.from_environment()
 
 
-__all__ = ["EnvironmentSettings", "settings"]
+__all__ = ["EnvironmentSettings", "RagLocalSettings", "settings"]
