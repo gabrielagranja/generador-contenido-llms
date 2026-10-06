@@ -52,7 +52,8 @@ This contract scopes content-generation behavior related to Issue #22. It does n
 
 - OpenSpec active-change and SDD required-field validation passed.
 - The service and focused tests for template selection and channel adaptation passed with mocked providers.
-- Review grounding, channel fit, editability and excluded capabilities.
+- F-01, F-02 and F-03 passed the focused contract checks for template/version selection, channel adaptation, visible fact states and editable output structure.
+- Limitation: the mock verifies the contract and generated prompt contents; it does not establish the quality, usefulness or factuality of a response from a real model.
 
 ## Open questions and blockers
 

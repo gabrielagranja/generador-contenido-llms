@@ -17,4 +17,4 @@ The contract is Approved. Implementation has been completed for the scoped servi
 
 - [x] Run OpenSpec and SDD validation for this change.
 - [x] Run focused tests with external providers mocked after approval and implementation.
-- [ ] Record limitations and evidence against Issue #23 before closure.
+- [x] Record focused fixture evidence and limitations against Issue #23; keep Issue closure pending.
