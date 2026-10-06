@@ -6,6 +6,38 @@ Define a local, traceable RAG boundary for consented business context required b
 
 ## ADDED Requirements
 
+### Requirement: Canonical documentary source model
+
+The system MUST and SHALL operate on chunkable documentary/textual content and normalize every PDF or authorized API source to one canonical document-chunk model before indexing. The RAG core MUST NOT depend on the source origin.
+
+#### Scenario: Source normalization
+
+- GIVEN a PDF parser output or an already retrieved authorized API response
+- WHEN the source is prepared for ingestion
+- THEN it produces the same canonical chunk structure with `business_id`, `source_type`, `source_id`, `source_version`, `consent_ref`, `text` and stable `chunk_id`
+- AND no HTTP call is required by the normalization boundary.
+
+### Requirement: Origin-specific provenance
+
+The system MUST and SHALL preserve source provenance through indexing and retrieval. PDF chunks MUST retain source file and page number. API chunks MUST retain endpoint/origin URI and `retrieved_at` or an equivalent reproducible version marker when available.
+
+#### Scenario: Provenance survives indexing
+
+- GIVEN canonical PDF and API chunks
+- WHEN they are indexed and retrieved
+- THEN their origin-specific provenance remains available with the passage and common source metadata.
+
+### Requirement: Deterministic PDF extraction and chunking
+
+The system MUST and SHALL extract PDF text page by page with a maintained text-only PDF parser, ignore completely empty pages, and produce deterministic chunks without OCR or an LLM. Chunk size and overlap MUST be configurable and have documented defaults. PDF chunk identifiers MUST include source identity, page number and chunk position.
+
+#### Scenario: Repeatable local PDF parsing
+
+- GIVEN the same local PDF and the same chunk-size and overlap configuration
+- WHEN the parser runs twice
+- THEN it returns the same text, page provenance and chunk identifiers
+- AND a completely empty page produces no chunk.
+
 ### Requirement: Consent-scoped local index
 
 The system MUST and SHALL index only synthetic or explicitly consented business-context records in a local Chroma collection.

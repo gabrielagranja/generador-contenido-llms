@@ -2,11 +2,11 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #32 — [STORY] Implement scoped business-context RAG
 - Parent epic: #11
 - Rubric: C4.3, “Uso de arquitecturas RAG”, obligatorio y valorado en 18 %
-- Human approval: Pending
+- Human approval: Approved by an authorized human reviewer.
 
 ## Plan objective
 
@@ -21,9 +21,10 @@ Provide a reproducible, provider-independent business-context retrieval boundary
 ### Included
 
 - A small local Chroma collection scoped to an explicitly identified business.
-- Ingestion of short synthetic or explicitly consented text records only.
+- Ingestion of chunkable documentary/textual content from PDFs or authorized APIs after normalization to the canonical document model.
 - A pinned/configured multilingual embedding model running locally, with no embedding-provider API calls.
 - Source and chunk metadata sufficient to trace every retrieved passage to its consented source record and version.
+- PDF provenance includes source file and page; API provenance includes endpoint/origin and applicable version or retrieval marker.
 - Similarity retrieval returning passages, identifiers, metadata and scores for grounding.
 - A retrieval boundary that can be injected into the existing text-generation flow without changing the `GuidedBrief` contract.
 - Synthetic examples and focused verification of source traceability, business scoping and claim support.
@@ -31,7 +32,7 @@ Provide a reproducible, provider-independent business-context retrieval boundary
 ### Excluded
 
 - Real business data until explicit consent and handling rules are recorded.
-- Automatic web crawling, external knowledge ingestion or unverified sources.
+- Automatic web crawling, scraping, external discovery, real API calls in this slice or unverified sources.
 - Publication, scheduling, analytics, learning loops or interface changes.
 - Provider-hosted embeddings, provider calls required for retrieval, multi-tenant administration and broad enterprise search.
 - Claims that retrieval alone proves factual correctness or improves engagement.
@@ -39,6 +40,8 @@ Provide a reproducible, provider-independent business-context retrieval boundary
 ## Acceptance criteria
 
 - A synthetic consented record can be indexed locally in Chroma with business, source, version, consent and chunk metadata.
+- PDF parser output and already retrieved authorized API content normalize to the same canonical chunk model, without network calls.
+- PDF file/page and API endpoint/origin/version provenance survives indexing and retrieval.
 - A query returns only records from the requested business scope and includes traceable source identifiers.
 - The embedding path is multilingual and local, versioned/configurable, and does not call an external embedding provider.
 - A generated factual claim can be checked against the retrieved approved passage; unsupported claims are flagged or omitted by the grounding boundary.
@@ -65,4 +68,4 @@ This contract directly targets C4.3, the mandatory RAG-architecture indicator. I
 
 ## Approval
 
-Pending explicit human approval. No application implementation may begin until approval is recorded.
+The contract has been approved by an authorized human reviewer. Implementation of Issue #32 may begin.

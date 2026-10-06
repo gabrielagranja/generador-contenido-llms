@@ -1,0 +1,25 @@
+{
+  "records": [
+    {
+      "business_id": "synthetic-bakery-a",
+      "source_id": "menu-a",
+      "source_version": "v1",
+      "consent_ref": "synthetic-fixture",
+      "text": "Weekday breakfast box includes bread and fruit. Price and availability are not specified."
+    },
+    {
+      "business_id": "synthetic-bakery-b",
+      "source_id": "menu-b",
+      "source_version": "v1",
+      "consent_ref": "synthetic-fixture",
+      "text": "Weekend breakfast box includes bread and fruit. Price and availability are not specified."
+    }
+  ],
+  "negative_claims": [
+    {
+      "claim": "The box costs five euros.",
+      "expected": "unsupported",
+      "reason": "No price appears in either synthetic source."
+    }
+  ]
+}
