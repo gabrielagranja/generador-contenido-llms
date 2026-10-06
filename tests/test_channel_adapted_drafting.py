@@ -70,11 +70,32 @@ class ChannelAdaptedDraftServiceTests(unittest.TestCase):
 
         self.assertIn("[CONFIRMED] The diagnosis lasts 15 minutes and is free", prompt)
         self.assertIn("[UNKNOWN] A repair will save money", prompt)
+        self.assertIn(
+            "Audience context: Local residents deciding whether repair is worthwhile",
+            prompt,
+        )
+        self.assertIn(
+            "Brand and constraints: clear and practical; no unsupported claims",
+            prompt,
+        )
         self.assertIn("Never invent business facts", prompt)
         self.assertIn("Do not render media, publish, schedule", prompt)
         self.assertEqual(draft.evidence_refs, ["The diagnosis lasts 15 minutes and is free"])
         self.assertEqual(draft.assumptions, ["A repair will save money"])
         self.assertIn("not a publication request", draft.review_notes[1])
+
+    def test_editable_output_can_be_revised_without_changing_grounding_metadata(self) -> None:
+        generator = Mock()
+        generator.generate.return_value = "Initial editable draft"
+
+        draft = ChannelAdaptedDraftService(generator).draft(make_brief("instagram"))[0]
+        original_evidence = draft.evidence_refs.copy()
+        draft.caption = "Revised editable draft"
+
+        self.assertEqual(draft.caption, "Revised editable draft")
+        self.assertEqual(draft.evidence_refs, original_evidence)
+        self.assertTrue(draft.assumptions)
+        self.assertTrue(draft.review_notes)
 
     def test_empty_provider_output_is_rejected(self) -> None:
         generator = Mock()
