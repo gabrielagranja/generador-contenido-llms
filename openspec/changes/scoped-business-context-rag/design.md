@@ -12,7 +12,7 @@ This change adds a local retrieval boundary for approved business context. It co
 4. **Embedding:** encode chunks with one configured multilingual embedding model executed locally. The model identifier and revision are stored with the index configuration.
 5. **Chroma store:** persist vectors in a local Chroma collection scoped by environment and business. No remote vector database is required for the initial slice.
 6. **Retrieval:** embed the query locally, retrieve a bounded top-k set, filter by the requested `business_id`, and return passage text, score and provenance metadata.
-7. **Grounding handoff:** pass retrieved evidence to the existing generation boundary as cited context. Claims without support in the returned evidence remain unsupported and must be omitted or flagged.
+7. **Grounding handoff:** `RagGroundedDraftService` passes only evidence retrieved for the requested `business_id` to the existing provider-neutral generation boundary as cited context. Claims without support in the returned evidence remain unsupported and are omitted or flagged for review.
 
 ## Record and retrieval contracts
 

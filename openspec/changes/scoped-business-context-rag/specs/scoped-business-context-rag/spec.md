@@ -99,6 +99,17 @@ The system MUST and SHALL return passage text and provenance sufficient to trace
 - THEN the claim is flagged or omitted
 - AND SHALL NOT be presented as retrieved business fact.
 
+### Requirement: Grounded generation handoff
+
+The system MUST and SHALL allow a brief to retrieve evidence for one requested `business_id` and pass only that evidence, including its source metadata, to the provider-neutral generation boundary. Context from another business MUST be rejected and unsupported claims MUST be surfaced as unsupported or excluded from factual evidence.
+
+#### Scenario: Business-scoped grounded draft
+
+- GIVEN a brief, a requested `business_id` and a local RAG index
+- WHEN the grounded drafting service retrieves context and invokes the generator
+- THEN every evidence reference passed to generation belongs to the requested business
+- AND the generated draft retains references to the chunks used.
+
 ### Requirement: Reproducible local verification
 
 The system MUST and SHALL expose enough configuration and result metadata to reproduce a retrieval against the same local index and embedding revision.
