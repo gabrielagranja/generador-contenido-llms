@@ -1,105 +1,122 @@
-# Generador de contenido con LLMs
+# LLM Content Generation MVP
 
-![Estado](https://img.shields.io/badge/estado-en_desarrollo-orange)
-[![Rama dev](https://img.shields.io/badge/rama-dev-blue)](https://github.com/gabrielagranja/generador-contenido-llms/tree/dev)
+![Status](https://img.shields.io/badge/status-in_development-orange)
+[![Development branch](https://img.shields.io/badge/branch-dev-blue)](https://github.com/gabrielagranja/generador-contenido-llms/tree/dev)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Web-Next.js-000000?logo=nextdotjs&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LLM-LangChain-1C3C3C)
 ![SDD](https://img.shields.io/badge/SDD-OpenSpec-6D28D9)
 
-Una aplicación para transformar un brief y la información de un negocio en **borradores de contenido para Instagram y Facebook**, con revisión humana antes de publicar.
+An application that turns a brief and business knowledge into **editable content for Instagram and Facebook**, with human review before publication.
 
-Está pensada para una **gestora de contenidos y copywriter que coordina una red de más de 20 pequeños negocios locales**. El MVP comienza con un negocio representativo y busca reducir el trabajo de redacción y adaptación, manteniendo el control editorial y la trazabilidad de la información.
+## Who it is for
 
-## Qué hará el MVP
+The primary user is the **Digital Content Manager**: the person responsible for planning, creating, reviewing and coordinating digital content across a local-business network.
 
-- Recoger un brief con tema, público, canal y contexto del negocio.
-- Crear y revisar textos para publicaciones, carruseles y Reels.
-- Recuperar información aprobada del negocio mediante **RAG** para fundamentar los borradores.
-- Generar una imagen para previsualizar un post de Instagram; los carruseles y Reels reciben planes creativos.
-- Permitir introducir briefs y solicitar revisiones por voz.
-- Conectar una cuenta profesional de Instagram mediante OAuth y publicar **solo tras una aprobación humana explícita**.
+The MVP uses **Coll Amunt!, a Catalan traders' association with more than 20 local businesses**, as its example context. It starts with one representative business to validate the workflow before expanding across the association. Business owners can contribute information and review content; their customers and local community are the audience.
 
-Facebook se utiliza para generar y adaptar contenido; su publicación directa queda fuera del MVP. Stories y LinkedIn quedan para una etapa posterior.
+## More than a content generator
 
-## Stack y APIs previstos
+Coordinating an association's communication requires reliable business information, a consistent editorial voice and balanced visibility across members. Generating isolated posts does not address that whole workflow.
 
-| Capa | Tecnología | Uso |
+The product direction is an **intelligent editorial management tool for local-business networks**: help the person responsible decide **what to communicate, for whom, why now and with what supporting evidence**.
+
+- **Maintain useful knowledge:** reusable business profiles, products, services, stories and tone guidance.
+- **Ground drafts in evidence:** retrieve approved context with traceable sources instead of inventing business facts.
+- **Support editorial planning:** eventually coordinate themes, campaigns and a balanced rotation of businesses.
+- **Learn from history:** eventually use publication history and authorized performance data to inform future planning.
+
+The MVP validates the brief-to-reviewed-content workflow first. Editorial planning and performance feedback are future stages requiring approved scope and contracts. The content manager retains editorial responsibility and the final publishing decision.
+
+## MVP scope
+
+- Capture a structured brief with topic, audience, channel and business context.
+- Draft and revise copy for single-image posts, carousels and Reels.
+- Retrieve approved business information through **RAG** to ground drafts.
+- Generate one image for an Instagram feed-post preview; carousels and Reels receive creative plans.
+- Enter briefs and request revisions through an optional voice mode.
+- Connect one Instagram Professional account through OAuth and publish **only after explicit human approval**.
+
+Facebook is a content-generation and adaptation channel; direct Facebook publishing is outside the MVP. Stories and LinkedIn are deferred.
+
+## Planned stack and APIs
+
+| Layer | Technology | Purpose |
 |---|---|---|
-| Frontend | Next.js · React · TypeScript | Brief, edición, previsualización y aprobación |
-| Backend | Python 3.11+ · FastAPI · Pydantic | Validación y coordinación de servicios |
-| Framework LLM | LangChain | Prompts, proveedores y flujo RAG |
-| Texto | Groq API · Gemini API | Groq como proveedor principal; Gemini para comparación |
-| RAG | Chroma local · embeddings multilingües locales | Recuperar contexto aprobado del negocio |
-| Datos | SQLite · SQLAlchemy | Perfiles, borradores y metadatos |
-| Imágenes | Gemini API · Gemini 3.1 Flash Image | Generar una imagen para revisión |
-| Voz | Gemini Live API | Crear briefs y revisar borradores hablando |
-| Publicación | Instagram Platform API · OAuth | Publicar contenido aprobado en una cuenta profesional |
-| Calidad y entorno | pytest · GitHub Actions · Docker Compose | Pruebas y ejecución reproducible |
+| Frontend | Next.js · React · TypeScript | Briefs, editing, previews and approval |
+| Backend | Python 3.11+ · FastAPI · Pydantic | Validation and service orchestration |
+| LLM framework | LangChain | Prompts, provider adapters and RAG workflow |
+| Text | Groq API · Gemini API | Groq as primary provider; Gemini for comparison |
+| RAG | Local Chroma · local multilingual embeddings | Retrieve approved business context |
+| Data | SQLite · SQLAlchemy | Profiles, drafts and metadata |
+| Images | Gemini API · Gemini 3.1 Flash Image | Generate an image for review |
+| Voice | Gemini Live API | Spoken briefs and draft revisions |
+| Publishing | Instagram Platform API · OAuth | Publish approved content to a professional account |
+| Quality and environment | pytest · GitHub Actions · Docker Compose | Testing and reproducible setup |
 
-**LangChain coordina el flujo; Groq y Gemini ejecutan los modelos.** Las integraciones se incorporan por fases según los contratos aprobados. Los detalles están en [Stack tecnológico](docs/architecture/technology-stack.md).
+**LangChain coordinates the workflow; Groq and Gemini run the models.** Integrations are delivered in stages under approved contracts. See the [technology stack](docs/architecture/technology-stack.md) for details.
 
-## Cómo funciona
+## How it works
 
-Flujo objetivo del MVP:
+Target MVP workflow:
 
 ```mermaid
 flowchart TD
-    U["Gestora de contenidos"] --> W["Next.js: brief y revisión"]
+    U["Digital Content Manager"] --> W["Next.js: brief and review"]
     W --> A["FastAPI"]
     A --> L["LangChain"]
-    R["RAG: contexto aprobado"] --> L
+    R["RAG: approved context"] --> L
     L --> M["Groq / Gemini"]
-    M --> D["Borrador de texto"]
-    A --> V["Gemini: imagen y voz"]
+    M --> D["Text draft"]
+    A --> V["Gemini: image and voice"]
     V --> D
-    D --> H["Revisión y aprobación humana"]
-    H --> I["Instagram API: publicación"]
-    H --> F["Facebook: contenido para uso manual"]
+    D --> H["Human review and approval"]
+    H --> I["Instagram API: publish"]
+    H --> F["Facebook: copy for manual use"]
 ```
 
-El RAG añade evidencia del negocio al proceso de generación:
+RAG adds business evidence to generation:
 
 ```mermaid
 flowchart TD
-    B["Información aprobada del negocio"] --> E["Fragmentos y embeddings locales"]
+    B["Approved business information"] --> E["Chunks and local embeddings"]
     E --> C["Chroma"]
-    Q["Consulta del brief"] --> S["Búsqueda semántica"]
+    Q["Brief query"] --> S["Semantic search"]
     C --> S
-    S --> K["Contexto relevante y fuentes"]
+    S --> K["Relevant context and sources"]
     K --> L["LangChain + LLM"]
     Q --> L
-    L --> D["Borrador fundamentado para revisión"]
+    L --> D["Grounded draft for review"]
 ```
 
-## Estado actual
+## Current status
 
-La base web/API está implementada: **FastAPI/Pydantic, cliente Next.js y endpoint de readiness**. Existe una frontera neutral con **LangChain Core y un mock determinista offline**, acompañada de pruebas sin proveedores reales ni credenciales.
+The web/API foundation is implemented: **FastAPI/Pydantic, a Next.js client and a readiness endpoint**. A provider-neutral boundary uses **LangChain Core with a deterministic offline mock**, supported by tests without real providers or credentials.
 
-La generación con proveedores reales, el RAG y las integraciones de imágenes, voz y publicación forman parte del alcance previsto; no se presentan aquí como funcionalidades terminadas. El avance se consulta en el [roadmap](docs/roadmap.md) y el [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
+Live-provider generation, RAG, images, voice and publishing are planned capabilities. Progress is tracked in the [roadmap](docs/roadmap.md) and [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
 
-## Desarrollo y fuente de verdad
+## Development and source of truth
 
-Trabajamos sobre **`dev`**, con OpenSpec y Specification-Driven Development: **Issue → contrato aprobado → implementación → pruebas y evidencia**. Cada publicación en Instagram requiere confirmación humana.
+Development targets **`dev`** and follows OpenSpec-based Specification-Driven Development: **Issue → approved contract → implementation → tests and evidence**. Every Instagram publication requires human confirmation.
 
-La **rúbrica oficial forma parte de la fuente de verdad** y guía la trazabilidad del proyecto:
+The **official assessment rubric is part of the project's source of truth**:
 
-| Competencia | Peso |
+| Competence | Weight |
 |---|---:|
-| C1 · Comunicación | 12 % |
-| C2 · Gestión del proyecto con control de versiones | 16 % |
-| C3 · Gestión de equipos | 18 % |
-| C4 · Modelo NLP/IA | 54 % |
+| C1 · Communication | 12% |
+| C2 · Project management with version control | 16% |
+| C3 · Team management | 18% |
+| C4 · NLP/AI model | 54% |
 
-C4 exige **modelos LLM, un framework de aplicaciones LLM y arquitectura RAG**: tres indicadores de 18 % cada uno. La generación de imágenes, la comparación de modelos y Docker son decisiones del producto.
+C4 requires **LLM models, an LLM application framework and a RAG architecture**: three indicators worth 18% each. Image generation, model comparison and Docker are product choices.
 
-Documentación de referencia:
+Reference documents:
 
-- [Visión y usuario](docs/project-charter.md) · [Alcance del MVP](docs/scope.md)
-- [Rúbrica y trazabilidad](docs/rubric-traceability.md) · [Plan de evaluación](docs/evaluation-plan.md)
-- [Roadmap](docs/roadmap.md) · [Decisiones](docs/decisions/) · [Preguntas abiertas](docs/assumptions.md)
-- [Contratos OpenSpec](openspec/) · [Guía de contribución](CONTRIBUTING.md) · [Dailies](docs/daily/)
-- [Issues](https://github.com/gabrielagranja/generador-contenido-llms/issues) · [Tablero del proyecto](https://github.com/users/gabrielagranja/projects/1)
+- [Vision and user](docs/project-charter.md) · [MVP scope](docs/scope.md)
+- [Rubric and traceability](docs/rubric-traceability.md) · [Evaluation plan](docs/evaluation-plan.md)
+- [Roadmap](docs/roadmap.md) · [Decisions](docs/decisions/) · [Open questions](docs/assumptions.md)
+- [OpenSpec contracts](openspec/) · [Contributing guide](CONTRIBUTING.md) · [Daily logs](docs/daily/)
+- [Issues](https://github.com/gabrielagranja/generador-contenido-llms/issues) · [Project board](https://github.com/users/gabrielagranja/projects/1)
 
-**Entrega:** 13 de octubre de 2026 a las 12:00, Europe/Madrid. **Presentación técnica:** 14 de octubre de 2026.
+**Delivery:** 13 October 2026 at 12:00, Europe/Madrid. **Technical presentation:** 14 October 2026.
