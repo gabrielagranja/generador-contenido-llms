@@ -71,6 +71,13 @@ La rúbrica suma 100 puntos y contiene 24 indicadores. Cada indicador reparte po
 
 ## Interpretación de alcance
 
+### Issue #24 contract traceability
+
+Issue #24 has a prepared OpenSpec contract for explicit human review,
+feedback/changed-input regeneration and approved-final text copy/export. This is
+planning evidence only; no rubric indicator is marked complete by the contract,
+and implementation/evaluation evidence remains pending.
+
 - C4 exige los tres indicadores: uso de modelos LLM, uso de un framework de aplicaciones LLM y uso de una arquitectura RAG. Cada uno vale 18 %.
 - La rúbrica no exige generación de imágenes, comparación entre dos modelos LLM ni Docker. Esas capacidades pueden responder a decisiones de producto, coste o demostración, pero no deben presentarse como requisitos de la rúbrica.
 - El indicador C1.2 exige contenido visual o demo. Puede acreditarse mediante una demostración funcional y materiales visuales; no prescribe generación de imágenes por IA.
