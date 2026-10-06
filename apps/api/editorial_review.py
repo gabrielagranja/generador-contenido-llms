@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from typing import Literal
+from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from apps.api.drafting import EditableTextDraft
 
@@ -17,6 +19,19 @@ EditorialState = Literal[
     "approved_final",
 ]
 ReviewDecision = Literal["approve", "request_regeneration"]
+RegenerationTrigger = Literal["human_feedback", "changed_inputs"]
+ALLOWED_CHANGED_INPUTS = frozenset(
+    {
+        "topic_or_offer",
+        "objective",
+        "audience_context",
+        "business_context_refs",
+        "platforms",
+        "format",
+        "brand_and_constraints",
+        "notes",
+    }
+)
 
 
 class EditorialTransitionError(ValueError):
@@ -32,6 +47,41 @@ class HumanReview(BaseModel):
     reviewed_text_fingerprint: str = Field(min_length=1)
 
 
+class RegenerationRequest(BaseModel):
+    """Approved inputs for one #24.2 regeneration request."""
+
+    trigger: RegenerationTrigger
+    feedback: str | None = Field(default=None, min_length=1)
+    changed_inputs: dict[str, object] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_trigger_payload(self) -> "RegenerationRequest":
+        unknown_inputs = set(self.changed_inputs) - ALLOWED_CHANGED_INPUTS
+        if unknown_inputs:
+            raise ValueError(
+                "changed_inputs contains unsupported fields: "
+                + ", ".join(sorted(unknown_inputs))
+            )
+        if self.trigger == "human_feedback":
+            if not self.feedback or not self.feedback.strip():
+                raise ValueError("human_feedback regeneration requires feedback")
+            if self.changed_inputs:
+                raise ValueError("human_feedback regeneration cannot change inputs")
+        if self.trigger == "changed_inputs" and not self.changed_inputs:
+            raise ValueError("changed_inputs regeneration requires changed inputs")
+        return self
+
+
+class EditorialLineage(BaseModel):
+    """Minimal source link for a regenerated editorial item."""
+
+    source_draft_id: str = Field(min_length=1)
+    trigger: RegenerationTrigger
+    feedback: str | None = Field(default=None, min_length=1)
+    changed_inputs: dict[str, object] = Field(default_factory=dict)
+    source_text_fingerprint: str = Field(min_length=1)
+
+
 class EditorialContent(BaseModel):
     """Generated text plus its explicit editorial lifecycle state."""
 
@@ -39,10 +89,11 @@ class EditorialContent(BaseModel):
     state: EditorialState
     draft: EditableTextDraft
     review: HumanReview | None = None
+    lineage: EditorialLineage | None = None
 
 
 class EditorialReviewService:
-    """Apply only the Issue #24.1 review and manual-edit transitions."""
+    """Apply the Issue #24.1 review and #24.2 regeneration transitions."""
 
     @classmethod
     def from_generated_draft(
@@ -118,6 +169,55 @@ class EditorialReviewService:
             update={"draft": edited_draft, "review": None, "state": "pending_human_review"}
         )
 
+    @classmethod
+    def regenerate(
+        cls,
+        content: EditorialContent,
+        request: RegenerationRequest,
+        *,
+        draft_factory: Callable[[EditorialContent, RegenerationRequest], EditableTextDraft],
+    ) -> EditorialContent:
+        """Create a new review-pending draft from feedback or allowed inputs."""
+
+        cls._require_state(content, "pending_human_review", "regenerate")
+        if request.trigger == "human_feedback":
+            if content.review is None or content.review.decision != "request_regeneration":
+                raise EditorialTransitionError(
+                    "human_feedback regeneration requires recorded human feedback"
+                )
+            if request.feedback != content.review.feedback:
+                raise EditorialTransitionError(
+                    "regeneration feedback must match the recorded human feedback"
+                )
+
+        source_fingerprint = cls.text_fingerprint(content)
+        try:
+            generated_draft = draft_factory(content, request)
+        except Exception as exc:  # noqa: BLE001 - preserve safe editorial state
+            raise EditorialTransitionError("regeneration provider failed") from exc
+
+        preserved_draft = generated_draft.model_copy(
+            update={
+                "evidence_refs": content.draft.evidence_refs,
+                "assumptions": content.draft.assumptions,
+                "review_notes": content.draft.review_notes,
+                "evidence_provenance": content.draft.evidence_provenance,
+                "unsupported_claims": content.draft.unsupported_claims,
+            }
+        )
+        lineage = EditorialLineage(
+            source_draft_id=content.content_id,
+            trigger=request.trigger,
+            feedback=request.feedback,
+            changed_inputs=request.changed_inputs,
+            source_text_fingerprint=source_fingerprint,
+        )
+        regenerated = cls.from_generated_draft(
+            preserved_draft,
+            content_id=f"{content.content_id}:regenerated:{uuid4().hex}",
+        )
+        return cls.submit_for_review(regenerated).model_copy(update={"lineage": lineage})
+
     @staticmethod
     def text_fingerprint(content: EditorialContent) -> str:
         """Return a stable fingerprint for the exact reviewable draft payload."""
@@ -141,8 +241,10 @@ class EditorialReviewService:
 
 __all__ = [
     "EditorialContent",
+    "EditorialLineage",
     "EditorialReviewService",
     "EditorialState",
     "EditorialTransitionError",
     "HumanReview",
+    "RegenerationRequest",
 ]

@@ -1,8 +1,8 @@
-# Issue #24.1 — explicit human review evidence
+# Issue #24.1/#24.2 — review and regeneration evidence
 
-This evidence covers only the editorial state, review, feedback and manual-edit
-boundary. Regeneration lineage (#24.2) and copy/export (#24.3) are not
-implemented here.
+This evidence covers the editorial state, review and manual-edit boundary from
+#24.1. Regeneration lineage (#24.2) is now covered by the focused evidence in
+`tests/test_editorial_review.py`; copy/export (#24.3) remains unimplemented.
 
 ## Implemented lifecycle
 
@@ -23,9 +23,18 @@ Only `EditorialReviewService.approve(..., reviewer_ref=...)` can create
 - Invalid state transitions, empty feedback, empty captions and missing reviewer
   references raise `EditorialTransitionError` without promoting content.
 
+## #24.2 regeneration evidence
+
+- Feedback regeneration creates a new pending item with source ID, trigger,
+  feedback and source fingerprint while leaving the source unchanged.
+- Changed-input regeneration records only approved brief/channel/format fields,
+  preserves evidence/provenance metadata and returns to human review.
+- Invalid input fields and provider failures leave the source item pending and
+  unapproved.
+
 ## Evidence
 
 `tests/test_editorial_review.py` covers initial state, explicit submission to
-review, approval/fingerprint, feedback, invalid transitions and manual editing
-without implicit approval. Provider, RAG retrieval, regeneration and export
-boundaries are unchanged.
+review, approval/fingerprint, feedback, invalid transitions, manual editing
+without implicit approval, feedback/changed-input regeneration and safe
+provider failure handling. RAG retrieval and export boundaries are unchanged.
