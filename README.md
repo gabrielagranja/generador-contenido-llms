@@ -1,6 +1,8 @@
 # LLM Content Generation MVP
 
-> A portfolio project that explores and validates an LLM-assisted social-content workflow for a network of 20+ small businesses.
+> A portfolio project exploring how LLMs can support editorial management for a network of 20+ small businesses—not just generate standalone social posts.
+
+The long-term goal is an **intelligent editorial management tool for local-business networks**: help a content manager maintain reliable business knowledge, decide what to communicate and why, balance content across businesses and themes, create drafts grounded in traceable evidence, and eventually learn from publication history and authorized performance data. The MVP validates a narrow, human-reviewed workflow first; the broader direction will be investigated and delivered in approved stages.
 
 ## Status
 
@@ -37,6 +39,38 @@ The initial functional slice lets the content manager:
 7. Connect one authorized Instagram Professional account and publish only after explicit human approval.
 
 The first slice uses one representative/authorized business. Instagram is the priority channel and Facebook is the second content-generation/adaptation channel. Initial content formats are single-image posts, carousels and Reels; Stories and LinkedIn are deferred. Direct Facebook publishing is outside the first slice. Voice interaction can create and revise drafts, but it cannot publish without the same explicit approval step.
+
+## Product direction beyond the first slice
+
+A post generator answers “Can AI write this post?” The broader product we are exploring should also help answer: **“What should we communicate, for whom, why now, and what evidence supports it?”** The goal is to grow toward an **intelligent editorial management tool for local-business networks**, with the LLM as a drafting assistant—not the system that independently decides the whole strategy.
+
+This is a long-term product direction, not a claim that these capabilities are already implemented or an expansion of the approved MVP scope above.
+
+### Knowledge people can maintain
+
+A non-technical content manager should be able to add and correct business information through familiar workflows, such as a simple web form or spreadsheet/CSV import. The application—not the user—would validate and organize the information and make approved updates searchable.
+
+The knowledge base could include business profiles, stories, products and services, values, campaigns, images, local events, and selected local news or public statistics. Retrieved evidence should retain source details so a reviewer can check the basis for a generated claim. Databases, chunks, and embeddings remain internal implementation details.
+
+The current provisional MVP stack uses a small local Chroma store. Whether a later deployment should use PostgreSQL with pgvector or another storage setup remains an open technical decision; this README does not select or commit to it.
+
+### Editorial planning and learning
+
+The longer-term system could bring together three distinct functions:
+
+1. **Knowledge and evidence:** retrieve relevant, approved business and local context and preserve its sources.
+2. **Editorial engine:** use a human-defined line of editorial, content categories, campaigns, calendar, and deterministic rotation rules to suggest what to cover, which business or topic to feature, and why. The aim is a deliberate mix of useful local information, business stories, promotions, educational content, events, and community content—not repetitive promotion alone.
+3. **History and performance feedback:** record what was drafted or published and, when authorized analytics are available, relate outcomes to content type, business, topic, format, and date to inform future planning.
+
+The LLM would turn the selected objective and evidence into channel-appropriate drafts. It should not independently govern editorial strategy, promise engagement, or publish without human approval. Any balance targets or use of analytics must be validated before implementation.
+
+### Candidate sources and staged evolution
+
+Initial exploration can prioritize information already available about the businesses, selected RSS/Atom feeds from local institutions and media, and an application-owned calendar for campaigns, local events, and relevant dates. Official public data sources such as INE or datos.gob.es may be evaluated when specific economic or demographic context is useful. Social-platform analytics, trend services, and paid news aggregators should wait until user value, access, terms, privacy, and cost are verified.
+
+These are candidate sources, not current dependencies. External information must be curated, attributable, dated, and checked before it is used as evidence; no API is assumed to be free for production or automatically suitable for ingestion.
+
+A possible progression is reliable business knowledge and traceable retrieval, followed by human-controlled editorial planning and history, curated local context, and later authorized performance feedback. Each implementation stage requires a GitHub Issue and an approved OpenSpec contract. The official rubric and approved first-slice scope remain authoritative.
 
 ## Approved provisional technology stack
 
