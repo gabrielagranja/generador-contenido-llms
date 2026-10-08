@@ -23,10 +23,10 @@
 
 ## Verification
 
-- [ ] 8. Run focused automated tests for presets, custom mixes, invalid input,
+- [x] 8. Run focused automated tests for presets, custom mixes, invalid input,
   rounding, platform/format boundaries and metadata preservation.
-- [ ] 9. Run OpenSpec schema and SDD required-field validation.
-- [ ] 10. Record manual evidence and limitations; keep implementation and
+- [x] 9. Run OpenSpec schema and SDD required-field validation.
+- [x] 10. Record manual evidence and limitations; keep implementation and
   verification unchecked while human approval is Pending.
 
 The contract is approved, and application implementation for Issue #70 was
