@@ -1,0 +1,33 @@
+# Tasks
+
+## Contract preparation
+
+- [x] 1. Confirm the existing Issue #22 related-parent linkage; do not create a
+  duplicate editorial-planning issue.
+- [x] 2. Confirm the canonical Three-Thirds bucket labels as `EDUCATIONAL`,
+  `COMMUNITY` and `PROMOTIONAL`; retain `VALUE` and `PROMOTIONAL` for 80/20.
+- [x] 3. Validate that the contract references the existing GuidedBrief,
+  channel-adaptation, RAG/source-evidence and human-review boundaries without
+  duplicating them.
+
+## Implementation after approval
+
+- [ ] 4. Implement immutable strategy definitions and validation for built-in
+  and custom mixes.
+- [ ] 5. Implement deterministic largest-remainder allocation and transparent
+  target/actual summaries.
+- [ ] 6. Implement bounded item assignment with source/evidence/review-state
+  preservation.
+- [ ] 7. Add synthetic Coll Amunt! fixtures for Instagram and Facebook across
+  the approved formats.
+
+## Verification
+
+- [ ] 8. Run focused automated tests for presets, custom mixes, invalid input,
+  rounding, platform/format boundaries and metadata preservation.
+- [ ] 9. Run OpenSpec schema and SDD required-field validation.
+- [ ] 10. Record manual evidence and limitations; keep implementation and
+  verification unchecked while human approval is Pending.
+
+The contract is approved for artifact delivery. Do not start application
+implementation tasks until separately authorized.
