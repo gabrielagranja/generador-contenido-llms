@@ -12,13 +12,13 @@
 
 ## Implementation after approval
 
-- [ ] 4. Implement immutable strategy definitions and validation for built-in
+- [x] 4. Implement immutable strategy definitions and validation for built-in
   and custom mixes.
-- [ ] 5. Implement deterministic largest-remainder allocation and transparent
+- [x] 5. Implement deterministic largest-remainder allocation and transparent
   target/actual summaries.
-- [ ] 6. Implement bounded item assignment with source/evidence/review-state
+- [x] 6. Implement bounded item assignment with source/evidence/review-state
   preservation.
-- [ ] 7. Add synthetic Coll Amunt! fixtures for Instagram and Facebook across
+- [x] 7. Add synthetic Coll Amunt! fixtures for Instagram and Facebook across
   the approved formats.
 
 ## Verification
@@ -29,5 +29,5 @@
 - [ ] 10. Record manual evidence and limitations; keep implementation and
   verification unchecked while human approval is Pending.
 
-The contract is approved for artifact delivery. Do not start application
-implementation tasks until separately authorized.
+The contract is approved, and application implementation for Issue #70 was
+separately authorized on 2026-10-08.
