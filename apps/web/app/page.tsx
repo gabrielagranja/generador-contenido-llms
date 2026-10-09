@@ -37,7 +37,7 @@ type BriefForm = {
   restrictions: string;
 };
 
-type DraftPreparationStatus = "not-prepared" | "pending-review" | "brief-changed";
+type DraftPreparationStatus = "not-prepared" | "pending-review" | "brief-changed" | "changes-requested" | "approved";
 
 type EditorialStatus = "draft" | "review" | "approved";
 
@@ -306,6 +306,9 @@ function ContentStudioSection({
   onBriefChange,
   onPreviewChange,
   onPrepareDraft,
+  onApproveDraft,
+  onRequestChanges,
+  onResubmitDraft,
 }: {
   contextName: string;
   contextSummary: string;
@@ -316,6 +319,9 @@ function ContentStudioSection({
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onPreviewChange: (value: string) => void;
   onPrepareDraft: () => void;
+  onApproveDraft: () => void;
+  onRequestChanges: () => void;
+  onResubmitDraft: () => void;
 }) {
   return (
     <section className="studio-section" aria-label={"Content Studio para " + contextName}>
@@ -396,18 +402,34 @@ function ContentStudioSection({
               ? "Pendiente de revisión humana"
               : preparationStatus === "brief-changed"
                 ? "El brief cambió · actualiza el borrador antes de revisarlo"
-                : "Completa el brief y prepara un borrador local"}
+                : preparationStatus === "changes-requested"
+                  ? "Cambios solicitados · edita el copy y vuelve a enviarlo"
+                  : preparationStatus === "approved"
+                    ? "Aprobado en este prototipo · estado solo local"
+                    : "Completa el brief y prepara un borrador local"}
           </p>
-          <label className="preview-label" htmlFor="preview-copy">Copy editable localmente</label>
+          {preparationStatus === "pending-review" && (
+            <div className="review-actions" aria-label="Decisión de revisión">
+              <button className="review-action-button" type="button" onClick={onRequestChanges}>Solicitar cambios</button>
+              <button className="review-action-button review-approve-button" type="button" onClick={onApproveDraft}>Aprobar en prototipo</button>
+            </div>
+          )}
+          {preparationStatus === "changes-requested" && (
+            <button className="review-action-button review-resubmit-button" type="button" onClick={onResubmitDraft}>Enviar cambios a revisión</button>
+          )}
+          <label className="preview-label" htmlFor="preview-copy">
+            {preparationStatus === "approved" ? "Copy aprobado · solo lectura" : "Copy editable localmente"}
+          </label>
           <textarea
             id="preview-copy"
             className="preview-copy"
             value={previewCopy}
             onChange={(event) => onPreviewChange(event.target.value)}
             placeholder="El borrador sintético aparecerá aquí al preparar el brief."
+            readOnly={preparationStatus === "approved"}
             rows={12}
           />
-          <p className="preview-boundary">El borrador requiere revisión humana antes de considerarse final. Esta iteración no incluye aprobación, exportación ni publicación.</p>
+          <p className="preview-boundary">La aprobación solo cambia el estado local del prototipo. No habilita exportación ni publicación.</p>
         </article>
       </div>
     </section>
@@ -487,7 +509,7 @@ export default function Home() {
 
   function updateBrief(field: keyof BriefForm, value: string) {
     setBrief((current) => ({ ...current, [field]: value }));
-    setPreparationStatus((current) => current === "pending-review" ? "brief-changed" : current);
+    setPreparationStatus((current) => current === "pending-review" || current === "approved" ? "brief-changed" : current);
     setValidationMessage("");
   }
 
@@ -501,6 +523,18 @@ export default function Home() {
     setPreviewCopy(buildSyntheticCopy(contextName, brief));
     setPreparationStatus("pending-review");
     setValidationMessage("");
+  }
+
+  function approveDraft() {
+    setPreparationStatus((current) => current === "pending-review" ? "approved" : current);
+  }
+
+  function requestDraftChanges() {
+    setPreparationStatus((current) => current === "pending-review" ? "changes-requested" : current);
+  }
+
+  function resubmitDraftForReview() {
+    setPreparationStatus((current) => current === "changes-requested" ? "pending-review" : current);
   }
 
   function selectBrand(nextBrandId: BrandId) {
@@ -647,6 +681,9 @@ export default function Home() {
               onBriefChange={updateBrief}
               onPreviewChange={setPreviewCopy}
               onPrepareDraft={prepareDraft}
+              onApproveDraft={approveDraft}
+              onRequestChanges={requestDraftChanges}
+              onResubmitDraft={resubmitDraftForReview}
             />
           )}
 
