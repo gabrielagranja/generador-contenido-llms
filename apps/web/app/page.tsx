@@ -27,6 +27,31 @@ type BrandContext = {
   commerceOptions?: CommerceContext[];
 };
 
+type EditorialStatus = "draft" | "review" | "approved";
+
+type DashboardItem = {
+  id: string;
+  title: string;
+  date: string;
+  platform: string;
+  format: string;
+  status?: EditorialStatus;
+};
+
+type DashboardActivity = {
+  id: string;
+  text: string;
+  time: string;
+};
+
+type DashboardFixture = {
+  drafts: number;
+  review: number;
+  approved: number;
+  upcoming: DashboardItem[];
+  activity: DashboardActivity[];
+};
+
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -68,6 +93,151 @@ const brandContexts: BrandContext[] = [
     ],
   },
 ];
+
+const dashboardFixtures: Record<string, DashboardFixture> = {
+  panaderialaplaza: {
+    drafts: 3,
+    review: 2,
+    approved: 5,
+    upcoming: [
+      { id: "plaza-1", title: "Pan del día: proceso artesano", date: "12 jun", platform: "Instagram", format: "Carrusel" },
+      { id: "plaza-2", title: "Selección de desayunos", date: "14 jun", platform: "Facebook", format: "Publicación" },
+    ],
+    activity: [
+      { id: "plaza-a1", text: "Borrador sintético actualizado: Pan del día", time: "Hoy, 09:40" },
+      { id: "plaza-a2", text: "Contenido sintético aprobado para revisión final", time: "Ayer, 16:20" },
+      { id: "plaza-a3", text: "Nuevo contenido añadido al calendario de ejemplo", time: "10 jun, 11:05" },
+    ],
+  },
+  collamunt_a: {
+    drafts: 2,
+    review: 1,
+    approved: 4,
+    upcoming: [
+      { id: "coll-a-1", title: "Ruta de iniciación: primeros pasos", date: "13 jun", platform: "Instagram", format: "Reel" },
+    ],
+    activity: [
+      { id: "coll-a-a1", text: "Borrador sintético creado para el comercio A", time: "Hoy, 08:55" },
+      { id: "coll-a-a2", text: "Contenido sintético enviado a revisión", time: "11 jun, 14:10" },
+    ],
+  },
+  collamunt_b: {
+    drafts: 1,
+    review: 0,
+    approved: 2,
+    upcoming: [],
+    activity: [],
+  },
+};
+
+function DashboardSection({
+  contextName,
+  fixture,
+  onOpenStudio,
+}: {
+  contextName: string;
+  fixture: DashboardFixture;
+  onOpenStudio: () => void;
+}) {
+  const editorialSummary = [
+    { label: "Borradores", value: fixture.drafts, tone: "draft" },
+    { label: "Pendientes de revisión", value: fixture.review, tone: "review" },
+    { label: "Aprobados", value: fixture.approved, tone: "approved" },
+  ];
+
+  return (
+    <section className="dashboard-section" aria-label={"Dashboard sintético de " + contextName}>
+      <div className="dashboard-intro">
+        <div>
+          <div className="card-kicker">RESUMEN EDITORIAL</div>
+          <h2>Estado del flujo de contenido</h2>
+        </div>
+        <span className="synthetic-label">Datos sintéticos · estado interno</span>
+      </div>
+
+      <div className="dashboard-summary">
+        {editorialSummary.map((metric) => (
+          <article className={"metric-card metric-" + metric.tone} key={metric.label}>
+            <span className="metric-label">{metric.label}</span>
+            <strong className="metric-value">{metric.value}</strong>
+            <span className="metric-caption">Estado editorial interno</span>
+          </article>
+        ))}
+      </div>
+
+      <div className="dashboard-columns">
+        <article className="dashboard-panel">
+          <div className="panel-heading">
+            <div>
+              <div className="card-kicker">CALENDARIO DE EJEMPLO</div>
+              <h3>Próximos contenidos</h3>
+            </div>
+            <span className="panel-note">Sin publicación automática</span>
+          </div>
+          {fixture.upcoming.length > 0 ? (
+            <div className="dashboard-list">
+              {fixture.upcoming.map((item) => (
+                <div className="dashboard-row" key={item.id}>
+                  <time className="dashboard-row-date">{item.date}</time>
+                  <div className="dashboard-row-main">
+                    <strong>{item.title}</strong>
+                    <span>{item.platform} · {item.format}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="dashboard-empty">
+              <strong>No hay próximos contenidos</strong>
+              <span>Este contexto sintético todavía no tiene elementos en el calendario de ejemplo.</span>
+            </div>
+          )}
+        </article>
+
+        <article className="dashboard-panel">
+          <div className="panel-heading">
+            <div>
+              <div className="card-kicker">TRAZA DE EJEMPLO</div>
+              <h3>Actividad reciente</h3>
+            </div>
+            <span className="panel-note">Sin conexión externa</span>
+          </div>
+          {fixture.activity.length > 0 ? (
+            <div className="activity-list">
+              {fixture.activity.map((entry) => (
+                <div className="activity-item" key={entry.id}>
+                  <span className="activity-dot" aria-hidden="true" />
+                  <div>
+                    <strong>{entry.text}</strong>
+                    <span>{entry.time} · actividad sintética</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="dashboard-empty">
+              <strong>Sin actividad reciente</strong>
+              <span>Este contexto sintético aún no registra cambios de ejemplo.</span>
+            </div>
+          )}
+        </article>
+      </div>
+
+      <div className="dashboard-footer">
+        <p className="social-boundary">
+          Estas cifras representan estados internos del flujo editorial. No son métricas de redes, conexiones ni rendimiento social.
+        </p>
+        <button className="studio-access" type="button" onClick={onOpenStudio}>
+          <span>
+            <strong>Continuar en Content Studio</strong>
+            <small>Acceso preparado · placeholder de próxima entrega</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [readiness, setState] = useState<ReadinessState>("loading");
@@ -119,6 +289,7 @@ export default function Home() {
     [brand, commerceId],
   );
   const activeContext = activeCommerce ?? brand;
+  const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
 
   const statusLabel = {
     loading: "Comprobando API…",
@@ -249,36 +420,38 @@ export default function Home() {
             <p className="eyebrow">APP SHELL · MULTIBRAND</p>
             <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : "Content Studio"}</h1>
             <p className="subheading">
-              Contexto activo: <strong>{brand.name}</strong>. Esta iteración valida la estructura,
-              la navegación y el aislamiento visual de datos sintéticos.
+              Contexto activo: <strong>{brand.name}</strong>{activeCommerce ? <> · <strong>{activeCommerce.name}</strong></> : <> · marca independiente</>}. El Dashboard muestra estados editoriales sintéticos aislados para este contexto.
             </p>
           </section>
 
-          <section className="workspace-grid" aria-label="Estado del shell">
-            <article className="context-card">
-              <div className="card-kicker">CONTEXTO ACTIVO</div>
-              <div className="card-heading">
-                <span className="large-avatar">{brand.avatar}</span>
-                <div>
-                  <h2>{brand.name}</h2>
-                  <p>@{activeContext.account}</p>
+          {view === "dashboard" ? (
+            <DashboardSection
+              contextName={activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name}
+              fixture={dashboard}
+              onOpenStudio={() => setView("content-studio")}
+            />
+          ) : (
+            <section className="workspace-grid" aria-label="Content Studio pendiente">
+              <article className="context-card">
+                <div className="card-kicker">CONTEXTO ACTIVO</div>
+                <div className="card-heading">
+                  <span className="large-avatar">{brand.avatar}</span>
+                  <div>
+                    <h2>{brand.name}</h2>
+                    <p>@{activeContext.account}</p>
+                  </div>
                 </div>
-              </div>
-              <p className="context-summary">{activeContext.summary}</p>
-              <dl className="context-details">
-                <div><dt>Tema de ejemplo</dt><dd>{activeContext.sampleTopic}</dd></div>
-                <div><dt>Audiencia</dt><dd>{activeContext.sampleAudience}</dd></div>
-              </dl>
-              <p className="synthetic-note">Datos sintéticos de interfaz · sin RAG ni servicios externos.</p>
-            </article>
-
-            <article className="placeholder-card" aria-label={`${view} pendiente`}>
-              <div className="card-kicker">PRÓXIMA ENTREGA</div>
-              <h2>{view === "dashboard" ? "Dashboard" : "Content Studio"}</h2>
-              <p>Placeholder explícito: esta vista aún no implementa métricas, borradores ni generación de contenido.</p>
-              <span className="status-badge">Pendiente</span>
-            </article>
-          </section>
+                <p className="context-summary">{activeContext.summary}</p>
+                <p className="synthetic-note">Datos sintéticos de interfaz · sin RAG ni servicios externos.</p>
+              </article>
+              <article className="placeholder-card" aria-label="Content Studio pendiente">
+                <div className="card-kicker">PRÓXIMA ENTREGA</div>
+                <h2>Content Studio</h2>
+                <p>Placeholder explícito: esta vista aún no implementa generación, edición ni publicación de contenido.</p>
+                <span className="status-badge">Pendiente</span>
+              </article>
+            </section>
+          )}
 
           <footer className="page-footer">
             <span>RAG permanece fuera de la navegación principal.</span>

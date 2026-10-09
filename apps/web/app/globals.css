@@ -289,3 +289,178 @@ h2 { margin: 0; font: 400 23px/1.2 var(--serif); letter-spacing: -.4px; }
   .workspace-grid { margin-top: 28px; }
   .context-card, .placeholder-card { padding: 20px 17px; }
 }
+
+
+.dashboard-section { margin-top: 38px; }
+.dashboard-intro,
+.panel-heading,
+.dashboard-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.dashboard-intro h2 { font-size: 26px; }
+.synthetic-label,
+.panel-note {
+  color: #a17a62;
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: right;
+}
+.synthetic-label {
+  padding: 6px 9px;
+  border: 1px solid #eadaca;
+  border-radius: 20px;
+  background: #fff8ef;
+}
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.metric-card {
+  min-height: 125px;
+  padding: 17px 18px;
+  border: 1px solid #ebe7df;
+  border-radius: 11px;
+  background: #fff;
+}
+.metric-draft { border-top: 3px solid #c79a72; }
+.metric-review { border-top: 3px solid #dba76c; }
+.metric-approved { border-top: 3px solid #7c997c; }
+.metric-label,
+.metric-caption {
+  display: block;
+  color: #89847b;
+  font-size: 10px;
+}
+.metric-value {
+  display: block;
+  margin-top: 11px;
+  font: 400 31px/1 var(--serif);
+}
+.metric-caption { margin-top: 8px; color: #aaa49a; font-size: 9px; }
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.dashboard-panel {
+  min-width: 0;
+  padding: 22px 20px;
+  border: 1px solid #ebe7df;
+  border-radius: 12px;
+  background: #fff;
+}
+.panel-heading { align-items: flex-start; }
+.panel-heading .card-kicker { margin-bottom: 8px; }
+.panel-heading h3 {
+  margin: 0;
+  font: 400 19px/1.2 var(--serif);
+}
+.panel-note { max-width: 100px; color: #aaa198; }
+.dashboard-list,
+.activity-list { display: grid; gap: 0; margin-top: 18px; }
+.dashboard-row {
+  display: flex;
+  gap: 13px;
+  padding: 13px 0;
+  border-top: 1px solid #efebe4;
+}
+.dashboard-row-date {
+  min-width: 43px;
+  padding-top: 1px;
+  color: #a36c53;
+  font-size: 10px;
+  font-weight: 700;
+}
+.dashboard-row-main,
+.activity-item > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.dashboard-row-main strong,
+.activity-item strong {
+  color: #4f4b45;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.dashboard-row-main span,
+.activity-item span {
+  color: #99938a;
+  font-size: 9px;
+  line-height: 1.4;
+}
+.dashboard-empty {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 22px 14px;
+  border: 1px dashed #e2ddd4;
+  border-radius: 8px;
+  background: #fcfaf6;
+}
+.dashboard-empty strong { color: #69635b; font-size: 11px; }
+.dashboard-empty span { color: #a09a90; font-size: 10px; line-height: 1.5; }
+.activity-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid #efebe4;
+}
+.activity-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.dashboard-footer {
+  align-items: center;
+  margin-top: 16px;
+}
+.social-boundary {
+  max-width: 520px;
+  margin: 0;
+  color: #a19a90;
+  font-size: 9px;
+  line-height: 1.55;
+}
+.studio-access {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 260px;
+  gap: 18px;
+  padding: 13px 15px;
+  border: 1px solid #eadaca;
+  border-radius: 10px;
+  background: #fff8ef;
+  color: #79533f;
+  text-align: left;
+}
+.studio-access:hover { border-color: #d9b99e; background: #fff3e5; }
+.studio-access > span:first-child { display: grid; gap: 4px; }
+.studio-access strong { font-size: 11px; }
+.studio-access small { color: #a17a62; font-size: 9px; }
+.studio-access > span:last-child { font-size: 17px; }
+
+@media (max-width: 900px) {
+  .dashboard-columns { grid-template-columns: 1fr; }
+}
+@media (max-width: 680px) {
+  .dashboard-section { margin-top: 28px; }
+  .dashboard-intro,
+  .dashboard-footer { display: grid; }
+  .synthetic-label,
+  .panel-note { text-align: left; }
+  .dashboard-summary { grid-template-columns: 1fr; }
+  .metric-card { min-height: 100px; }
+  .dashboard-footer { gap: 13px; }
+  .studio-access { min-width: 0; width: 100%; }
+}
