@@ -27,6 +27,16 @@ type BrandContext = {
   commerceOptions?: CommerceContext[];
 };
 
+
+type BriefForm = {
+  objective: string;
+  audience: string;
+  platform: "Instagram" | "Facebook";
+  format: "Reel" | "Carrusel" | "Publicación";
+  campaign: string;
+  restrictions: string;
+};
+
 type EditorialStatus = "draft" | "review" | "approved";
 
 type DashboardItem = {
@@ -239,6 +249,145 @@ function DashboardSection({
   );
 }
 
+
+const briefDefaults: Record<string, BriefForm> = {
+  panaderialaplaza: {
+    objective: "Presentar una novedad de producto artesano",
+    audience: "Personas del barrio interesadas en desayunos artesanos",
+    platform: "Instagram",
+    format: "Carrusel",
+    campaign: "Mañanas de barrio",
+    restrictions: "Mantener un tono cercano y no prometer disponibilidad futura.",
+  },
+  collamunt_a: {
+    objective: "Invitar a descubrir una ruta de iniciación",
+    audience: "Personas que buscan una primera experiencia de montaña",
+    platform: "Instagram",
+    format: "Reel",
+    campaign: "Primeros pasos",
+    restrictions: "No presentar rutas reales ni datos de ubicación.",
+  },
+  collamunt_b: {
+    objective: "Animar a planificar una salida de grupo",
+    audience: "Grupos que quieren descubrir rutas cercanas",
+    platform: "Facebook",
+    format: "Publicación",
+    campaign: "Salidas en compañía",
+    restrictions: "Usar referencias genéricas y mantener el contenido como ejemplo.",
+  },
+};
+
+function getBriefDefaults(account: string): BriefForm {
+  return briefDefaults[account] ?? briefDefaults.panaderialaplaza;
+}
+
+function buildSyntheticCopy(contextName: string, brief: BriefForm): string {
+  return [
+    "Borrador de prototipo · datos sintéticos",
+    "",
+    brief.objective + " para " + contextName + ".",
+    "",
+    "Una idea para " + brief.audience.toLowerCase() + ": descubre una propuesta preparada para esta campaña de ejemplo.",
+    "",
+    "Campaña: " + brief.campaign,
+    "Canal: " + brief.platform + " · Formato: " + brief.format,
+  ].join("\n");
+}
+
+function ContentStudioSection({
+  contextName,
+  contextSummary,
+  brief,
+  previewCopy,
+  onBriefChange,
+  onPreviewChange,
+}: {
+  contextName: string;
+  contextSummary: string;
+  brief: BriefForm;
+  previewCopy: string;
+  onBriefChange: (field: keyof BriefForm, value: string) => void;
+  onPreviewChange: (value: string) => void;
+}) {
+  return (
+    <section className="studio-section" aria-label={"Content Studio para " + contextName}>
+      <div className="studio-heading">
+        <div>
+          <div className="card-kicker">BRIEF GUIADO · PROTOTIPO LOCAL</div>
+          <h2>Prepara una idea de contenido</h2>
+          <p>{contextSummary}</p>
+        </div>
+        <span className="synthetic-label">Sin LLM · sin persistencia</span>
+      </div>
+
+      <div className="studio-grid">
+        <article className="brief-card">
+          <div className="panel-heading">
+            <div>
+              <div className="card-kicker">PASO 1</div>
+              <h3>Define el brief</h3>
+            </div>
+            <span className="panel-note">Contexto heredado</span>
+          </div>
+          <div className="brief-fields">
+            <label>
+              Objetivo
+              <textarea value={brief.objective} onChange={(event) => onBriefChange("objective", event.target.value)} rows={3} />
+            </label>
+            <label>
+              Audiencia
+              <input value={brief.audience} onChange={(event) => onBriefChange("audience", event.target.value)} />
+            </label>
+            <div className="brief-field-row">
+              <label>
+                Canal
+                <select value={brief.platform} onChange={(event) => onBriefChange("platform", event.target.value)}>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Facebook">Facebook</option>
+                </select>
+              </label>
+              <label>
+                Formato MVP
+                <select value={brief.format} onChange={(event) => onBriefChange("format", event.target.value)}>
+                  <option value="Reel">Reel</option>
+                  <option value="Carrusel">Carrusel</option>
+                  <option value="Publicación">Publicación</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Campaña
+              <input value={brief.campaign} onChange={(event) => onBriefChange("campaign", event.target.value)} />
+            </label>
+            <label>
+              Restricciones
+              <textarea value={brief.restrictions} onChange={(event) => onBriefChange("restrictions", event.target.value)} rows={3} />
+            </label>
+          </div>
+          <p className="studio-context-note">Marca y comercio se heredan del selector del App Shell; no hay selectores duplicados.</p>
+        </article>
+
+        <article className="preview-card">
+          <div className="panel-heading">
+            <div>
+              <div className="card-kicker">PASO 2</div>
+              <h3>Vista previa</h3>
+            </div>
+            <span className="prototype-pill">Borrador de prototipo</span>
+          </div>
+          <div className="preview-context">
+            <strong>{contextName}</strong>
+            <span>{brief.platform} · {brief.format} · contenido sintético</span>
+          </div>
+          <label className="preview-label" htmlFor="preview-copy">Copy editable localmente</label>
+          <textarea id="preview-copy" className="preview-copy" value={previewCopy} onChange={(event) => onPreviewChange(event.target.value)} rows={12} />
+          <p className="preview-boundary">La edición se mantiene solo en esta vista. No hay generación, variantes, aprobación, exportación ni publicación.</p>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [readiness, setState] = useState<ReadinessState>("loading");
   const [view, setView] = useState<ViewId>("dashboard");
@@ -290,12 +439,25 @@ export default function Home() {
   );
   const activeContext = activeCommerce ?? brand;
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
+  const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
+  const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
+  const [previewCopy, setPreviewCopy] = useState(() => buildSyntheticCopy(contextName, getBriefDefaults(activeContext.account)));
+
+  useEffect(() => {
+    const nextBrief = getBriefDefaults(activeContext.account);
+    setBrief(nextBrief);
+    setPreviewCopy(buildSyntheticCopy(contextName, nextBrief));
+  }, [activeContext.account, contextName]);
 
   const statusLabel = {
     loading: "Comprobando API…",
     ready: "API lista",
     unavailable: "API no disponible",
   }[readiness];
+
+  function updateBrief(field: keyof BriefForm, value: string) {
+    setBrief((current) => ({ ...current, [field]: value }));
+  }
 
   function selectBrand(nextBrandId: BrandId) {
     const nextBrand = brandContexts.find((context) => context.id === nextBrandId);
@@ -420,37 +582,25 @@ export default function Home() {
             <p className="eyebrow">APP SHELL · MULTIBRAND</p>
             <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : "Content Studio"}</h1>
             <p className="subheading">
-              Contexto activo: <strong>{brand.name}</strong>{activeCommerce ? <> · <strong>{activeCommerce.name}</strong></> : <> · marca independiente</>}. El Dashboard muestra estados editoriales sintéticos aislados para este contexto.
+              Contexto activo: <strong>{contextName}</strong>. El contenido de esta vista es local y sintético.
             </p>
           </section>
 
           {view === "dashboard" ? (
             <DashboardSection
-              contextName={activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name}
+              contextName={contextName}
               fixture={dashboard}
               onOpenStudio={() => setView("content-studio")}
             />
           ) : (
-            <section className="workspace-grid" aria-label="Content Studio pendiente">
-              <article className="context-card">
-                <div className="card-kicker">CONTEXTO ACTIVO</div>
-                <div className="card-heading">
-                  <span className="large-avatar">{brand.avatar}</span>
-                  <div>
-                    <h2>{brand.name}</h2>
-                    <p>@{activeContext.account}</p>
-                  </div>
-                </div>
-                <p className="context-summary">{activeContext.summary}</p>
-                <p className="synthetic-note">Datos sintéticos de interfaz · sin RAG ni servicios externos.</p>
-              </article>
-              <article className="placeholder-card" aria-label="Content Studio pendiente">
-                <div className="card-kicker">PRÓXIMA ENTREGA</div>
-                <h2>Content Studio</h2>
-                <p>Placeholder explícito: esta vista aún no implementa generación, edición ni publicación de contenido.</p>
-                <span className="status-badge">Pendiente</span>
-              </article>
-            </section>
+            <ContentStudioSection
+              contextName={contextName}
+              contextSummary={activeContext.summary}
+              brief={brief}
+              previewCopy={previewCopy}
+              onBriefChange={updateBrief}
+              onPreviewChange={setPreviewCopy}
+            />
           )}
 
           <footer className="page-footer">
