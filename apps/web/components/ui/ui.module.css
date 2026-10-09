@@ -1,0 +1,96 @@
+.kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.notice {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+.notice::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+  flex: none;
+  translate: 0 0.05rem;
+}
+
+.statusMark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--status-draft); flex: none; }
+.dotReview { background: var(--status-review); }
+.dotApproved { background: var(--status-approved); }
+.dotAlert { background: var(--danger); }
+
+.progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 2px solid var(--ink); }
+.step { padding: var(--space-3) var(--space-2) 0 0; font-size: var(--step--1); color: var(--muted); }
+.stepNum { display: block; font-family: var(--font-display); font-size: var(--step-1); color: var(--rule-strong); }
+.stepDone, .stepCurrent { color: var(--ink); }
+.stepDone .stepNum, .stepCurrent .stepNum { color: var(--brand-accent); }
+.stepCurrent { font-weight: 700; }
+
+.art {
+  position: relative;
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--art-tint);
+  color: var(--art-ink);
+  isolation: isolate;
+}
+.artShapeA, .artShapeB { position: absolute; background: var(--art-accent); z-index: -1; }
+.artText {
+  position: absolute;
+  left: 7cqw;
+  bottom: 7cqw;
+  max-width: 78%;
+  padding: 2.5cqw 3cqw;
+  background: var(--art-tint);
+  font-family: var(--font-display);
+  font-size: 7.5cqw;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.artHandle {
+  position: absolute;
+  top: 5cqw;
+  left: 7cqw;
+  font-size: 3.6cqw;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.artLabel {
+  position: absolute;
+  top: 5cqw;
+  right: 7cqw;
+  font-size: 3.2cqw;
+  font-weight: 600;
+  opacity: 0.8;
+}
+.layout0 .artShapeA { width: 60%; aspect-ratio: 1; border-radius: 50%; right: -12%; top: 14%; }
+.layout0 .artShapeB { width: 14%; aspect-ratio: 1; left: 7%; top: 30%; background: var(--art-ink); }
+.layout1 .artShapeA { width: 34%; top: 0; height: 70%; right: 0; }
+.layout1 .artShapeB { width: 18%; aspect-ratio: 1; left: 7%; top: 24%; border-radius: 50%; background: var(--art-ink); }
+.layout2 .artShapeA { width: 52%; height: 52%; left: 24%; top: 14%; border-radius: 999px 999px 0 0; }
+.layout2 .artShapeB { width: 100%; height: 3%; left: 0; top: 66%; background: var(--art-ink); }
+.artOnAccentText { color: var(--art-ink); }
+
+.placeholder { max-width: 38rem; padding-top: var(--space-4); }
+.placeholder h1 { font-family: var(--font-display); font-size: var(--step-4); line-height: 1.05; margin: var(--space-3) 0 var(--space-4); font-weight: 600; }
+.placeholder p { color: var(--ink-soft); font-size: var(--step-1); }
+.placeholderNote { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--rule); font-size: var(--step--1) !important; color: var(--muted) !important; }

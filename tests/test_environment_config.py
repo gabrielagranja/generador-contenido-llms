@@ -102,11 +102,16 @@ class EnvironmentConfigTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
 
-    def test_frontend_public_configuration_has_no_private_provider_keys(self) -> None:
-        page = (ROOT / "apps" / "web" / "app" / "page.tsx").read_text(encoding="utf-8")
+    def test_frontend_does_not_expose_backend_or_private_provider_configuration(self) -> None:
+        source_paths = (
+            ROOT / "apps" / "web" / "app" / "page.tsx",
+            ROOT / "apps" / "web" / "components" / "Workspace.tsx",
+            ROOT / "apps" / "web" / "components" / "shell" / "AppShell.tsx",
+        )
+        client = "\n".join(path.read_text(encoding="utf-8") for path in source_paths)
 
-        self.assertIn("NEXT_PUBLIC_API_BASE_URL", page)
-        self.assertNotRegex(page, r"(?i)(GROQ_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|META_ACCESS_TOKEN)")
+        self.assertNotIn("NEXT_PUBLIC_API_BASE_URL", client)
+        self.assertNotRegex(client, r"(?i)(GROQ_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|META_ACCESS_TOKEN)")
 
 
 if __name__ == "__main__":

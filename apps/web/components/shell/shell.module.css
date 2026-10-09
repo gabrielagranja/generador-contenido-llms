@@ -1,0 +1,115 @@
+.shell { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-5) var(--space-5);
+  background: var(--sunken);
+  border-right: 1px solid var(--rule);
+}
+
+.wordmark { font-family: var(--font-display); font-size: var(--step-2); font-weight: 700; letter-spacing: -0.02em; }
+.wordmark span { color: var(--muted); }
+
+.sectionLabel { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: var(--space-3); }
+
+.nav ul { display: grid; gap: 1px; }
+.navGroup + .navGroup { margin-top: var(--space-5); }
+.navItem {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  text-align: left;
+  font-size: var(--step-0);
+  color: var(--ink-soft);
+}
+.navItem:hover { background: rgba(28, 27, 24, 0.05); color: var(--ink); }
+.navItem[aria-current="page"] { border-left-color: var(--ink); color: var(--ink); font-weight: 700; background: var(--surface); }
+.navSub { padding-left: var(--space-5); }
+.navMeta { font-size: var(--step--1); color: var(--muted); font-weight: 400; }
+
+.sidebarFoot { margin-top: auto; padding-top: var(--space-4); border-top: 1px solid var(--rule); font-size: var(--step--1); color: var(--muted); }
+.sidebarFoot strong { display: block; color: var(--ink); font-size: var(--step-0); }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 3.5rem;
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.breadcrumb { font-size: var(--step--1); color: var(--muted); display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.breadcrumb strong { color: var(--ink); }
+.crumbSep { color: var(--rule-strong); }
+.menuButton { flex: none; display: none; min-height: 2.5rem; padding: 0 var(--space-4); border: 1px solid var(--ink); background: transparent; font-weight: 600; }
+
+.content { flex: 1; width: 100%; max-width: 78rem; padding: var(--space-6) var(--space-6) var(--space-7); }
+.footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: 1px solid var(--rule); font-size: var(--step--1); color: var(--muted); }
+
+/* Brand switcher */
+.switcher { display: grid; gap: var(--space-4); }
+.identity { display: flex; align-items: center; gap: var(--space-3); }
+.monogram {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  background: var(--brand-accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+}
+.identityName { font-family: var(--font-display); font-size: var(--step-1); font-weight: 700; line-height: 1.15; }
+.identityKind { font-size: var(--step--1); color: var(--muted); line-height: 1.3; }
+.field { display: grid; gap: var(--space-1); }
+.fieldLabel { font-size: var(--step--1); font-weight: 600; color: var(--ink-soft); }
+.select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.select:hover { border-color: var(--ink); }
+.switcherNote { font-size: var(--step--1); color: var(--muted); }
+
+@media (max-width: 62rem) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(20rem, 88vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+    box-shadow: 0 0 0 100vmax transparent;
+  }
+  .sidebarOpen { transform: none; visibility: visible; transition: transform 0.2s ease; box-shadow: 0 0 0 100vmax rgba(28, 27, 24, 0.4); }
+  .menuButton { display: inline-flex; align-items: center; }
+  .topbar { padding: var(--space-2) var(--space-4); }
+  .breadcrumb { flex: 1; min-width: 0; }
+  .content { padding: var(--space-5) var(--space-4) var(--space-7); }
+  .footer { padding: var(--space-4); }
+}
