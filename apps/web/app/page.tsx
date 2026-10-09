@@ -37,6 +37,8 @@ type BriefForm = {
   restrictions: string;
 };
 
+type DraftPreparationStatus = "not-prepared" | "pending-review" | "brief-changed";
+
 type EditorialStatus = "draft" | "review" | "approved";
 
 type DashboardItem = {
@@ -299,15 +301,21 @@ function ContentStudioSection({
   contextSummary,
   brief,
   previewCopy,
+  preparationStatus,
+  validationMessage,
   onBriefChange,
   onPreviewChange,
+  onPrepareDraft,
 }: {
   contextName: string;
   contextSummary: string;
   brief: BriefForm;
   previewCopy: string;
+  preparationStatus: DraftPreparationStatus;
+  validationMessage: string;
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onPreviewChange: (value: string) => void;
+  onPrepareDraft: () => void;
 }) {
   return (
     <section className="studio-section" aria-label={"Content Studio para " + contextName}>
@@ -364,6 +372,10 @@ function ContentStudioSection({
               <textarea value={brief.restrictions} onChange={(event) => onBriefChange("restrictions", event.target.value)} rows={3} />
             </label>
           </div>
+          <button className="prepare-draft-button" type="button" onClick={onPrepareDraft}>
+            {preparationStatus === "pending-review" ? "Preparar otro borrador" : preparationStatus === "brief-changed" ? "Actualizar borrador" : "Preparar borrador"}
+          </button>
+          {validationMessage && <p className="brief-validation" role="alert">{validationMessage}</p>}
           <p className="studio-context-note">Marca y comercio se heredan del selector del App Shell; no hay selectores duplicados.</p>
         </article>
 
@@ -379,9 +391,23 @@ function ContentStudioSection({
             <strong>{contextName}</strong>
             <span>{brief.platform} · {brief.format} · contenido sintético</span>
           </div>
+          <p className={`draft-review-status draft-review-${preparationStatus}`} aria-live="polite">
+            {preparationStatus === "pending-review"
+              ? "Pendiente de revisión humana"
+              : preparationStatus === "brief-changed"
+                ? "El brief cambió · actualiza el borrador antes de revisarlo"
+                : "Completa el brief y prepara un borrador local"}
+          </p>
           <label className="preview-label" htmlFor="preview-copy">Copy editable localmente</label>
-          <textarea id="preview-copy" className="preview-copy" value={previewCopy} onChange={(event) => onPreviewChange(event.target.value)} rows={12} />
-          <p className="preview-boundary">La edición se mantiene solo en esta vista. No hay generación, variantes, aprobación, exportación ni publicación.</p>
+          <textarea
+            id="preview-copy"
+            className="preview-copy"
+            value={previewCopy}
+            onChange={(event) => onPreviewChange(event.target.value)}
+            placeholder="El borrador sintético aparecerá aquí al preparar el brief."
+            rows={12}
+          />
+          <p className="preview-boundary">El borrador requiere revisión humana antes de considerarse final. Esta iteración no incluye aprobación, exportación ni publicación.</p>
         </article>
       </div>
     </section>
@@ -441,12 +467,16 @@ export default function Home() {
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
   const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
-  const [previewCopy, setPreviewCopy] = useState(() => buildSyntheticCopy(contextName, getBriefDefaults(activeContext.account)));
+  const [previewCopy, setPreviewCopy] = useState("");
+  const [preparationStatus, setPreparationStatus] = useState<DraftPreparationStatus>("not-prepared");
+  const [validationMessage, setValidationMessage] = useState("");
 
   useEffect(() => {
     const nextBrief = getBriefDefaults(activeContext.account);
     setBrief(nextBrief);
-    setPreviewCopy(buildSyntheticCopy(contextName, nextBrief));
+    setPreviewCopy("");
+    setPreparationStatus("not-prepared");
+    setValidationMessage("");
   }, [activeContext.account, contextName]);
 
   const statusLabel = {
@@ -457,6 +487,20 @@ export default function Home() {
 
   function updateBrief(field: keyof BriefForm, value: string) {
     setBrief((current) => ({ ...current, [field]: value }));
+    setPreparationStatus((current) => current === "pending-review" ? "brief-changed" : current);
+    setValidationMessage("");
+  }
+
+  function prepareDraft() {
+    const requiredFields = [brief.objective, brief.audience, brief.campaign];
+    if (requiredFields.some((value) => !value.trim())) {
+      setValidationMessage("Completa el objetivo, la audiencia y la campaña para preparar el borrador.");
+      return;
+    }
+
+    setPreviewCopy(buildSyntheticCopy(contextName, brief));
+    setPreparationStatus("pending-review");
+    setValidationMessage("");
   }
 
   function selectBrand(nextBrandId: BrandId) {
@@ -598,8 +642,11 @@ export default function Home() {
               contextSummary={activeContext.summary}
               brief={brief}
               previewCopy={previewCopy}
+              preparationStatus={preparationStatus}
+              validationMessage={validationMessage}
               onBriefChange={updateBrief}
               onPreviewChange={setPreviewCopy}
+              onPrepareDraft={prepareDraft}
             />
           )}
 
