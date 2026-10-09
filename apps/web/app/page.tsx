@@ -70,7 +70,7 @@ const brandContexts: BrandContext[] = [
 ];
 
 export default function Home() {
-  const [readiness, setReadiness] = useState<ReadinessState>("loading");
+  const [readiness, setState] = useState<ReadinessState>("loading");
   const [view, setView] = useState<ViewId>("dashboard");
   const [brandId, setBrandId] = useState<BrandId>("panaderia");
   const [commerceId, setCommerceId] = useState<CommerceId | null>(null);
@@ -98,10 +98,10 @@ export default function Home() {
           throw new Error("Unexpected readiness response");
         }
 
-        setReadiness("ready");
+        setState("ready");
       } catch {
         if (!controller.signal.aborted) {
-          setReadiness("unavailable");
+          setState("unavailable");
         }
       }
     }
