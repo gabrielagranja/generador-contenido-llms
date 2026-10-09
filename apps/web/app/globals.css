@@ -737,6 +737,7 @@ h2 { margin: 0; font: 400 23px/1.2 var(--serif); letter-spacing: -.4px; }
 .draft-status-draft { background: #f4eee7; color: #7c644e; }
 .draft-status-review { background: #fff3df; color: #8b602b; }
 .draft-status-approved { background: #edf4ec; color: #476b4a; }
+.draft-status-changes-requested { background: #fff3df; color: #8b602b; }
 .draft-updated {
   color: #9b958b;
   font-size: 9px;
