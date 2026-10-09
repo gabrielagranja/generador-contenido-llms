@@ -72,20 +72,14 @@ code { overflow-wrap: anywhere; }
   text-transform: uppercase;
 }
 .commerce-picker { position: relative; }
-.commerce-trigger,
-.brand-select {
+.brand-select,
+.commerce-select {
   width: 100%;
   min-height: 43px;
   border: 1px solid #e5e1d8;
   border-radius: 10px;
   background: #faf9f5;
   text-align: left;
-}
-.commerce-trigger {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 6px 9px;
 }
 .context-avatar,
 .profile-avatar,
@@ -118,34 +112,12 @@ code { overflow-wrap: anywhere; }
   background-size: 4px 4px, 4px 4px;
   background-repeat: no-repeat;
 }
-.commerce-menu {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 6px);
-  right: 0;
-  left: 0;
-  display: grid;
-  gap: 3px;
-  padding: 5px;
-  border: 1px solid #e5e1d8;
-  border-radius: 10px;
-  background: var(--panel);
-  box-shadow: 0 10px 24px rgb(56 46 31 / 12%);
+.independent-brand-note {
+  margin: 2px 7px 0;
+  color: #9a958d;
+  font-size: 9px;
+  line-height: 1.45;
 }
-.commerce-option {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 9px;
-  padding: 7px 5px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  text-align: left;
-}
-.commerce-option:hover,
-.commerce-option[aria-selected="true"] { background: #f1e8dc; }
-
 .main-nav { display: grid; gap: 5px; margin-top: 34px; }
 .nav-item {
   display: flex;
@@ -297,11 +269,10 @@ h2 { margin: 0; font: 400 23px/1.2 var(--serif); letter-spacing: -.4px; }
   .context-label,
   .context-copy,
   .brand-select,
+  .commerce-select,
   .boundary-card,
   .profile-row .context-copy { display: none; }
   .context-stack { width: 100%; }
-  .commerce-trigger { justify-content: center; padding: 6px; }
-  .commerce-trigger > span:last-child { display: none; }
   .main-nav { width: 100%; margin-top: 28px; }
   .nav-item { justify-content: center; padding: 0; font-size: 0; }
   .nav-icon { font-size: 17px; }
