@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type ReadinessState = "loading" | "ready" | "unavailable";
-type ViewId = "dashboard" | "drafts" | "content-studio";
+type ViewId = "dashboard" | "drafts" | "history" | "content-studio";
 type BrandId = "panaderia" | "coll-amunt";
 type CommerceId = "synthetic-a" | "synthetic-b";
 
@@ -62,6 +62,14 @@ type LocalDraft = {
 };
 
 type DraftFilter = "all" | EditorialStatus;
+
+type HistoryEntry = {
+  id: string;
+  text: string;
+  time: string;
+  status: EditorialStatus;
+  draftId: string;
+};
 
 type DashboardActivity = {
   id: string;
@@ -378,6 +386,108 @@ const draftFixtures: Record<string, LocalDraft[]> = {
   ],
 };
 
+const historyFixtures: Record<string, HistoryEntry[]> = {
+  panaderialaplaza: [
+    { id: "plaza-history-1", text: "Se editó un borrador local.", time: "Hoy · 09:40", status: "draft", draftId: "plaza-draft-pan-artesano" },
+    { id: "plaza-history-2", text: "El contenido se envió a revisión humana.", time: "Ayer · 16:20", status: "review", draftId: "plaza-review-desayunos" },
+    { id: "plaza-history-3", text: "Se marcó como aprobado en el prototipo.", time: "8 oct · 12:15", status: "approved", draftId: "plaza-approved-temporada" },
+  ],
+  collamunt_a: [
+    { id: "coll-a-history-1", text: "Se preparó un borrador local.", time: "Hoy · 08:55", status: "draft", draftId: "coll-a-draft-inicio" },
+    { id: "coll-a-history-2", text: "El contenido se envió a revisión humana.", time: "11 jun · 14:10", status: "review", draftId: "coll-a-review-grupo" },
+  ],
+  collamunt_b: [
+    { id: "coll-b-history-1", text: "Se creó un borrador de ejemplo.", time: "10 jun · 10:30", status: "draft", draftId: "coll-b-draft-group" },
+  ],
+};
+
+function HistorySection({
+  contextName,
+  entries,
+  drafts,
+  onOpenDraft,
+}: {
+  contextName: string;
+  entries: HistoryEntry[];
+  drafts: LocalDraft[];
+  onOpenDraft: (draft: LocalDraft) => void;
+}) {
+  const [filter, setFilter] = useState<DraftFilter>("all");
+  const visibleEntries = filter === "all" ? entries : entries.filter((entry) => entry.status === filter);
+  const filterOptions: { id: DraftFilter; label: string }[] = [
+    { id: "all", label: "Todos" },
+    { id: "draft", label: "Borradores" },
+    { id: "review", label: "En revisión" },
+    { id: "approved", label: "Aprobados" },
+  ];
+  const statusLabels: Record<EditorialStatus, string> = {
+    draft: "Borrador",
+    review: "En revisión",
+    approved: "Aprobado en prototipo",
+  };
+
+  return (
+    <section className="history-section" aria-label={"Historial de " + contextName}>
+      <div className="history-heading">
+        <div>
+          <div className="card-kicker">ACTIVIDAD EDITORIAL · EJEMPLOS</div>
+          <h2>Historial de {contextName}</h2>
+          <p>Actividad sintética del contexto seleccionado, sin conexiones externas ni persistencia.</p>
+        </div>
+        <span className="synthetic-label">Datos de ejemplo</span>
+      </div>
+
+      <div className="history-filters" role="group" aria-label="Filtrar actividad por estado">
+        {filterOptions.map((option) => (
+          <button
+            key={option.id}
+            className={`history-filter ${filter === option.id ? "active" : ""}`}
+            type="button"
+            aria-pressed={filter === option.id}
+            onClick={() => setFilter(option.id)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {visibleEntries.length > 0 ? (
+        <ol className="history-list">
+          {visibleEntries.map((entry) => {
+            const relatedDraft = drafts.find((draft) => draft.id === entry.draftId);
+            return (
+              <li className="history-entry" key={entry.id}>
+                <div className="history-entry-marker" aria-hidden="true" />
+                <div className="history-entry-content">
+                  <div className="history-entry-top">
+                    <time>{entry.time} · ejemplo</time>
+                    <span className={`draft-status draft-status-${entry.status}`}>{statusLabels[entry.status]}</span>
+                  </div>
+                  <p>{entry.text}</p>
+                  {relatedDraft && (
+                    <button className="history-open-button" type="button" onClick={() => onOpenDraft(relatedDraft)}>
+                      Abrir “{relatedDraft.title}” en Content Studio <span aria-hidden="true">→</span>
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <div className="history-empty" role="status">
+          <strong>{entries.length === 0 ? "Todavía no hay actividad" : "No hay actividad con este estado"}</strong>
+          <span>
+            {entries.length === 0
+              ? "Los cambios de ejemplo para este contexto aparecerán aquí."
+              : "Prueba otro filtro para consultar la actividad disponible."}
+          </span>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function DraftsSection({
   contextName,
   drafts,
@@ -652,6 +762,7 @@ export default function Home() {
   const activeContext = activeCommerce ?? brand;
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
   const drafts = draftFixtures[activeContext.account] ?? [];
+  const historyEntries = historyFixtures[activeContext.account] ?? [];
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
   const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
   const [previewCopy, setPreviewCopy] = useState("");
@@ -700,6 +811,14 @@ export default function Home() {
 
   function resubmitDraftForReview() {
     setPreparationStatus((current) => current === "changes-requested" ? "pending-review" : current);
+  }
+
+  function openDraft(draft: LocalDraft) {
+    setBrief(draft.brief);
+    setPreviewCopy(draft.copy);
+    setPreparationStatus(draft.status === "draft" ? "draft" : draft.status === "review" ? "pending-review" : "approved");
+    setValidationMessage("");
+    setView("content-studio");
   }
 
   function selectBrand(nextBrandId: BrandId) {
@@ -790,10 +909,14 @@ export default function Home() {
             Borradores
             <span className="nav-count">{drafts.length}</span>
           </button>
-          <button className="nav-item muted" type="button" onClick={() => setView("dashboard")}>
+          <button
+            className={`nav-item ${view === "history" ? "active" : ""}`}
+            type="button"
+            onClick={() => setView("history")}
+          >
             <span className="nav-icon">◷</span>
             Historial
-            <span className="nav-count">—</span>
+            <span className="nav-count">{historyEntries.length}</span>
           </button>
         </nav>
 
@@ -813,7 +936,7 @@ export default function Home() {
       <section className="workspace">
         <header className="topbar">
           <div className="breadcrumb">
-            Estudio <span>/</span> <strong>{view === "dashboard" ? "Dashboard" : view === "drafts" ? "Borradores" : "Content Studio"}</strong>
+            Estudio <span>/</span> <strong>{view === "dashboard" ? "Dashboard" : view === "drafts" ? "Borradores" : view === "history" ? "Historial" : "Content Studio"}</strong>
           </div>
           <div className="topbar-actions">
             <span className={`readiness-pill readiness-${readiness}`}>
@@ -827,7 +950,7 @@ export default function Home() {
         <div className="content">
           <section className="hero-block" aria-labelledby="page-title">
             <p className="eyebrow">APP SHELL · MULTIBRAND</p>
-            <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : view === "drafts" ? "Borradores" : "Content Studio"}</h1>
+            <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : view === "drafts" ? "Borradores" : view === "history" ? "Historial" : "Content Studio"}</h1>
             <p className="subheading">
               Contexto activo: <strong>{contextName}</strong>. El contenido de esta vista es local y sintético.
             </p>
@@ -843,13 +966,14 @@ export default function Home() {
             <DraftsSection
               contextName={contextName}
               drafts={drafts}
-              onOpenDraft={(draft) => {
-                setBrief(draft.brief);
-                setPreviewCopy(draft.copy);
-                setPreparationStatus(draft.status === "draft" ? "draft" : draft.status === "review" ? "pending-review" : "approved");
-                setValidationMessage("");
-                setView("content-studio");
-              }}
+              onOpenDraft={openDraft}
+            />
+          ) : view === "history" ? (
+            <HistorySection
+              contextName={contextName}
+              entries={historyEntries}
+              drafts={drafts}
+              onOpenDraft={openDraft}
             />
           ) : (
             <ContentStudioSection
