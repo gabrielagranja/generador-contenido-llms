@@ -1,26 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 type Platform = "Instagram" | "Facebook";
 type Format = "Publicación" | "Carrusel" | "Reel";
+type BrandId = "panaderia" | "coll-amunt";
 
-const sampleCopy =
-  "Hay planes que saben mejor cuando se comparten. En Panadería La Plaza horneamos cada mañana para que tu pausa tenga ese sabor de siempre. ¿Cuál es tu favorito?";
+type Brand = {
+  id: BrandId;
+  name: string;
+  avatar: string;
+  account: string;
+  topic: string;
+  audience: string;
+  sampleCopy: string;
+  visualStamp: string;
+  visualCaption: string;
+};
+
+const brands: Brand[] = [
+  {
+    id: "panaderia",
+    name: "Panadería La Plaza",
+    avatar: "P",
+    account: "panaderialaplaza",
+    topic: "Nuestros panes recién horneados",
+    audience: "Personas del barrio que buscan desayunos artesanos",
+    sampleCopy:
+      "Hay planes que saben mejor cuando se comparten. En Panadería La Plaza horneamos cada mañana para que tu pausa tenga ese sabor de siempre. ¿Cuál es tu favorito?",
+    visualStamp: "HECHO\\nCADA DÍA",
+    visualCaption: "Un buen día\\nempieza aquí.",
+  },
+  {
+    id: "coll-amunt",
+    name: "Coll Amunt!",
+    avatar: "C",
+    account: "collamunt",
+    topic: "Planes de montaña para este fin de semana",
+    audience: "Personas que disfrutan de rutas y naturaleza cerca de casa",
+    sampleCopy:
+      "Subimos juntos, respiramos hondo y descubrimos nuevos caminos. En Coll Amunt! te proponemos una ruta para disfrutar la montaña este fin de semana. ¿Te apuntas?",
+    visualStamp: "VIVE\\nEL CAMINO",
+    visualCaption: "La montaña\\nnos llama.",
+  },
+];
 
 export default function Home() {
+  const [brandId, setBrandId] = useState<BrandId>("panaderia");
   const [platform, setPlatform] = useState<Platform>("Instagram");
   const [format, setFormat] = useState<Format>("Publicación");
-  const [topic, setTopic] = useState("Nuestros panes recién horneados");
+  const [topic, setTopic] = useState(brands[0].topic);
   const [goal, setGoal] = useState("Dar a conocer el producto");
-  const [audience, setAudience] = useState("Personas del barrio que buscan desayunos artesanos");
+  const [audience, setAudience] = useState(brands[0].audience);
   const [notes, setNotes] = useState("");
   const [generated, setGenerated] = useState(false);
-  const [copy, setCopy] = useState(sampleCopy);
+  const [copy, setCopy] = useState(brands[0].sampleCopy);
   const [copied, setCopied] = useState(false);
+  const [brandMenuOpen, setBrandMenuOpen] = useState(false);
+  const brand = brands.find((item) => item.id === brandId) ?? brands[0];
+
+  function selectBrand(nextBrandId: BrandId) {
+    const nextBrand = brands.find((item) => item.id === nextBrandId) ?? brands[0];
+    setBrandId(nextBrand.id);
+    setTopic(nextBrand.topic);
+    setAudience(nextBrand.audience);
+    setCopy(nextBrand.sampleCopy);
+    setNotes("");
+    setGenerated(false);
+    setCopied(false);
+    setBrandMenuOpen(false);
+  }
 
   function generateDraft() {
-    setCopy(sampleCopy);
+    setCopy(brand.sampleCopy);
     setGenerated(true);
     setCopied(false);
   }
@@ -44,11 +96,36 @@ export default function Home() {
         </a>
 
         <div className="workspace-label">ESPACIO DE TRABAJO</div>
-        <button className="business-switcher" type="button">
-          <span className="business-avatar">P</span>
-          <span className="business-name"><strong>Panadería La Plaza</strong><small>Perfil de negocio</small></span>
-          <span className="switcher-chevron" aria-hidden="true">⌄</span>
-        </button>
+        <div className="brand-picker">
+          <button
+            className="business-switcher"
+            type="button"
+            aria-expanded={brandMenuOpen}
+            aria-haspopup="listbox"
+            onClick={() => setBrandMenuOpen((open) => !open)}
+          >
+            <span className="business-avatar">{brand.avatar}</span>
+            <span className="business-name"><strong>{brand.name}</strong><small>Perfil de negocio</small></span>
+            <span className="switcher-chevron" aria-hidden="true">⌄</span>
+          </button>
+          {brandMenuOpen && (
+            <div className="brand-menu" role="listbox" aria-label="Seleccionar marca">
+              {brands.map((option) => (
+                <button
+                  className="brand-option"
+                  type="button"
+                  role="option"
+                  aria-selected={option.id === brand.id}
+                  key={option.id}
+                  onClick={() => selectBrand(option.id)}
+                >
+                  <span className="business-avatar">{option.avatar}</span>
+                  <span className="business-name"><strong>{option.name}</strong><small>Perfil de negocio</small></span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <nav className="main-nav" aria-label="Navegación principal">
           <a className="nav-item active" href="#" aria-current="page"><span className="nav-icon">✳</span> Crear contenido</a>
@@ -138,10 +215,10 @@ export default function Home() {
               <div className="preview-topline"><span className="section-kicker">VISTA PREVIA</span><span className="preview-live"><span /> {generated ? "BORRADOR" : "EN ESPERA"}</span></div>
               <div className="preview-title-row"><h2 id="preview-title">{generated ? "Tu primera propuesta" : "Aquí empieza la idea"}</h2><span className="preview-menu">···</span></div>
               <div className="social-preview">
-                <div className="social-head"><span className="social-avatar">P</span><span className="social-account"><strong>panaderialaplaza</strong><small>{platform} · Vista previa</small></span><span className="social-more">•••</span></div>
-                <div className="visual-placeholder"><div className="visual-stamp">HECHO<br />CADA DÍA</div><span className="visual-sun" /><div className="bread-shape"><i /><i /><i /></div><div className="visual-caption">Un buen día<br /><em>empieza aquí.</em></div><span className="visual-label">{format.toUpperCase()}</span></div>
+                <div className="social-head"><span className="social-avatar">{brand.avatar}</span><span className="social-account"><strong>{brand.account}</strong><small>{platform} · Vista previa</small></span><span className="social-more">•••</span></div>
+                <div className="visual-placeholder"><div className="visual-stamp">{brand.visualStamp.split("\\n").map((line) => <Fragment key={line}>{line}<br /></Fragment>)}</div><span className="visual-sun" /><div className="bread-shape"><i /><i /><i /></div><div className="visual-caption">{brand.visualCaption.split("\\n").map((line, index) => <Fragment key={line}>{index > 0 && <br />}<em>{index === 1 ? line : ""}</em>{index === 0 && line}</Fragment>)}</div><span className="visual-label">{format.toUpperCase()}</span></div>
                 <div className="social-actions"><span>♡</span><span>▢</span><span>➤</span><span className="social-save">♧</span></div>
-                <div className="social-copy">{generated ? <><strong>panaderialaplaza</strong> <textarea className="draft-edit" aria-label="Editar texto del borrador" value={copy} onChange={(e) => setCopy(e.target.value)} rows={4} /><button className="copy-button" type="button" onClick={copyDraft}>{copied ? "Copiado" : "Copiar texto"}</button></> : <p className="placeholder-copy">Tu texto aparecerá aquí cuando prepares un borrador.</p>}</div>
+                <div className="social-copy">{generated ? <><strong>{brand.account}</strong> <textarea className="draft-edit" aria-label="Editar texto del borrador" value={copy} onChange={(e) => setCopy(e.target.value)} rows={4} /><button className="copy-button" type="button" onClick={copyDraft}>{copied ? "Copiado" : "Copiar texto"}</button></> : <p className="placeholder-copy">Tu texto aparecerá aquí cuando prepares un borrador.</p>}</div>
               </div>
               <div className="preview-footnote"><span>✦</span><p>La vista visual es orientativa. Revisa el texto y los datos antes de usarlo.</p></div>
               {generated && <div className="assumption-tag"><span>i</span> Revisa que todos los detalles del negocio sean correctos</div>}
