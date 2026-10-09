@@ -464,3 +464,112 @@ h2 { margin: 0; font: 400 23px/1.2 var(--serif); letter-spacing: -.4px; }
   .dashboard-footer { gap: 13px; }
   .studio-access { min-width: 0; width: 100%; }
 }
+
+
+.studio-section { margin-top: 38px; }
+.studio-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.studio-heading h2 { font-size: 26px; }
+.studio-heading p {
+  max-width: 600px;
+  margin: 9px 0 0;
+  color: #807c74;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.studio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+.brief-card,
+.preview-card {
+  min-width: 0;
+  padding: 22px 21px;
+  border: 1px solid #ebe7df;
+  border-radius: 12px;
+  background: #fff;
+}
+.brief-fields {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+.brief-fields label,
+.preview-label {
+  display: grid;
+  gap: 6px;
+  color: #777169;
+  font-size: 10px;
+  font-weight: 700;
+}
+.brief-fields input,
+.brief-fields textarea,
+.brief-fields select,
+.preview-copy {
+  width: 100%;
+  border: 1px solid #e5e1d8;
+  border-radius: 8px;
+  background: #fcfbf8;
+  color: #4b4944;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.brief-fields input,
+.brief-fields select { min-height: 38px; padding: 0 10px; }
+.brief-fields textarea,
+.preview-copy { padding: 9px 10px; resize: vertical; }
+.brief-fields input:focus,
+.brief-fields textarea:focus,
+.brief-fields select:focus,
+.preview-copy:focus {
+  outline: 2px solid #ecd1bd;
+  border-color: #d8754f;
+}
+.brief-field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.studio-context-note,
+.preview-boundary {
+  margin: 18px 0 0;
+  padding-top: 13px;
+  border-top: 1px solid #efebe4;
+  color: #a17b63;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.preview-context {
+  display: grid;
+  gap: 4px;
+  margin: 19px 0 14px;
+  padding: 11px 12px;
+  border: 1px solid #eee5da;
+  border-radius: 8px;
+  background: #fffaf3;
+}
+.preview-context strong { color: #5d5047; font: 400 17px var(--serif); }
+.preview-context span { color: #9a8b7e; font-size: 9px; }
+.preview-label { margin-bottom: 7px; }
+.preview-copy {
+  display: block;
+  min-height: 250px;
+  background: #fffdf9;
+}
+.preview-boundary { color: #9f978e; }
+@media (max-width: 900px) {
+  .studio-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 680px) {
+  .studio-section { margin-top: 28px; }
+  .studio-heading { display: grid; }
+  .brief-field-row { grid-template-columns: 1fr; }
+  .brief-card,
+  .preview-card { padding: 19px 16px; }
+}
