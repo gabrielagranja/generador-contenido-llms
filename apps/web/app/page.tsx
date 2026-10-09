@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type ReadinessState = "loading" | "ready" | "unavailable";
 type ViewId = "dashboard" | "drafts" | "history" | "content-studio";
@@ -761,13 +761,19 @@ export default function Home() {
   );
   const activeContext = activeCommerce ?? brand;
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
-  const drafts = draftFixtures[activeContext.account] ?? [];
   const historyEntries = historyFixtures[activeContext.account] ?? [];
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
+  const [sessionDraftsByContext, setSessionDraftsByContext] = useState<Record<string, LocalDraft[]>>({});
+  const [activeSessionDraftId, setActiveSessionDraftId] = useState<string | null>(null);
+  const sessionDraftSequence = useRef(0);
   const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
   const [previewCopy, setPreviewCopy] = useState("");
   const [preparationStatus, setPreparationStatus] = useState<DraftPreparationStatus>("not-prepared");
   const [validationMessage, setValidationMessage] = useState("");
+  const drafts = [
+    ...(sessionDraftsByContext[activeContext.account] ?? []),
+    ...(draftFixtures[activeContext.account] ?? []),
+  ];
 
   useEffect(() => {
     const nextBrief = getBriefDefaults(activeContext.account);
@@ -775,6 +781,7 @@ export default function Home() {
     setPreviewCopy("");
     setPreparationStatus("not-prepared");
     setValidationMessage("");
+    setActiveSessionDraftId(null);
   }, [activeContext.account, contextName]);
 
   const statusLabel = {
@@ -783,10 +790,27 @@ export default function Home() {
     unavailable: "API no disponible",
   }[readiness];
 
+  function updateSessionDraft(patch: Partial<LocalDraft>) {
+    if (!activeSessionDraftId) return;
+    setSessionDraftsByContext((current) => ({
+      ...current,
+      [activeContext.account]: (current[activeContext.account] ?? []).map((draft) =>
+        draft.id === activeSessionDraftId ? { ...draft, ...patch } : draft,
+      ),
+    }));
+  }
+
   function updateBrief(field: keyof BriefForm, value: string) {
-    setBrief((current) => ({ ...current, [field]: value }));
+    const nextBrief = { ...brief, [field]: value };
+    setBrief(nextBrief);
     setPreparationStatus((current) => current === "pending-review" || current === "approved" ? "brief-changed" : current);
+    updateSessionDraft({ brief: nextBrief, title: nextBrief.campaign.trim() || nextBrief.objective.trim(), status: "draft" });
     setValidationMessage("");
+  }
+
+  function updatePreviewCopy(value: string) {
+    setPreviewCopy(value);
+    updateSessionDraft({ copy: value });
   }
 
   function prepareDraft() {
@@ -796,26 +820,49 @@ export default function Home() {
       return;
     }
 
-    setPreviewCopy(buildSyntheticCopy(contextName, brief));
+    const generatedCopy = buildSyntheticCopy(contextName, brief);
+    const sessionDraft: LocalDraft = {
+      id: `session-${activeContext.account}-${++sessionDraftSequence.current}`,
+      title: brief.campaign.trim() || brief.objective.trim(),
+      platform: brief.platform,
+      format: brief.format,
+      status: "review",
+      updatedAt: "Ahora · sesión actual",
+      brief,
+      copy: generatedCopy,
+    };
+    setSessionDraftsByContext((current) => ({
+      ...current,
+      [activeContext.account]: [sessionDraft, ...(current[activeContext.account] ?? [])],
+    }));
+    setActiveSessionDraftId(sessionDraft.id);
+    setPreviewCopy(generatedCopy);
     setPreparationStatus("pending-review");
     setValidationMessage("");
   }
 
   function approveDraft() {
-    setPreparationStatus((current) => current === "pending-review" ? "approved" : current);
+    if (preparationStatus !== "pending-review") return;
+    setPreparationStatus("approved");
+    updateSessionDraft({ status: "approved" });
   }
 
   function requestDraftChanges() {
-    setPreparationStatus((current) => current === "pending-review" ? "changes-requested" : current);
+    if (preparationStatus !== "pending-review") return;
+    setPreparationStatus("changes-requested");
+    updateSessionDraft({ status: "draft" });
   }
 
   function resubmitDraftForReview() {
-    setPreparationStatus((current) => current === "changes-requested" ? "pending-review" : current);
+    if (preparationStatus !== "changes-requested") return;
+    setPreparationStatus("pending-review");
+    updateSessionDraft({ status: "review" });
   }
 
   function openDraft(draft: LocalDraft) {
     setBrief(draft.brief);
     setPreviewCopy(draft.copy);
+    setActiveSessionDraftId(draft.id.startsWith("session-") ? draft.id : null);
     setPreparationStatus(draft.status === "draft" ? "draft" : draft.status === "review" ? "pending-review" : "approved");
     setValidationMessage("");
     setView("content-studio");
@@ -984,7 +1031,7 @@ export default function Home() {
               preparationStatus={preparationStatus}
               validationMessage={validationMessage}
               onBriefChange={updateBrief}
-              onPreviewChange={setPreviewCopy}
+              onPreviewChange={updatePreviewCopy}
               onPrepareDraft={prepareDraft}
               onApproveDraft={approveDraft}
               onRequestChanges={requestDraftChanges}
