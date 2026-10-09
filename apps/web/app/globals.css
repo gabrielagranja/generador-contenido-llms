@@ -25,6 +25,11 @@ a { color: inherit; text-decoration: none; }
 .brand-dot { color: var(--orange); }
 .workspace-label { margin: 43px 12px 12px; color: #98948b; font-size: 9px; font-weight: 700; letter-spacing: 1.15px; }
 .business-switcher { display: flex; align-items: center; width: 100%; gap: 10px; padding: 10px 9px; background: #faf9f5; border: 1px solid #e5e1d8; border-radius: 10px; text-align: left; color: var(--ink); }
+.brand-picker { position: relative; }
+.brand-menu { position: absolute; z-index: 10; top: calc(100% + 6px); right: 0; left: 0; display: grid; gap: 3px; padding: 5px; border: 1px solid #e5e1d8; border-radius: 10px; background: #fffdf9; box-shadow: 0 10px 24px rgb(56 46 31 / 12%); }
+.brand-option { display: flex; align-items: center; width: 100%; gap: 10px; padding: 7px 5px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); text-align: left; }
+.brand-option:hover, .brand-option[aria-selected="true"] { background: #f1e8dc; }
+.brand-option .business-avatar { width: 28px; height: 28px; font-size: 13px; }
 .business-avatar, .social-avatar { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #c67a54; color: #fffaf4; font: 700 16px var(--serif); }
 .business-name, .profile-button > span:nth-child(2), .social-account { display: grid; gap: 3px; min-width: 0; flex: 1; }
 .business-name strong, .profile-button strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
