@@ -94,11 +94,11 @@ Issue #22/#25/#32 evidence paths rather than altering rubric weights.
 
 - Canonical Three-Thirds labels are confirmed as `EDUCATIONAL`, `COMMUNITY`
   and `PROMOTIONAL`.
-- Confirm a dedicated GitHub issue for editorial planning, or approve using
-  Issue #22 as the related parent for this contract.
+- Issue #70 is the implementation story, related to the completed Issue #22;
+  no duplicate editorial-planning issue is needed.
 
 ## Approval
 
 Approved by the user on 2026-10-08 for contract completion and repository
-delivery. This approval covers the OpenSpec artifacts only; application
-implementation remains a separate future task.
+delivery. The user separately authorized application implementation for
+Issue #70 on 2026-10-08.
