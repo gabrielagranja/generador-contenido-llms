@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type ReadinessState = "loading" | "ready" | "unavailable";
-type ViewId = "dashboard" | "content-studio";
+type ViewId = "dashboard" | "drafts" | "content-studio";
 type BrandId = "panaderia" | "coll-amunt";
 type CommerceId = "synthetic-a" | "synthetic-b";
 
@@ -37,7 +37,7 @@ type BriefForm = {
   restrictions: string;
 };
 
-type DraftPreparationStatus = "not-prepared" | "pending-review" | "brief-changed" | "changes-requested" | "approved";
+type DraftPreparationStatus = "not-prepared" | "draft" | "pending-review" | "brief-changed" | "changes-requested" | "approved";
 
 type EditorialStatus = "draft" | "review" | "approved";
 
@@ -49,6 +49,19 @@ type DashboardItem = {
   format: string;
   status?: EditorialStatus;
 };
+
+type LocalDraft = {
+  id: string;
+  title: string;
+  platform: BriefForm["platform"];
+  format: BriefForm["format"];
+  status: EditorialStatus;
+  updatedAt: string;
+  brief: BriefForm;
+  copy: string;
+};
+
+type DraftFilter = "all" | EditorialStatus;
 
 type DashboardActivity = {
   id: string;
@@ -296,6 +309,155 @@ function buildSyntheticCopy(contextName: string, brief: BriefForm): string {
   ].join("\n");
 }
 
+const draftFixtures: Record<string, LocalDraft[]> = {
+  panaderialaplaza: [
+    {
+      id: "plaza-draft-pan-artesano",
+      title: "Una mañana de pan artesano",
+      platform: "Instagram",
+      format: "Carrusel",
+      status: "draft",
+      updatedAt: "Hoy · 09:40",
+      brief: { ...briefDefaults.panaderialaplaza, objective: "Presentar una idea de desayuno artesano" },
+      copy: `Borrador sintético · Panadería La Plaza\n\nUna idea de desayuno artesano para compartir con el barrio.\n\nContenido de ejemplo, pendiente de edición.`,
+    },
+    {
+      id: "plaza-review-desayunos",
+      title: "Ideas para empezar el día",
+      platform: "Facebook",
+      format: "Publicación",
+      status: "review",
+      updatedAt: "Ayer · 16:20",
+      brief: { ...briefDefaults.panaderialaplaza, platform: "Facebook", format: "Publicación", campaign: "Mañanas de barrio" },
+      copy: `Borrador sintético · Panadería La Plaza\n\nDescubre una propuesta de desayuno para disfrutar con calma.\n\nContenido de ejemplo, pendiente de revisión humana.`,
+    },
+    {
+      id: "plaza-approved-temporada",
+      title: "Sabores de temporada",
+      platform: "Instagram",
+      format: "Publicación",
+      status: "approved",
+      updatedAt: "8 oct · 12:15",
+      brief: { ...briefDefaults.panaderialaplaza, format: "Publicación", campaign: "Sabores del barrio" },
+      copy: `Texto sintético aprobado en el prototipo para ilustrar el estado editorial.`,
+    },
+  ],
+  collamunt_a: [
+    {
+      id: "coll-a-draft-inicio",
+      title: "Primeros pasos en la montaña",
+      platform: "Instagram",
+      format: "Reel",
+      status: "draft",
+      updatedAt: "Hoy · 08:55",
+      brief: { ...briefDefaults.collamunt_a },
+      copy: `Borrador sintético · Coll Amunt! · Comercio A\n\nUna invitación genérica a descubrir una primera experiencia de montaña.\n\nSin rutas ni ubicaciones reales.`,
+    },
+    {
+      id: "coll-a-review-grupo",
+      title: "Una salida para compartir",
+      platform: "Facebook",
+      format: "Publicación",
+      status: "review",
+      updatedAt: "11 jun · 14:10",
+      brief: { ...briefDefaults.collamunt_a, platform: "Facebook", format: "Publicación", campaign: "Salidas en compañía" },
+      copy: `Borrador sintético · Coll Amunt! · Comercio A\n\nUna propuesta genérica para organizar una salida en grupo.\n\nPendiente de revisión humana.`,
+    },
+  ],
+  collamunt_b: [
+    {
+      id: "coll-b-draft-group",
+      title: "Planifica tu próxima salida",
+      platform: "Facebook",
+      format: "Publicación",
+      status: "draft",
+      updatedAt: "10 jun · 10:30",
+      brief: { ...briefDefaults.collamunt_b },
+      copy: `Borrador sintético · Coll Amunt! · Comercio B\n\nUna propuesta genérica para planificar una salida en grupo.`,
+    },
+  ],
+};
+
+function DraftsSection({
+  contextName,
+  drafts,
+  onOpenDraft,
+}: {
+  contextName: string;
+  drafts: LocalDraft[];
+  onOpenDraft: (draft: LocalDraft) => void;
+}) {
+  const [filter, setFilter] = useState<DraftFilter>("all");
+  const visibleDrafts = filter === "all" ? drafts : drafts.filter((draft) => draft.status === filter);
+  const filterOptions: { id: DraftFilter; label: string }[] = [
+    { id: "all", label: "Todos" },
+    { id: "draft", label: "Borrador" },
+    { id: "review", label: "En revisión" },
+    { id: "approved", label: "Aprobado" },
+  ];
+  const statusLabels: Record<EditorialStatus, string> = {
+    draft: "Borrador",
+    review: "En revisión",
+    approved: "Aprobado",
+  };
+
+  return (
+    <section className="drafts-section" aria-label={"Borradores de " + contextName}>
+      <div className="drafts-heading">
+        <div>
+          <div className="card-kicker">CONTENIDO LOCAL · DATOS SINTÉTICOS</div>
+          <h2>Borradores de {contextName}</h2>
+          <p>Revisa ejemplos por estado editorial y abre cualquiera en Content Studio.</p>
+        </div>
+        <span className="synthetic-label">Sin persistencia</span>
+      </div>
+
+      <div className="draft-filters" role="group" aria-label="Filtrar borradores por estado">
+        {filterOptions.map((option) => (
+          <button
+            key={option.id}
+            className={`draft-filter ${filter === option.id ? "active" : ""}`}
+            type="button"
+            aria-pressed={filter === option.id}
+            onClick={() => setFilter(option.id)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {visibleDrafts.length > 0 ? (
+        <div className="draft-list">
+          {visibleDrafts.map((draft) => (
+            <article className="draft-list-card" key={draft.id}>
+              <div className="draft-list-card-top">
+                <span className={`draft-status draft-status-${draft.status}`}>{statusLabels[draft.status]}</span>
+                <span className="draft-updated">{draft.updatedAt} · ejemplo</span>
+              </div>
+              <h3>{draft.title}</h3>
+              <p className="draft-meta">{draft.platform} · {draft.format}</p>
+              <p className="draft-excerpt">{draft.copy.replace(/\s+/g, " ").slice(0, 150)}</p>
+              <button className="draft-open-button" type="button" onClick={() => onOpenDraft(draft)}>
+                Abrir en Content Studio <span aria-hidden="true">→</span>
+              </button>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="drafts-empty" role="status">
+          <strong>{drafts.length === 0 ? "Todavía no hay borradores" : "No hay borradores con este estado"}</strong>
+          <span>
+            {drafts.length === 0
+              ? "Cuando prepares contenido para este contexto, aparecerá aquí."
+              : "Prueba otro filtro o prepara un borrador nuevo desde Content Studio."}
+          </span>
+        </div>
+      )}
+      <p className="drafts-boundary">La lista es de ejemplo y no guarda cambios. Los estados no representan aprobaciones fuera del prototipo.</p>
+    </section>
+  );
+}
+
 function ContentStudioSection({
   contextName,
   contextSummary,
@@ -400,7 +562,9 @@ function ContentStudioSection({
           <p className={`draft-review-status draft-review-${preparationStatus}`} aria-live="polite">
             {preparationStatus === "pending-review"
               ? "Pendiente de revisión humana"
-              : preparationStatus === "brief-changed"
+              : preparationStatus === "draft"
+                ? "Borrador local · edítalo o prepáralo para revisión"
+                : preparationStatus === "brief-changed"
                 ? "El brief cambió · actualiza el borrador antes de revisarlo"
                 : preparationStatus === "changes-requested"
                   ? "Cambios solicitados · edita el copy y vuelve a enviarlo"
@@ -487,6 +651,7 @@ export default function Home() {
   );
   const activeContext = activeCommerce ?? brand;
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
+  const drafts = draftFixtures[activeContext.account] ?? [];
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
   const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
   const [previewCopy, setPreviewCopy] = useState("");
@@ -616,10 +781,14 @@ export default function Home() {
             <span className="nav-icon">✦</span>
             Content Studio
           </button>
-          <button className="nav-item muted" type="button" onClick={() => setView("dashboard")}>
+          <button
+            className={`nav-item ${view === "drafts" ? "active" : ""}`}
+            type="button"
+            onClick={() => setView("drafts")}
+          >
             <span className="nav-icon">▤</span>
             Borradores
-            <span className="nav-count">—</span>
+            <span className="nav-count">{drafts.length}</span>
           </button>
           <button className="nav-item muted" type="button" onClick={() => setView("dashboard")}>
             <span className="nav-icon">◷</span>
@@ -644,7 +813,7 @@ export default function Home() {
       <section className="workspace">
         <header className="topbar">
           <div className="breadcrumb">
-            Estudio <span>/</span> <strong>{view === "dashboard" ? "Dashboard" : "Content Studio"}</strong>
+            Estudio <span>/</span> <strong>{view === "dashboard" ? "Dashboard" : view === "drafts" ? "Borradores" : "Content Studio"}</strong>
           </div>
           <div className="topbar-actions">
             <span className={`readiness-pill readiness-${readiness}`}>
@@ -658,7 +827,7 @@ export default function Home() {
         <div className="content">
           <section className="hero-block" aria-labelledby="page-title">
             <p className="eyebrow">APP SHELL · MULTIBRAND</p>
-            <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : "Content Studio"}</h1>
+            <h1 id="page-title">{view === "dashboard" ? "Tu espacio de trabajo" : view === "drafts" ? "Borradores" : "Content Studio"}</h1>
             <p className="subheading">
               Contexto activo: <strong>{contextName}</strong>. El contenido de esta vista es local y sintético.
             </p>
@@ -669,6 +838,18 @@ export default function Home() {
               contextName={contextName}
               fixture={dashboard}
               onOpenStudio={() => setView("content-studio")}
+            />
+          ) : view === "drafts" ? (
+            <DraftsSection
+              contextName={contextName}
+              drafts={drafts}
+              onOpenDraft={(draft) => {
+                setBrief(draft.brief);
+                setPreviewCopy(draft.copy);
+                setPreparationStatus(draft.status === "draft" ? "draft" : draft.status === "review" ? "pending-review" : "approved");
+                setValidationMessage("");
+                setView("content-studio");
+              }}
             />
           ) : (
             <ContentStudioSection
