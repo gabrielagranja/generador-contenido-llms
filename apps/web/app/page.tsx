@@ -5,17 +5,26 @@ import { useEffect, useMemo, useState } from "react";
 type ReadinessState = "loading" | "ready" | "unavailable";
 type ViewId = "dashboard" | "content-studio";
 type BrandId = "panaderia" | "coll-amunt";
-type CommerceId = "plaza" | "coll-amunt";
+type CommerceId = "synthetic-a" | "synthetic-b";
+
+type CommerceContext = {
+  id: CommerceId;
+  name: string;
+  account: string;
+  summary: string;
+  sampleTopic: string;
+  sampleAudience: string;
+};
 
 type BrandContext = {
   id: BrandId;
-  commerceId: CommerceId;
   name: string;
   account: string;
   avatar: string;
   summary: string;
   sampleTopic: string;
   sampleAudience: string;
+  commerceOptions?: CommerceContext[];
 };
 
 const apiBaseUrl =
@@ -24,37 +33,47 @@ const apiBaseUrl =
 const brandContexts: BrandContext[] = [
   {
     id: "panaderia",
-    commerceId: "plaza",
     name: "Panadería La Plaza",
     account: "panaderialaplaza",
     avatar: "P",
-    summary: "Panadería de barrio con producto artesano de elaboración diaria.",
+    summary: "Marca independiente de panadería con producto artesano de elaboración diaria.",
     sampleTopic: "Nuestros panes recién horneados",
     sampleAudience: "Personas del barrio que buscan desayunos artesanos",
   },
   {
     id: "coll-amunt",
-    commerceId: "coll-amunt",
     name: "Coll Amunt!",
     account: "collamunt",
     avatar: "C",
-    summary: "Proyecto local de rutas y experiencias para disfrutar la montaña.",
+    summary: "Marca de rutas y experiencias de montaña con contexto comercial seleccionable.",
     sampleTopic: "Planes de montaña para este fin de semana",
     sampleAudience: "Personas que disfrutan de rutas y naturaleza cerca de casa",
+    commerceOptions: [
+      {
+        id: "synthetic-a",
+        name: "Comercio sintético A",
+        account: "collamunt_a",
+        summary: "Contexto sintético A para demostrar una sede asociada a la marca.",
+        sampleTopic: "Ruta de iniciación para este fin de semana",
+        sampleAudience: "Personas que buscan una primera experiencia de montaña",
+      },
+      {
+        id: "synthetic-b",
+        name: "Comercio sintético B",
+        account: "collamunt_b",
+        summary: "Contexto sintético B para demostrar otra sede asociada a la marca.",
+        sampleTopic: "Salida de grupo por caminos locales",
+        sampleAudience: "Grupos que quieren descubrir rutas cercanas",
+      },
+    ],
   },
 ];
 
-const commerceNames: Record<CommerceId, string> = {
-  plaza: "Panadería La Plaza",
-  "coll-amunt": "Coll Amunt!",
-};
-
 export default function Home() {
-  const [readiness, setState] = useState<ReadinessState>("loading");
+  const [readiness, setReadiness] = useState<ReadinessState>("loading");
   const [view, setView] = useState<ViewId>("dashboard");
   const [brandId, setBrandId] = useState<BrandId>("panaderia");
-  const [commerceId, setCommerceId] = useState<CommerceId>("plaza");
-  const [commerceMenuOpen, setCommerceMenuOpen] = useState(false);
+  const [commerceId, setCommerceId] = useState<CommerceId | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -79,10 +98,10 @@ export default function Home() {
           throw new Error("Unexpected readiness response");
         }
 
-        setState("ready");
+        setReadiness("ready");
       } catch {
         if (!controller.signal.aborted) {
-          setState("unavailable");
+          setReadiness("unavailable");
         }
       }
     }
@@ -92,12 +111,14 @@ export default function Home() {
   }, []);
 
   const brand = useMemo(
-    () =>
-      brandContexts.find(
-        (context) => context.id === brandId && context.commerceId === commerceId,
-      ) ?? brandContexts[0],
-    [brandId, commerceId],
+    () => brandContexts.find((context) => context.id === brandId) ?? brandContexts[0],
+    [brandId],
   );
+  const activeCommerce = useMemo(
+    () => brand.commerceOptions?.find((commerce) => commerce.id === commerceId),
+    [brand, commerceId],
+  );
+  const activeContext = activeCommerce ?? brand;
 
   const statusLabel = {
     loading: "Comprobando API…",
@@ -109,17 +130,13 @@ export default function Home() {
     const nextBrand = brandContexts.find((context) => context.id === nextBrandId);
     if (!nextBrand) return;
     setBrandId(nextBrand.id);
-    setCommerceId(nextBrand.commerceId);
+    setCommerceId(nextBrand.commerceOptions?.[0]?.id ?? null);
   }
 
   function selectCommerce(nextCommerceId: CommerceId) {
-    const nextBrand = brandContexts.find(
-      (context) => context.commerceId === nextCommerceId,
-    );
-    if (!nextBrand) return;
-    setCommerceId(nextCommerceId);
-    setBrandId(nextBrand.id);
-    setCommerceMenuOpen(false);
+    if (brand.commerceOptions?.some((commerce) => commerce.id === nextCommerceId)) {
+      setCommerceId(nextCommerceId);
+    }
   }
 
   return (
@@ -132,48 +149,6 @@ export default function Home() {
 
         <p className="sidebar-label">ESPACIO DE TRABAJO</p>
         <div className="context-stack">
-          <div className="context-field">
-            <span className="context-label">Comercio</span>
-            <div className="commerce-picker">
-              <button
-                className="commerce-trigger"
-                type="button"
-                aria-expanded={commerceMenuOpen}
-                aria-haspopup="listbox"
-                onClick={() => setCommerceMenuOpen((open) => !open)}
-              >
-                <span className="context-avatar">{brand.avatar}</span>
-                <span className="context-copy">
-                  <strong>{commerceNames[commerceId]}</strong>
-                  <small>Contexto sintético</small>
-                </span>
-                <span aria-hidden="true">⌄</span>
-              </button>
-              {commerceMenuOpen && (
-                <div className="commerce-menu" role="listbox" aria-label="Seleccionar comercio">
-                  {(Object.entries(commerceNames) as [CommerceId, string][]).map(
-                    ([id, name]) => (
-                      <button
-                        className="commerce-option"
-                        type="button"
-                        role="option"
-                        aria-selected={id === commerceId}
-                        key={id}
-                        onClick={() => selectCommerce(id)}
-                      >
-                        <span className="context-avatar">{id === "plaza" ? "P" : "C"}</span>
-                        <span className="context-copy">
-                          <strong>{name}</strong>
-                          <small>Comercio de ejemplo</small>
-                        </span>
-                      </button>
-                    ),
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
           <div className="context-field">
             <label className="context-label" htmlFor="brand-select">Marca</label>
             <select
@@ -189,6 +164,28 @@ export default function Home() {
               ))}
             </select>
           </div>
+
+          {brand.commerceOptions && (
+            <div className="context-field">
+              <label className="context-label" htmlFor="commerce-select">Comercio asociado</label>
+              <select
+                id="commerce-select"
+                className="commerce-select"
+                value={commerceId ?? ""}
+                onChange={(event) => selectCommerce(event.target.value as CommerceId)}
+              >
+                {brand.commerceOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {!brand.commerceOptions && (
+            <p className="independent-brand-note">Marca independiente · sin comercio asociado</p>
+          )}
         </div>
 
         <nav className="main-nav" aria-label="Navegación principal">
@@ -264,13 +261,13 @@ export default function Home() {
                 <span className="large-avatar">{brand.avatar}</span>
                 <div>
                   <h2>{brand.name}</h2>
-                  <p>@{brand.account}</p>
+                  <p>@{activeContext.account}</p>
                 </div>
               </div>
-              <p className="context-summary">{brand.summary}</p>
+              <p className="context-summary">{activeContext.summary}</p>
               <dl className="context-details">
-                <div><dt>Tema de ejemplo</dt><dd>{brand.sampleTopic}</dd></div>
-                <div><dt>Audiencia</dt><dd>{brand.sampleAudience}</dd></div>
+                <div><dt>Tema de ejemplo</dt><dd>{activeContext.sampleTopic}</dd></div>
+                <div><dt>Audiencia</dt><dd>{activeContext.sampleAudience}</dd></div>
               </dl>
               <p className="synthetic-note">Datos sintéticos de interfaz · sin RAG ni servicios externos.</p>
             </article>
