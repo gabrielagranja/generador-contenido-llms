@@ -14,7 +14,8 @@ from apps.api.main import ReadinessResponse, app
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CLIENT_PAGE = ROOT / "apps" / "web" / "app" / "page.tsx"
+CLIENT_WORKSPACE = ROOT / "apps" / "web" / "components" / "Workspace.tsx"
+CLIENT_SHELL = ROOT / "apps" / "web" / "components" / "shell" / "AppShell.tsx"
 PROVIDER_ENVIRONMENT_KEYS = (
     "GROQ_API_KEY",
     "GOOGLE_API_KEY",
@@ -57,14 +58,12 @@ class ApiFoundationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "ready")
 
-    def test_client_declares_the_readiness_api_contract(self) -> None:
-        page = CLIENT_PAGE.read_text(encoding="utf-8")
+    def test_client_does_not_expose_backend_readiness_details(self) -> None:
+        client = CLIENT_WORKSPACE.read_text(encoding="utf-8") + CLIENT_SHELL.read_text(encoding="utf-8")
 
-        self.assertIn("NEXT_PUBLIC_API_BASE_URL", page)
-        self.assertIn("/readiness", page)
-        self.assertIn('payload.status !== "ready"', page)
-        self.assertIn('payload.service !== "api"', page)
-        self.assertIn('setState("unavailable")', page)
+        self.assertNotIn("NEXT_PUBLIC_API_BASE_URL", client)
+        self.assertNotIn("API local:", client)
+        self.assertNotIn("API no disponible", client)
 
     def test_foundation_readiness_does_not_open_network_connections(self) -> None:
         async def request_readiness() -> httpx.Response:

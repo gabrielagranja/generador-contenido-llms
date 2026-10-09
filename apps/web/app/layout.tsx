@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../styles/tokens.css";
 
 export const metadata: Metadata = {
-  title: "Generador de contenido",
-  description: "Foundation web client",
+  title: "Estudio · Generador de contenido",
+  description: "Espacio de trabajo editorial multimarca asistido por LLM",
 };
 
 export default function RootLayout({
