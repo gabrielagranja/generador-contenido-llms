@@ -63,12 +63,15 @@ type LocalDraft = {
 
 type DraftFilter = "all" | EditorialStatus;
 
+type HistoryStatus = EditorialStatus | "changes-requested";
+
 type HistoryEntry = {
   id: string;
   text: string;
   time: string;
-  status: EditorialStatus;
+  status: HistoryStatus;
   draftId: string;
+  source?: "session";
 };
 
 type DashboardActivity = {
@@ -413,28 +416,35 @@ function HistorySection({
   onOpenDraft: (draft: LocalDraft) => void;
 }) {
   const [filter, setFilter] = useState<DraftFilter>("all");
-  const visibleEntries = filter === "all" ? entries : entries.filter((entry) => entry.status === filter);
+  const visibleEntries = filter === "all"
+    ? entries
+    : entries.filter((entry) =>
+        filter === "draft"
+          ? entry.status === "draft" || entry.status === "changes-requested"
+          : entry.status === filter,
+      );
   const filterOptions: { id: DraftFilter; label: string }[] = [
     { id: "all", label: "Todos" },
     { id: "draft", label: "Borradores" },
     { id: "review", label: "En revisión" },
     { id: "approved", label: "Aprobados" },
   ];
-  const statusLabels: Record<EditorialStatus, string> = {
+  const statusLabels: Record<HistoryStatus, string> = {
     draft: "Borrador",
     review: "En revisión",
     approved: "Aprobado en prototipo",
+    "changes-requested": "Cambios solicitados",
   };
 
   return (
     <section className="history-section" aria-label={"Historial de " + contextName}>
       <div className="history-heading">
         <div>
-          <div className="card-kicker">ACTIVIDAD EDITORIAL · EJEMPLOS</div>
+          <div className="card-kicker">ACTIVIDAD EDITORIAL · LOCAL</div>
           <h2>Historial de {contextName}</h2>
           <p>Actividad sintética del contexto seleccionado, sin conexiones externas ni persistencia.</p>
         </div>
-        <span className="synthetic-label">Datos de ejemplo</span>
+        <span className="synthetic-label">Ejemplos y sesión actual</span>
       </div>
 
       <div className="history-filters" role="group" aria-label="Filtrar actividad por estado">
@@ -460,7 +470,7 @@ function HistorySection({
                 <div className="history-entry-marker" aria-hidden="true" />
                 <div className="history-entry-content">
                   <div className="history-entry-top">
-                    <time>{entry.time} · ejemplo</time>
+                    <time>{entry.time}{entry.source === "session" ? " · esta sesión" : " · ejemplo"}</time>
                     <span className={`draft-status draft-status-${entry.status}`}>{statusLabels[entry.status]}</span>
                   </div>
                   <p>{entry.text}</p>
@@ -761,11 +771,12 @@ export default function Home() {
   );
   const activeContext = activeCommerce ?? brand;
   const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
-  const historyEntries = historyFixtures[activeContext.account] ?? [];
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
   const [sessionDraftsByContext, setSessionDraftsByContext] = useState<Record<string, LocalDraft[]>>({});
+  const [sessionHistoryByContext, setSessionHistoryByContext] = useState<Record<string, HistoryEntry[]>>({});
   const [activeSessionDraftId, setActiveSessionDraftId] = useState<string | null>(null);
   const sessionDraftSequence = useRef(0);
+  const sessionHistorySequence = useRef(0);
   const [brief, setBrief] = useState<BriefForm>(() => getBriefDefaults(activeContext.account));
   const [previewCopy, setPreviewCopy] = useState("");
   const [preparationStatus, setPreparationStatus] = useState<DraftPreparationStatus>("not-prepared");
@@ -773,6 +784,10 @@ export default function Home() {
   const drafts = [
     ...(sessionDraftsByContext[activeContext.account] ?? []),
     ...(draftFixtures[activeContext.account] ?? []),
+  ];
+  const historyEntries = [
+    ...(sessionHistoryByContext[activeContext.account] ?? []),
+    ...(historyFixtures[activeContext.account] ?? []),
   ];
 
   useEffect(() => {
@@ -789,6 +804,22 @@ export default function Home() {
     ready: "API lista",
     unavailable: "API no disponible",
   }[readiness];
+
+  function recordSessionHistory(draftId: string, status: HistoryStatus, text: string) {
+    if (!draftId.startsWith("session-")) return;
+    const entry: HistoryEntry = {
+      id: `session-history-${activeContext.account}-${++sessionHistorySequence.current}`,
+      text,
+      time: "Ahora",
+      status,
+      draftId,
+      source: "session",
+    };
+    setSessionHistoryByContext((current) => ({
+      ...current,
+      [activeContext.account]: [entry, ...(current[activeContext.account] ?? [])],
+    }));
+  }
 
   function updateSessionDraft(patch: Partial<LocalDraft>) {
     if (!activeSessionDraftId) return;
@@ -838,6 +869,7 @@ export default function Home() {
     setActiveSessionDraftId(sessionDraft.id);
     setPreviewCopy(generatedCopy);
     setPreparationStatus("pending-review");
+    recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador y quedó pendiente de revisión humana.");
     setValidationMessage("");
   }
 
@@ -845,18 +877,27 @@ export default function Home() {
     if (preparationStatus !== "pending-review") return;
     setPreparationStatus("approved");
     updateSessionDraft({ status: "approved" });
+    if (activeSessionDraftId) {
+      recordSessionHistory(activeSessionDraftId, "approved", "El borrador fue aprobado en esta sesión.");
+    }
   }
 
   function requestDraftChanges() {
     if (preparationStatus !== "pending-review") return;
     setPreparationStatus("changes-requested");
     updateSessionDraft({ status: "draft" });
+    if (activeSessionDraftId) {
+      recordSessionHistory(activeSessionDraftId, "changes-requested", "Se solicitaron cambios para este borrador.");
+    }
   }
 
   function resubmitDraftForReview() {
     if (preparationStatus !== "changes-requested") return;
     setPreparationStatus("pending-review");
     updateSessionDraft({ status: "review" });
+    if (activeSessionDraftId) {
+      recordSessionHistory(activeSessionDraftId, "review", "El borrador volvió a revisión humana.");
+    }
   }
 
   function openDraft(draft: LocalDraft) {
