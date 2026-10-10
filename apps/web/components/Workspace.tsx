@@ -13,6 +13,7 @@ import type {
 } from "../domain/types.ts";
 import { canStartGeneration, parseDraftResponse, type GenerationState } from "../domain/draft-generation.ts";
 import { createDraft, getDraft, reviewDraft, updateDraft, mapBriefToApi, type ApiEditorialContent } from "../domain/review-api.ts";
+import { savePlan, type EditorialPlan } from "../domain/plans-api.ts";
 import { brandContexts, dashboardFixtures, draftFixtures, getBriefDefaults, historyFixtures } from "../domain/fixtures.ts";
 import {
   afterBriefChange,
@@ -102,6 +103,7 @@ export function Workspace() {
   const [reviewerName, setReviewerName] = useState("");
   const [reviewMessage, setReviewMessage] = useState("");
   const [reviewFeedback, setReviewFeedback] = useState("");
+  const [planSaveMessage, setPlanSaveMessage] = useState("");
   const [activeBackendId, setActiveBackendId] = useState<string | null>(null);
   const requestSequence = useRef(0);
 
@@ -117,6 +119,7 @@ export function Workspace() {
     setReviewerName("");
     setReviewMessage("");
     setReviewFeedback("");
+    setPlanSaveMessage("");
     setActiveBackendId(null);
     setActiveSessionDraftId(null);
     requestSequence.current += 1;
@@ -241,6 +244,44 @@ export function Workspace() {
     updateSessionDraft({ copy: content.draft.caption, status: content.state === "approved_final" ? "approved" : "review", reviewer: content.review?.reviewer_ref });
   }
 
+  function buildValidatedPlan(): EditorialPlan | null {
+    if (!activeBackendId || status === "not-prepared") return null;
+    const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
+    const platform = brief.platform.toLowerCase() === "facebook" ? "facebook" : "instagram";
+    const today = new Date().toISOString().slice(0, 10);
+    return {
+      strategy_id: "eighty_twenty",
+      strategy_version: "1.0.0",
+      total_slots: 1,
+      starts_on: today,
+      ends_on: today,
+      targets: { VALUE: 1 },
+      items: [{
+        source_ref: activeBackendId,
+        source_kind: "editorial_content",
+        strategy_version: "1.0.0",
+        bucket_key: "VALUE",
+        platform,
+        format,
+        review_state: status === "approved" ? "approved_final" : "pending_human_review",
+        evidence: {},
+      }],
+    };
+  }
+
+  async function saveValidatedPlan() {
+    const plan = buildValidatedPlan();
+    if (!plan) {
+      setPlanSaveMessage("Prepara primero un borrador validado.");
+      return;
+    }
+    try {
+      const stored = await savePlan(plan);
+      setPlanSaveMessage(`Plan guardado: ${stored.plan_id.slice(0, 8)}. Ya está disponible en Calendario.`);
+    } catch (error) {
+      setPlanSaveMessage(error instanceof Error ? error.message : "No se pudo guardar el plan.");
+    }
+  }
   async function saveCurrentEdit() {
     if (!activeBackendId || status === "approved") return;
     const requestVersion = ++requestSequence.current;
@@ -466,6 +507,9 @@ export function Workspace() {
           onApprove={approveCurrentDraft}
           onRequestChanges={requestCurrentChanges}
           onResubmit={resubmitCurrentDraft}
+          canSavePlan={Boolean(activeBackendId)}
+          planSaveMessage={planSaveMessage}
+          onSavePlan={saveValidatedPlan}
         />
       )}
       {view === "calendar" && <CalendarView />}
