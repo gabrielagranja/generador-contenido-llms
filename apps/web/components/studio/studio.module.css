@@ -51,6 +51,7 @@ fieldset.choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid;
 .side { display: grid; gap: var(--space-5); }
 .statusBlock { display: grid; gap: var(--space-2); }
 .hint { color: var(--ink-soft); font-size: 0.9375rem; }
+.generationState { color: var(--ink-soft); font-size: var(--step--1); font-weight: 700; }
 .actions { display: grid; gap: var(--space-2); }
 .action { min-height: 2.75rem; padding: 0 var(--space-4); border: 2px solid var(--ink); background: transparent; font-weight: 700; text-align: left; }
 .action:hover { background: var(--sunken); }
