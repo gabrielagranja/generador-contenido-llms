@@ -10,6 +10,8 @@ from typing import Any, Protocol, runtime_checkable
 
 from langchain_core.runnables import Runnable, RunnableLambda
 
+from apps.api.config import LlmSettings
+
 
 @runtime_checkable
 class TextGenerator(Protocol):
@@ -50,4 +52,44 @@ class DeterministicMockAdapter(LangChainTextGenerator):
         )
 
 
-__all__ = ["DeterministicMockAdapter", "LangChainTextGenerator", "TextGenerator"]
+class LlmConfigurationError(RuntimeError):
+    """Raised when a configured provider cannot be built safely."""
+
+
+def build_text_generator(settings: LlmSettings | None = None) -> TextGenerator:
+    """Build the configured generator while keeping provider details behind one boundary."""
+
+    resolved = settings or LlmSettings.from_environment()
+    if resolved.provider == "mock":
+        return DeterministicMockAdapter()
+
+    if resolved.provider != "groq":
+        raise LlmConfigurationError(f"Unsupported LLM provider: {resolved.provider}")
+    if not resolved.groq_api_key:
+        raise LlmConfigurationError(
+            "GROQ_API_KEY is required when LLM_PROVIDER=groq"
+        )
+
+    try:
+        from langchain_groq import ChatGroq
+    except ImportError as error:  # pragma: no cover - exercised in setup failures
+        raise LlmConfigurationError(
+            "langchain-groq is required for the Groq provider"
+        ) from error
+
+    runnable = ChatGroq(
+        model=resolved.groq_model,
+        temperature=resolved.temperature,
+        timeout=resolved.timeout_seconds,
+        api_key=resolved.groq_api_key,
+    )
+    return LangChainTextGenerator(runnable)
+
+
+__all__ = [
+    "DeterministicMockAdapter",
+    "LangChainTextGenerator",
+    "LlmConfigurationError",
+    "TextGenerator",
+    "build_text_generator",
+]

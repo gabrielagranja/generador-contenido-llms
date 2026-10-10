@@ -20,6 +20,7 @@ export function ContentStudio({
   onBriefChange,
   onCopyChange,
   onPrepare,
+  isPreparing,
   onApprove,
   onRequestChanges,
   onResubmit,
@@ -35,7 +36,8 @@ export function ContentStudio({
   validationMessage: string;
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onCopyChange: (value: string) => void;
-  onPrepare: () => void;
+  onPrepare: () => void | Promise<void>;
+  isPreparing: boolean;
   onApprove: () => void;
   onRequestChanges: () => void;
   onResubmit: () => void;
@@ -48,7 +50,7 @@ export function ContentStudio({
           <h1 id="view-title" className={styles.title}>Prepara una idea de contenido</h1>
           <p className={styles.context}>Trabajando en <strong>{contextName}</strong></p>
         </div>
-        <SyntheticNotice>Prototipo local · sin LLM · sin persistencia</SyntheticNotice>
+        <SyntheticNotice>API local · revisión humana · sin persistencia</SyntheticNotice>
       </header>
 
       <div className={styles.grid}>
@@ -58,6 +60,7 @@ export function ContentStudio({
           validationMessage={validationMessage}
           onChange={onBriefChange}
           onPrepare={onPrepare}
+          isPreparing={isPreparing}
         />
 
         <ContentPreview

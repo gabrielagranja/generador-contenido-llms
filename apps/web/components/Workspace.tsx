@@ -15,7 +15,6 @@ import {
   afterBriefChange,
   afterTextChange,
   approve,
-  buildSyntheticCopy,
   missingBriefFields,
   requestChanges,
   resubmit,
@@ -90,6 +89,7 @@ export function Workspace() {
   const [previewCopy, setPreviewCopy] = useState("");
   const [status, setStatus] = useState<DraftPreparationStatus>("not-prepared");
   const [validationMessage, setValidationMessage] = useState("");
+  const [isPreparing, setIsPreparing] = useState(false);
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
@@ -161,31 +161,64 @@ export function Workspace() {
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "review", "El borrador volvió a revisión humana.");
   }
 
-  function prepareDraft() {
+  async function prepareDraft() {
     if (missingBriefFields(brief)) {
       setValidationMessage("Completa el objetivo, la audiencia y la campaña para preparar el borrador.");
       return;
     }
-    const copy = buildSyntheticCopy(contextName, brief);
-    const sessionDraft: LocalDraft = {
-      id: `session-${activeContext.account}-${++sessionDraftSequence.current}`,
-      title: brief.campaign.trim() || brief.objective.trim(),
-      platform: brief.platform,
-      format: brief.format,
-      status: "review",
-      updatedAt: "Ahora · sesión actual",
-      brief,
-      copy,
-    };
-    setSessionDraftsByContext((current) => ({
-      ...current,
-      [activeContext.account]: [sessionDraft, ...(current[activeContext.account] ?? [])],
-    }));
-    setActiveSessionDraftId(sessionDraft.id);
-    setPreviewCopy(copy);
-    setStatus("pending-review");
-    recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador y quedó pendiente de revisión humana.");
+    setIsPreparing(true);
     setValidationMessage("");
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+    const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/drafts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brief: {
+            topic_or_offer: brief.campaign.trim(),
+            objective: brief.objective.trim(),
+            audience_context: brief.audience.trim(),
+            business_context_refs: [activeContext.account],
+            platforms: [brief.platform.toLowerCase()],
+            format,
+            brand_and_constraints: brief.restrictions.trim() || activeContext.summary,
+            notes: "Generated from Content Studio local workspace.",
+            facts: [],
+          },
+        }),
+      });
+      const payload = (await response.json()) as { detail?: string; drafts?: Array<{ caption?: string }> };
+      if (!response.ok) {
+        throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);
+      }
+      const copy = payload.drafts?.[0]?.caption?.trim();
+      if (!copy) throw new Error("La API no devolvió un borrador editable.");
+
+      const sessionDraft: LocalDraft = {
+        id: `session-${activeContext.account}-${++sessionDraftSequence.current}`,
+        title: brief.campaign.trim() || brief.objective.trim(),
+        platform: brief.platform,
+        format: brief.format,
+        status: "review",
+        updatedAt: "Ahora · sesión actual",
+        brief,
+        copy,
+      };
+      setSessionDraftsByContext((current) => ({
+        ...current,
+        [activeContext.account]: [sessionDraft, ...(current[activeContext.account] ?? [])],
+      }));
+      setActiveSessionDraftId(sessionDraft.id);
+      setPreviewCopy(copy);
+      setStatus("pending-review");
+      recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador con la API y quedó pendiente de revisión humana.");
+    } catch (error) {
+      setValidationMessage(error instanceof Error ? error.message : "No se pudo conectar con la API de generación.");
+    } finally {
+      setIsPreparing(false);
+    }
   }
 
   function openDraft(draft: LocalDraft) {
@@ -271,6 +304,7 @@ export function Workspace() {
           onBriefChange={updateBrief}
           onCopyChange={updateCopy}
           onPrepare={prepareDraft}
+          isPreparing={isPreparing}
           onApprove={approveCurrentDraft}
           onRequestChanges={requestCurrentChanges}
           onResubmit={resubmitCurrentDraft}

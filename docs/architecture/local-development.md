@@ -39,6 +39,18 @@ copy .env.example .env
 credentials. Do not add API keys or tokens to `.env.example`, the browser bundle,
 or the repository.
 
+To use the real Groq text provider locally, set these values in `.env` after
+creating a development key in the Groq console. Keep `LLM_PROVIDER=mock` when
+running offline tests:
+
+```text
+LLM_PROVIDER=groq
+GROQ_API_KEY=<local-only-secret>
+GROQ_MODEL=openai/gpt-oss-20b
+LLM_TEMPERATURE=0.2
+LLM_TIMEOUT_SECONDS=30
+```
+
 ## Run the foundation
 
 Use two terminals from the repository root.
@@ -50,6 +62,16 @@ python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 The API exposes `/readiness`, `/docs`, `/redoc` and `/openapi.json`.
+With `LLM_PROVIDER=groq`, `POST /drafts` uses the API-side Groq adapter and
+returns editable drafts for human review. The browser never receives the key.
+
+To ingest the official Coll Amunt! PDF into the ignored local RAG store, place
+the downloaded source at `.local/rag/sources/2025-Coll-Amunt-Llibre-_compressed.pdf`
+and run `python scripts/ingest_collamunt.py`. The command preserves Catalan
+page text, source provenance, a SHA-256 digest and stable business identifiers;
+re-running it uses the same chunk IDs and Chroma upsert semantics. Enable the
+grounded API path with `rag_enabled=true`, `business_id` and optional `top_k` in
+`POST /drafts`.
 
 Terminal 2 — web client:
 

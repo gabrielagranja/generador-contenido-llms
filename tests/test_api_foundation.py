@@ -58,12 +58,13 @@ class ApiFoundationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "ready")
 
-    def test_client_does_not_expose_backend_readiness_details(self) -> None:
+    def test_client_only_contains_the_public_api_base_configuration(self) -> None:
         client = CLIENT_WORKSPACE.read_text(encoding="utf-8") + CLIENT_SHELL.read_text(encoding="utf-8")
 
-        self.assertNotIn("NEXT_PUBLIC_API_BASE_URL", client)
+        self.assertIn("NEXT_PUBLIC_API_BASE_URL", client)
         self.assertNotIn("API local:", client)
         self.assertNotIn("API no disponible", client)
+        self.assertNotRegex(client, r"(?i)(GROQ_API_KEY|gsk_[a-z0-9])")
 
     def test_foundation_readiness_does_not_open_network_connections(self) -> None:
         async def request_readiness() -> httpx.Response:

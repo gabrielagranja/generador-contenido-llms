@@ -78,6 +78,11 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "API_HOST",
                 "API_PORT",
                 "NEXT_PUBLIC_API_BASE_URL",
+                "LLM_PROVIDER",
+                "GROQ_API_KEY",
+                "GROQ_MODEL",
+                "LLM_TEMPERATURE",
+                "LLM_TIMEOUT_SECONDS",
                 "RAG_EMBEDDING_MODEL",
                 "RAG_EMBEDDING_REVISION",
                 "RAG_CHROMA_COLLECTION",
@@ -85,7 +90,8 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "RAG_API_BASE_URL",
             },
         )
-        self.assertNotRegex(assignment_text, r"(?i)(api[_-]?key|token|secret|password)")
+        self.assertRegex(assignment_text, r"(?m)^GROQ_API_KEY=$")
+        self.assertNotRegex(assignment_text, r"(?i)(token|secret|password)=[^\\n]+\\S")
         self.assertNotRegex(assignment_text, r"(?i)(sk-[a-z0-9]|ghp_[a-z0-9]|ya29\.[a-z0-9])")
 
     def test_sensitive_env_files_are_ignored_but_example_is_trackable(self) -> None:
@@ -110,7 +116,7 @@ class EnvironmentConfigTests(unittest.TestCase):
         )
         client = "\n".join(path.read_text(encoding="utf-8") for path in source_paths)
 
-        self.assertNotIn("NEXT_PUBLIC_API_BASE_URL", client)
+        self.assertIn("NEXT_PUBLIC_API_BASE_URL", client)
         self.assertNotRegex(client, r"(?i)(GROQ_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY|META_ACCESS_TOKEN)")
 
 

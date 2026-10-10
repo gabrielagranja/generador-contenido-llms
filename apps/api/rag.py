@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import hashlib
 from pathlib import Path
 import re
 import unicodedata
@@ -67,6 +68,7 @@ class CanonicalDocumentChunk:
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
+    source_sha256: str | None = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -97,6 +99,8 @@ def pdf_to_canonical_chunks(
     consent_ref: str,
     pages: Sequence[dict[str, Any]],
     source_file: str,
+    source_uri: str | None = None,
+    source_sha256: str | None = None,
 ) -> list[CanonicalDocumentChunk]:
     """Normalize parser output into chunks without opening or parsing a PDF.
 
@@ -122,6 +126,8 @@ def pdf_to_canonical_chunks(
                 source_file=source_file,
                 page_number=page_number,
                 chunk_position=position,
+                source_uri=source_uri,
+                source_sha256=source_sha256,
             )
             )
     return chunks
@@ -166,6 +172,10 @@ def parse_pdf_to_canonical_chunks(
     consent_ref: str,
     max_chunk_size: int = DEFAULT_PDF_CHUNK_SIZE,
     overlap: int = DEFAULT_PDF_CHUNK_OVERLAP,
+    source_uri: str | None = None,
+    source_file: str | None = None,
+    source_sha256: str | None = None,
+    ocr_if_empty: bool = True,
 ) -> list[CanonicalDocumentChunk]:
     """Extract and chunk a local PDF, returning only canonical document chunks.
 
@@ -173,13 +183,16 @@ def parse_pdf_to_canonical_chunks(
     network access and indexing are intentionally outside this function.
     """
 
-    from pypdf import PdfReader
-
     path = Path(pdf_path)
-    reader = PdfReader(str(path))
+    page_payloads = extract_pdf_pages(path, ocr_if_empty=ocr_if_empty)
+    # Preserve the original parser contract when callers do not provide a
+    # public source filename; official ingestion passes the canonical basename.
+    resolved_source_file = source_file or str(path)
+    resolved_sha256 = source_sha256 or sha256_file(path)
     chunks: list[CanonicalDocumentChunk] = []
-    for page_number, page in enumerate(reader.pages, start=1):
-        page_text = page.extract_text() or ""
+    for page in page_payloads:
+        page_number = page["page_number"]
+        page_text = page["text"]
         for chunk_position, text in enumerate(
             _split_text_deterministically(page_text, max_chunk_size, overlap),
             start=1,
@@ -191,12 +204,112 @@ def parse_pdf_to_canonical_chunks(
                     source_version=source_version,
                     consent_ref=consent_ref,
                     text=text,
-                    source_file=str(path),
+                source_file=resolved_source_file,
                     page_number=page_number,
                     chunk_position=chunk_position,
+                source_uri=source_uri,
+                source_sha256=resolved_sha256,
                 )
             )
     return chunks
+
+
+def sha256_file(path: str | Path) -> str:
+    """Return the reproducible SHA-256 digest of a local source file."""
+
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def extract_pdf_pages(
+    pdf_path: str | Path,
+    *,
+    ocr_if_empty: bool = True,
+) -> list[dict[str, Any]]:
+    """Extract deterministic page text and table rows from a PDF.
+
+    Text PDFs use pypdf/pdfplumber. Scanned pages use local RapidOCR over a
+    PyMuPDF rasterization; no external OCR service or LLM is involved.
+    """
+
+    from pypdf import PdfReader
+
+    path = Path(pdf_path)
+    reader = PdfReader(str(path))
+    page_payloads: list[dict[str, Any]] = []
+    text_lengths: list[int] = []
+    for page_number, page in enumerate(reader.pages, start=1):
+        text = page.extract_text() or ""
+        tables: list[list[str]] = []
+        page_payloads.append(
+            {"page_number": page_number, "text": text, "tables": tables}
+        )
+        text_lengths.append(len(text.strip()))
+
+    if any(text_lengths) or not ocr_if_empty:
+        _append_pdfplumber_tables(path, page_payloads)
+        return _finalize_page_payloads(page_payloads)
+
+    import pymupdf
+    import numpy as np
+    from rapidocr_onnxruntime import RapidOCR
+
+    ocr = RapidOCR()
+    document = pymupdf.open(str(path))
+    for page_number, page in enumerate(document, start=1):
+        pixmap = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False)
+        image = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(
+            pixmap.height, pixmap.width, pixmap.n
+        )
+        result, _ = ocr(image)
+        lines: list[tuple[float, float, str]] = []
+        for item in result or []:
+            box, value, confidence = item
+            if not value or confidence is not None and float(confidence) < 0.35:
+                continue
+            x = min(point[0] for point in box)
+            y = min(point[1] for point in box)
+            lines.append((y, x, str(value).strip()))
+        lines.sort(key=lambda item: (round(item[0] / 8), item[1]))
+        page_payloads[page_number - 1]["text"] = "\n".join(
+            value for _, _, value in lines if value
+        )
+    return _finalize_page_payloads(page_payloads)
+
+
+def _append_pdfplumber_tables(path: Path, pages: list[dict[str, Any]]) -> None:
+    """Add text-PDF table rows while keeping the parser dependency optional."""
+
+    try:
+        import pdfplumber
+    except ImportError:
+        return
+    with pdfplumber.open(str(path)) as pdf:
+        for page_number, page in enumerate(pdf.pages, start=1):
+            tables = page.extract_tables() or []
+            normalized = [
+                [" | ".join((cell or "").split()) for cell in row]
+                for table in tables
+                for row in table
+                if any(cell and cell.strip() for cell in row)
+            ]
+            pages[page_number - 1]["tables"] = normalized
+            if normalized:
+                table_text = "\n".join(" | ".join(row) for row in normalized)
+                pages[page_number - 1]["text"] = (
+                    f"{pages[page_number - 1]['text']}\n{table_text}"
+                ).strip()
+
+
+def _finalize_page_payloads(pages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        page
+        for page in pages
+        if " ".join(str(page.get("text", "")).split()).strip()
+    ]
 
 
 def api_response_to_canonical_chunks(
@@ -338,6 +451,8 @@ def canonical_pdf_chunk(
     source_file: str,
     page_number: int,
     chunk_position: int = 1,
+    source_uri: str | None = None,
+    source_sha256: str | None = None,
 ) -> CanonicalDocumentChunk:
     """Normalize parser output from one PDF page into the canonical model."""
 
@@ -351,6 +466,8 @@ def canonical_pdf_chunk(
         chunk_id=f"{source_id}-{source_version}-p{page_number:04d}-c{chunk_position:04d}",
         source_file=source_file,
         page_number=page_number,
+        source_uri=source_uri,
+        source_sha256=source_sha256,
     )
 
 
@@ -398,6 +515,7 @@ class RetrievedBusinessContext:
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
+    source_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -414,6 +532,7 @@ class GroundingProvenance:
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
+    source_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -471,6 +590,7 @@ def ground_claim(
                     page_number=context.page_number,
                     source_uri=context.source_uri,
                     retrieved_at=context.retrieved_at,
+                    source_sha256=context.source_sha256,
                 ),
                 reason="All claim terms are present in the retrieved evidence.",
             )
@@ -527,6 +647,24 @@ class LocalEmbeddingFunction:
         if hasattr(vectors, "tolist"):
             return vectors.tolist()
         return [list(vector) for vector in vectors]
+
+    @staticmethod
+    def name() -> str:
+        """Stable Chroma embedding-function identity."""
+
+        return "local_sentence_transformer"
+
+    def get_config(self) -> dict[str, str]:
+        return {"model_name": self.model_name, "revision": self.revision}
+
+    @staticmethod
+    def build_from_config(config: dict[str, str]) -> "LocalEmbeddingFunction":
+        return LocalEmbeddingFunction(
+            RagLocalSettings(
+                embedding_model=config["model_name"],
+                embedding_revision=config["revision"],
+            )
+        )
 
 
 def build_local_embedding(
@@ -603,6 +741,8 @@ class LocalChromaIndex:
                     else {"source_uri": record.source_uri, "retrieved_at": record.retrieved_at}
                 ),
             }
+            | ({"source_uri": record.source_uri, "source_sha256": record.source_sha256}
+               if record.source_type == "pdf" else {})
             for record, chunk_id in zip(records, chunk_ids)
         ]
         self.collection.upsert(
@@ -661,6 +801,7 @@ class LocalChromaIndex:
                     page_number=result_metadata.get("page_number"),
                     source_uri=result_metadata.get("source_uri"),
                     retrieved_at=result_metadata.get("retrieved_at"),
+                    source_sha256=result_metadata.get("source_sha256"),
                 )
             )
         return results[:top_k]
@@ -686,5 +827,7 @@ __all__ = [
     "ground_claim",
     "normalize_documents",
     "parse_pdf_to_canonical_chunks",
+    "extract_pdf_pages",
+    "sha256_file",
     "pdf_to_canonical_chunks",
 ]
