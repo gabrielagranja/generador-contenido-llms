@@ -9,6 +9,9 @@ from pydantic import BaseModel
 from apps.api.drafting import ChannelAdaptedDraftService, EditableTextDraft
 from apps.api.llm import LlmConfigurationError, build_text_generator
 from apps.api.models import GuidedBrief
+from apps.api.config import RagLocalSettings
+from apps.api.drafting import RagGroundedDraftService
+from apps.api.rag import LocalChromaIndex
 
 
 class ReadinessResponse(BaseModel):
@@ -22,6 +25,9 @@ class DraftRequest(BaseModel):
     """Validated request for one or more channel-adapted text drafts."""
 
     brief: GuidedBrief
+    rag_enabled: bool = False
+    business_id: str | None = None
+    top_k: int = 3
 
 
 class DraftResponse(BaseModel):
@@ -40,7 +46,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3004",
+        "http://127.0.0.1:3004",
+    ],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
@@ -67,7 +78,25 @@ def create_drafts(request: DraftRequest) -> DraftResponse:
     except LlmConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
-    drafts = ChannelAdaptedDraftService(generator).draft(request.brief)
+    if request.rag_enabled:
+        if not request.business_id:
+            raise HTTPException(
+                status_code=422,
+                detail="business_id is required when rag_enabled=true",
+            )
+        if request.top_k <= 0:
+            raise HTTPException(status_code=422, detail="top_k must be positive")
+        try:
+            index = LocalChromaIndex(RagLocalSettings())
+            drafts = RagGroundedDraftService(index, generator).draft(
+                request.brief,
+                business_id=request.business_id,
+                top_k=request.top_k,
+            )
+        except (ValueError, RuntimeError) as error:
+            raise HTTPException(status_code=503, detail=str(error)) from error
+    else:
+        drafts = ChannelAdaptedDraftService(generator).draft(request.brief)
     from apps.api.config import LlmSettings
 
     llm_settings = LlmSettings.from_environment()

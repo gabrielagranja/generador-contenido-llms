@@ -24,7 +24,7 @@ DEFAULT_RAG_CHROMA_COLLECTION = "business-context"
 DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY = Path(".local") / "chroma"
 DEFAULT_RAG_API_BASE_URL = "https://jsonplaceholder.typicode.com"
 DEFAULT_LLM_PROVIDER = "mock"
-DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
 DEFAULT_LLM_TEMPERATURE = 0.2
 DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
 

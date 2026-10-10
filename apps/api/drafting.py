@@ -189,6 +189,8 @@ class ChannelAdaptedDraftService:
             f"{evidence_block}\n"
             "Return only editable draft text. Never invent business facts, "
             "benefits, proof, deadlines, scarcity, credentials or guarantees. "
+            "Keep historical dates and past events explicitly historical; do not "
+            "present them as current facts unless the evidence says they are current. "
             "Keep inferred and unknown information out of factual claims. "
             "Do not render media, publish, schedule or request credentials."
         )
@@ -225,6 +227,7 @@ def _provenance_dict(context: RetrievedBusinessContext) -> dict[str, object]:
         "page_number": context.page_number,
         "source_uri": context.source_uri,
         "retrieved_at": context.retrieved_at,
+        "source_sha256": context.source_sha256,
         "score": context.score,
     }
 

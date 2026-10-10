@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -30,7 +31,9 @@ def brief_payload() -> dict[str, object]:
 
 
 def test_create_drafts_returns_reviewable_content_without_exposing_secrets() -> None:
-    with patch("apps.api.main.build_text_generator", return_value=FakeGenerator()):
+    with patch.dict(os.environ, {"LLM_PROVIDER": "mock"}, clear=False), patch(
+        "apps.api.main.build_text_generator", return_value=FakeGenerator()
+    ):
         response = client.post("/drafts", json={"brief": brief_payload()})
 
     assert response.status_code == 200
