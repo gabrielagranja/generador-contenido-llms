@@ -11,8 +11,9 @@ import type {
   DraftEvidence,
   ViewId,
 } from "../domain/types.ts";
+import { createRequestGuard } from "../domain/request-guard.ts";
 import { canStartGeneration, parseDraftResponse, type GenerationState } from "../domain/draft-generation.ts";
-import { createDraft, getDraft, reviewDraft, updateDraft, mapBriefToApi, type ApiEditorialContent } from "../domain/review-api.ts";
+import { RequestCancelledError, createDraft, getDraft, reviewDraft, updateDraft, mapBriefToApi, type ApiEditorialContent } from "../domain/review-api.ts";
 import { brandContexts, dashboardFixtures, draftFixtures, getBriefDefaults, historyFixtures } from "../domain/fixtures.ts";
 import {
   afterBriefChange,
@@ -104,6 +105,7 @@ export function Workspace() {
   const [reviewFeedback, setReviewFeedback] = useState("");
   const [activeBackendId, setActiveBackendId] = useState<string | null>(null);
   const requestSequence = useRef(0);
+  const generationGuard = useRef(createRequestGuard());
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
@@ -120,6 +122,7 @@ export function Workspace() {
     setActiveBackendId(null);
     setActiveSessionDraftId(null);
     requestSequence.current += 1;
+    generationGuard.current.cancel();
   }, [activeContext.account, contextName]);
 
   function updateBrief(field: keyof BriefForm, value: string) {
@@ -265,11 +268,12 @@ export function Workspace() {
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
     const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
     const requestVersion = ++requestSequence.current;
+    const generation = generationGuard.current.begin();
 
     try {
       {
-      const payload = await createDraft({ brief: mapBriefToApi({ ...brief, restrictions: brief.restrictions.trim() || activeContext.summary }, activeContext.account), brandId: brand.id, businessId: ragBusinessId, ragEnabled: Boolean(ragBusinessId) });
-      if (requestVersion !== requestSequence.current) return;
+      const payload = await createDraft({ brief: mapBriefToApi({ ...brief, restrictions: brief.restrictions.trim() || activeContext.summary }, activeContext.account), brandId: brand.id, businessId: ragBusinessId, ragEnabled: Boolean(ragBusinessId), signal: generation.signal });
+      if (requestVersion !== requestSequence.current || !generation.isCurrent()) return;
       const parsed = await parseDraftResponse({ ok: true, status: 200, json: async () => payload }, ragBusinessId);
       const parsedDrafts = await Promise.all(payload.drafts!.map((_, index) => parseDraftResponse({ ok: true, status: 200, json: async () => ({ ...payload, drafts: [payload.drafts?.[index]], content_ids: [payload.content_ids?.[index]] }) }, ragBusinessId)));
       if (payload.review_state !== "pending_human_review" || !payload.drafts?.length || !payload.content_ids?.length) throw new Error("La API no confirmó los borradores pendientes de revisión humana.");
@@ -348,6 +352,7 @@ export function Workspace() {
       setGenerationState("success");
       recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador con la API y quedó pendiente de revisión humana.");
     } catch (error) {
+      if (error instanceof RequestCancelledError || !generation.isCurrent()) return;
       setGenerationState("error");
       setValidationMessage(error instanceof Error ? error.message : "No se pudo conectar con la API de generación.");
     }
