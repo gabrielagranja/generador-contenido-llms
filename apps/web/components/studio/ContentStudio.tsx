@@ -1,4 +1,5 @@
 import type { BrandTheme, BriefForm, DraftPreparationStatus } from "../../domain/types.ts";
+import { generationStateLabels, type GenerationState } from "../../domain/draft-generation.ts";
 import { statusCopy } from "../../domain/editorial.ts";
 import { Kicker, SyntheticNotice } from "../ui/Kicker";
 import { EditorialProgress, StudioStatus } from "../ui/EditorialStatus";
@@ -17,6 +18,7 @@ export function ContentStudio({
   previewCopy,
   status,
   validationMessage,
+  generationState,
   onBriefChange,
   onCopyChange,
   onPrepare,
@@ -34,6 +36,7 @@ export function ContentStudio({
   previewCopy: string;
   status: DraftPreparationStatus;
   validationMessage: string;
+  generationState: GenerationState;
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onCopyChange: (value: string) => void;
   onPrepare: () => void | Promise<void>;
@@ -79,6 +82,9 @@ export function ContentStudio({
             <div className={styles.statusBlock}>
               <EditorialProgress status={status} />
               <StudioStatus status={status} />
+              <p className={styles.generationState} aria-live="polite">
+                Generación: {generationStateLabels[generationState]}
+              </p>
               <p className={styles.hint}>{statusCopy[status].hint}</p>
             </div>
             <ReviewActions status={status} onApprove={onApprove} onRequestChanges={onRequestChanges} onResubmit={onResubmit} />

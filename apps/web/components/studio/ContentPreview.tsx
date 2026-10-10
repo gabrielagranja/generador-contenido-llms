@@ -44,7 +44,7 @@ export function ContentPreview({
           className={styles.caption}
           value={copy}
           onChange={(event) => onCopyChange(event.target.value)}
-          placeholder="El borrador sintético aparecerá aquí al preparar el brief."
+          placeholder="El borrador de la API aparecerá aquí al preparar el brief."
           readOnly={readOnly}
         />
         <p className={styles.note}>La imagen es una composición sintética de ejemplo, no un recurso real de la marca.</p>

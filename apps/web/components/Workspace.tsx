@@ -10,6 +10,7 @@ import type {
   LocalDraft,
   ViewId,
 } from "../domain/types.ts";
+import { canStartGeneration, parseDraftResponse, type GenerationState } from "../domain/draft-generation.ts";
 import { brandContexts, dashboardFixtures, draftFixtures, getBriefDefaults, historyFixtures } from "../domain/fixtures.ts";
 import {
   afterBriefChange,
@@ -27,6 +28,12 @@ import { DraftsView } from "./drafts/DraftsView";
 import { HistoryView } from "./history/HistoryView";
 import { ContentStudio } from "./studio/ContentStudio";
 import { PlaceholderView } from "./ui/PlaceholderView";
+
+type DraftApiResponse = {
+  detail?: string;
+  drafts?: Array<{ caption?: string }>;
+  review_state?: "pending_human_review";
+};
 
 const viewTitles: Record<ViewId, string> = {
   dashboard: "Dashboard",
@@ -46,12 +53,6 @@ const placeholders: Partial<Record<ViewId, string>> = {
   analytics: "Rendimiento real de las publicaciones. Requiere cuentas conectadas, que no existen en el MVP.",
   brands: "Gestión de marcas, comercios asociados y perfiles sociales.",
   settings: "Configuración de la plataforma y de cada marca, incluidos sus materiales y fuentes.",
-};
-
-type DraftApiResponse = {
-  detail?: string;
-  drafts?: Array<{ caption?: string }>;
-  review_state?: "pending_human_review";
 };
 
 export function Workspace() {
@@ -95,13 +96,14 @@ export function Workspace() {
   const [previewCopy, setPreviewCopy] = useState("");
   const [status, setStatus] = useState<DraftPreparationStatus>("not-prepared");
   const [validationMessage, setValidationMessage] = useState("");
-  const [isPreparing, setIsPreparing] = useState(false);
+  const [generationState, setGenerationState] = useState<GenerationState>("idle");
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
     setPreviewCopy("");
     setStatus("not-prepared");
     setValidationMessage("");
+    setGenerationState("idle");
     setActiveSessionDraftId(null);
   }, [activeContext.account, contextName]);
 
@@ -168,11 +170,12 @@ export function Workspace() {
   }
 
   async function prepareDraft() {
+    if (!canStartGeneration(generationState)) return;
     if (missingBriefFields(brief)) {
       setValidationMessage("Completa el objetivo, la audiencia y la campaña para preparar el borrador.");
       return;
     }
-    setIsPreparing(true);
+    setGenerationState("loading");
     setValidationMessage("");
     const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
@@ -199,13 +202,14 @@ export function Workspace() {
         }),
       });
       const payload = (await response.json()) as DraftApiResponse;
+      const parsed = await parseDraftResponse({ ok: response.ok, status: response.status, json: async () => payload });
       if (!response.ok) {
         throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);
       }
       if (payload.review_state !== "pending_human_review") {
         throw new Error("La API no confirm\u00f3 que el borrador quede pendiente de revisi\u00f3n humana.");
       }
-      const copy = payload.drafts?.[0]?.caption?.trim();
+      const copy = parsed.copy;
       if (!copy) throw new Error("La API no devolvió un borrador editable.");
 
       const sessionDraft: LocalDraft = {
@@ -225,11 +229,11 @@ export function Workspace() {
       setActiveSessionDraftId(sessionDraft.id);
       setPreviewCopy(copy);
       setStatus("pending-review");
+      setGenerationState("success");
       recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador con la API y quedó pendiente de revisión humana.");
     } catch (error) {
+      setGenerationState("error");
       setValidationMessage(error instanceof Error ? error.message : "No se pudo conectar con la API de generación.");
-    } finally {
-      setIsPreparing(false);
     }
   }
 
@@ -313,10 +317,11 @@ export function Workspace() {
           previewCopy={previewCopy}
           status={status}
           validationMessage={validationMessage}
+          generationState={generationState}
           onBriefChange={updateBrief}
           onCopyChange={updateCopy}
           onPrepare={prepareDraft}
-          isPreparing={isPreparing}
+          isPreparing={generationState === "loading"}
           onApprove={approveCurrentDraft}
           onRequestChanges={requestCurrentChanges}
           onResubmit={resubmitCurrentDraft}
