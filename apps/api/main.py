@@ -4,9 +4,16 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from apps.api.drafting import ChannelAdaptedDraftService, EditableTextDraft
+from apps.api.editorial_review import (
+    EditorialContent,
+    EditorialReviewService,
+    EditorialTransitionError,
+    HumanReview,
+)
+from apps.api.editorial_store import EditorialContentStore
 from apps.api.llm import LlmConfigurationError, build_text_generator
 from apps.api.models import GuidedBrief
 from apps.api.config import RagLocalSettings
@@ -26,6 +33,7 @@ class DraftRequest(BaseModel):
 
     brief: GuidedBrief
     rag_enabled: bool = False
+    brand_id: str | None = None
     business_id: str | None = None
     top_k: int = 3
 
@@ -34,9 +42,28 @@ class DraftResponse(BaseModel):
     """Reviewable drafts returned before any approval or publication action."""
 
     drafts: list[EditableTextDraft]
+    content_ids: list[str]
+    content_id: str | None = None
     provider: str
     model: str
     review_state: Literal["pending_human_review"] = "pending_human_review"
+
+
+class ReviewRequest(BaseModel):
+    decision: Literal["approve", "request_regeneration"]
+    reviewer_ref: str = Field(min_length=1)
+    feedback: str | None = Field(default=None, min_length=1)
+
+
+class ManualEditRequest(BaseModel):
+    caption: str = Field(min_length=1)
+    cta: str | None = None
+
+
+class ReviewStatusResponse(BaseModel):
+    content_id: str
+    state: Literal["generated_draft", "pending_human_review", "approved_final"]
+    review: HumanReview | None = None
 
 
 app = FastAPI(
@@ -53,9 +80,11 @@ app.add_middleware(
         "http://127.0.0.1:3004",
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["Content-Type"],
 )
+
+editorial_store = EditorialContentStore()
 
 
 @app.get("/readiness", response_model=ReadinessResponse)
@@ -102,4 +131,88 @@ def create_drafts(request: DraftRequest) -> DraftResponse:
     llm_settings = LlmSettings.from_environment()
     provider = llm_settings.provider
     model = "deterministic-mock" if provider == "mock" else llm_settings.groq_model
-    return DraftResponse(drafts=drafts, provider=provider, model=model)
+    content_ids: list[str] = []
+    for draft in drafts:
+        content_id = editorial_store.create_id()
+        content = EditorialReviewService.from_generated_draft(
+            draft,
+            content_id=content_id,
+            brand_id=request.brand_id,
+            business_id=request.business_id,
+        )
+        editorial_store.create(EditorialReviewService.submit_for_review(content))
+        content_ids.append(content_id)
+    return DraftResponse(
+        drafts=drafts,
+        content_ids=content_ids,
+        content_id=content_ids[0] if len(content_ids) == 1 else None,
+        provider=provider,
+        model=model,
+    )
+
+
+def _get_editorial_content(content_id: str) -> EditorialContent:
+    """Resolve an opaque process-local ID, not an authenticated tenant scope.
+
+    This MVP provides logical segregation through generated IDs and preserved
+    business metadata. It does not authenticate callers or authorize access to
+    a business, so ``content_id`` must not be treated as a tenant boundary.
+    """
+    content = editorial_store.get(content_id)
+    if content is None:
+        raise HTTPException(status_code=404, detail="content_id not found")
+    return content
+
+
+@app.get("/drafts/{content_id}", response_model=EditorialContent)
+def get_draft(content_id: str) -> EditorialContent:
+    return _get_editorial_content(content_id)
+
+
+@app.get("/drafts/{content_id}/review", response_model=ReviewStatusResponse)
+def get_review_status(content_id: str) -> ReviewStatusResponse:
+    content = _get_editorial_content(content_id)
+    return ReviewStatusResponse(
+        content_id=content.content_id,
+        state=content.state,
+        review=content.review,
+    )
+
+
+@app.post("/drafts/{content_id}/review", response_model=EditorialContent)
+def record_review(content_id: str, request: ReviewRequest) -> EditorialContent:
+    content = _get_editorial_content(content_id)
+    if not request.reviewer_ref.strip():
+        raise HTTPException(status_code=422, detail="reviewer_ref must contain text")
+    try:
+        if request.decision == "approve":
+            updated = EditorialReviewService.approve(
+                content, reviewer_ref=request.reviewer_ref
+            )
+        else:
+            if request.feedback is None or not request.feedback.strip():
+                raise HTTPException(
+                    status_code=422,
+                    detail="feedback must contain text when requesting regeneration",
+                )
+            updated = EditorialReviewService.record_feedback(
+                content,
+                feedback=request.feedback,
+                reviewer_ref=request.reviewer_ref,
+            )
+    except EditorialTransitionError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    return editorial_store.save(updated)
+
+
+@app.patch("/drafts/{content_id}", response_model=EditorialContent)
+def edit_draft(content_id: str, request: ManualEditRequest) -> EditorialContent:
+    content = _get_editorial_content(content_id)
+    try:
+        updated = EditorialReviewService.manual_edit(
+            content, caption=request.caption, cta=request.cta
+        )
+    except EditorialTransitionError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    return editorial_store.save(updated)
+
