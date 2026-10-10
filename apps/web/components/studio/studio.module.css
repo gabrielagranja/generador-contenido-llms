@@ -31,7 +31,10 @@ fieldset.choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid;
 .option input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 3px; }
 .primary { min-height: 3rem; padding: 0 var(--space-5); border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-weight: 700; }
 .primary:hover { background: var(--paper); color: var(--ink); }
-.alert { color: var(--danger); font-weight: 600; }
+.primary:disabled, .savePlanButton:disabled, .action:disabled { opacity: 0.55; cursor: not-allowed; }
+.primary:disabled:hover { background: var(--ink); color: var(--paper); }
+.primary[disabled]:not(:hover) { background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,255,255,0.08) 8px 16px); }
+.alert { padding: var(--space-2) var(--space-3); border-left: 3px solid var(--danger); background: var(--sunken); color: var(--danger); font-weight: 600; }
 .note { font-size: var(--step--1); color: var(--muted); }
 
 /* Canvas */
@@ -56,16 +59,22 @@ fieldset.choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid;
 .warning { color: var(--danger); font-weight: 700; font-size: var(--step--1); }
 
 /* Side */
-.side { display: grid; gap: var(--space-5); }
+.side { display: grid; gap: var(--space-6); }
 .statusBlock { display: grid; gap: var(--space-2); }
-.hint { color: var(--ink-soft); font-size: 0.9375rem; }
+.hint { color: var(--ink-soft); font-size: 0.9375rem; max-width: 38ch; }
 .generationState { color: var(--ink-soft); font-size: var(--step--1); font-weight: 700; }
-.actions { display: grid; gap: var(--space-2); }
+.actions { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
 .reviewerField { display: grid; gap: var(--space-2); }
 .action { min-height: 2.75rem; padding: 0 var(--space-4); border: 2px solid var(--ink); background: transparent; font-weight: 700; text-align: left; }
 .action:hover { background: var(--sunken); }
 .approve { background: var(--status-approved); border-color: var(--status-approved); color: #fff; }
-.approve:hover { background: #245431; }
+.approve:hover:not(:disabled) { background: #245431; }
+.action:focus-visible, .primary:focus-visible, .savePlanButton:focus-visible { outline-offset: 3px; }
+.savePlan { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding: var(--space-4); border: 1px solid var(--rule-strong); border-top: 4px solid var(--brand-accent); background: var(--surface); }
+.savePlanTitle { font-family: var(--font-display); font-size: var(--step-1); font-weight: 600; }
+.savePlanButton { min-height: 3rem; padding: 0 var(--space-4); border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-weight: 700; }
+.savePlanButton:hover:not(:disabled) { background: var(--paper); color: var(--ink); }
+.saveMessage { padding: var(--space-2) var(--space-3); border-left: 3px solid var(--status-approved); background: var(--sunken); font-size: var(--step--1); font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
 .details { border-top: 1px solid var(--rule); padding-top: var(--space-3); font-size: 0.9375rem; }
 .details summary { cursor: pointer; font-weight: 700; min-height: 2rem; }
 .details p { margin-top: var(--space-2); color: var(--ink-soft); }
@@ -78,4 +87,9 @@ fieldset.choice { border: 0; margin: 0; padding: 0; min-width: 0; display: grid;
 @media (max-width: 62rem) {
   .grid { grid-template-columns: minmax(0, 1fr); }
   .side { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 38rem) {
+  .primary, .savePlanButton, .action { width: 100%; min-height: 3rem; }
+  .title { font-size: var(--step-3); }
+  .stage { padding: var(--space-4) var(--space-2); }
 }

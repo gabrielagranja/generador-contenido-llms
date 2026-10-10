@@ -130,13 +130,16 @@ export function ContentStudio({
             <p className={styles.note}>
               Aprobar solo cambia el estado local del prototipo. No habilita copia, exportación ni publicación.
             </p>
-            <section className={styles.details} aria-labelledby="plan-save-title">
-              <h3 id="plan-save-title" className={styles.colTitle}>Plan editorial</h3>
+            <section className={styles.savePlan} aria-labelledby="plan-save-title">
+              <h3 id="plan-save-title" className={styles.savePlanTitle}>Plan editorial</h3>
               <p className={styles.note}>Guarda el contenido validado como un plan de un ítem para verlo en el calendario.</p>
-              <button className={styles.action} type="button" onClick={onSavePlan} disabled={!canSavePlan}>
+              <button className={styles.savePlanButton} type="button" onClick={onSavePlan} disabled={!canSavePlan} aria-describedby="plan-save-hint">
                 Guardar plan validado
               </button>
-              {planSaveMessage && <p className={styles.note} role="status">{planSaveMessage}</p>}
+              <p id="plan-save-hint" className={styles.note}>
+                {canSavePlan ? "Se guardará en el Calendario editorial." : "Se habilita cuando hay un borrador preparado."}
+              </p>
+              {planSaveMessage && <p className={styles.saveMessage} role="status">{planSaveMessage}</p>}
             </section>
           </section>
 
