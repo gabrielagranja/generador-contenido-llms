@@ -1,0 +1,7 @@
+- [ ] Obtain explicit human approval for this OpenSpec change.
+- [ ] Implement paragraph- and sentence-aware chunking for Coll Amunt business sheets.
+- [ ] Preserve business, page and source metadata for generated chunks.
+- [ ] Add tests for boundaries, oversized sentences and business isolation.
+- [ ] Rebuild the local Chroma index with `scripts/ingest_collamunt.py`.
+- [ ] Validate the 800-character limit against the expert's 14 queries.
+- [ ] Run pytest, OpenSpec validation and diff checks.

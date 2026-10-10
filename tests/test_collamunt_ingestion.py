@@ -7,8 +7,10 @@ from unittest.mock import Mock
 
 from apps.api.collamunt import (
     COLLAMUNT_SOURCE_URI,
+    COLLAMUNT_SHEET_CHUNK_SIZE,
     build_collamunt_chunks,
     collamunt_business_id_for_page,
+    split_business_sheet,
 )
 from apps.api.config import RagLocalSettings
 from apps.api.drafting import RagGroundedDraftService
@@ -159,3 +161,54 @@ class CollAmuntIngestionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BusinessSheetChunkingTests(unittest.TestCase):
+    def test_short_sheet_stays_in_one_chunk(self) -> None:
+        text = "Pelu Sonia treballa al Coll.\n\nObre amb cita prèvia."
+        self.assertEqual(split_business_sheet(text), ["Pelu Sonia treballa al Coll. Obre amb cita prèvia."])
+
+    def test_long_sheet_splits_on_sentences_never_mid_sentence(self) -> None:
+        sentences = [f"Frase número {i} sobre el comerç del barri." for i in range(40)]
+        chunks = split_business_sheet(" ".join(sentences), max_size=200)
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(chunk) <= 200 for chunk in chunks))
+        self.assertTrue(all(chunk.endswith(".") for chunk in chunks))
+        self.assertEqual(" ".join(chunks), " ".join(sentences))
+
+    def test_oversized_sentence_falls_back_to_word_boundaries(self) -> None:
+        sentence = " ".join(["paraula"] * 100)
+        chunks = split_business_sheet(sentence, max_size=120)
+        self.assertTrue(all(len(chunk) <= 120 for chunk in chunks))
+        self.assertEqual(" ".join(chunks), sentence)
+
+    def test_empty_text_and_invalid_size(self) -> None:
+        self.assertEqual(split_business_sheet("  \n\n "), [])
+        with self.assertRaises(ValueError):
+            split_business_sheet("text", max_size=0)
+
+    def test_business_chunks_carry_name_and_stay_in_their_business(self) -> None:
+        sheet = " ".join(f"Frase {i} de la fitxa." for i in range(120))
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.pdf"
+            source.write_bytes(b"official-source")
+            ingestion = build_collamunt_chunks(
+                source,
+                [
+                    {"page_number": 3, "text": sheet},
+                    {"page_number": 4, "text": "Centre d'Estètica Alma. Cura personal."},
+                ],
+            )
+        sonia = [c for c in ingestion.chunks if c.business_id == "coll-amunt-pelu-sonia"]
+        self.assertGreater(len(sonia), 1)
+        self.assertTrue(all(c.text.startswith("Pelu Sonia. ") for c in sonia))
+        self.assertTrue(all(len(c.text) <= COLLAMUNT_SHEET_CHUNK_SIZE + len("Pelu Sonia. ") for c in sonia))
+        self.assertTrue(all(c.page_number == 3 for c in sonia))
+        self.assertEqual(len({c.chunk_id for c in ingestion.chunks}), len(ingestion.chunks))
+
+    def test_association_pages_keep_generic_chunking(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.pdf"
+            source.write_bytes(b"official-source")
+            ingestion = build_collamunt_chunks(source, [{"page_number": 1, "text": "Coll Amunt associacio"}])
+        self.assertEqual([c.text for c in ingestion.chunks], ["Coll Amunt associacio"])
