@@ -107,30 +107,33 @@ def create_drafts(request: DraftRequest) -> DraftResponse:
     except LlmConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
-    if request.rag_enabled:
-        if not request.business_id:
-            raise HTTPException(
-                status_code=422,
-                detail="business_id is required when rag_enabled=true",
-            )
-        if request.top_k <= 0:
-            raise HTTPException(status_code=422, detail="top_k must be positive")
-        try:
-            index = LocalChromaIndex(RagLocalSettings())
-            drafts = RagGroundedDraftService(index, generator).draft(
-                request.brief,
-                business_id=request.business_id,
-                top_k=request.top_k,
-            )
-        except (ValueError, RuntimeError) as error:
-            raise HTTPException(status_code=503, detail=str(error)) from error
-    else:
-        drafts = ChannelAdaptedDraftService(generator).draft(request.brief)
+    try:
+        if request.rag_enabled:
+            if not request.business_id:
+                raise HTTPException(
+                    status_code=422,
+                    detail="business_id is required when rag_enabled=true",
+                )
+            if request.top_k <= 0:
+                raise HTTPException(status_code=422, detail="top_k must be positive")
+            try:
+                index = LocalChromaIndex(RagLocalSettings())
+                drafts = RagGroundedDraftService(index, generator).draft(
+                    request.brief,
+                    business_id=request.business_id,
+                    top_k=request.top_k,
+                )
+            except (ValueError, RuntimeError) as error:
+                raise HTTPException(status_code=503, detail=str(error)) from error
+        else:
+            drafts = ChannelAdaptedDraftService(generator).draft(request.brief)
+    except LlmConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
     from apps.api.config import LlmSettings
 
     llm_settings = LlmSettings.from_environment()
     provider = llm_settings.provider
-    model = "deterministic-mock" if provider == "mock" else llm_settings.groq_model
+    model = ("deterministic-mock" if provider == "mock" else llm_settings.ollama_model if provider == "ollama" else llm_settings.groq_model)
     content_ids: list[str] = []
     for draft in drafts:
         content_id = editorial_store.create_id()

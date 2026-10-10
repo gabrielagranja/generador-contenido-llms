@@ -25,6 +25,7 @@ DEFAULT_RAG_CHROMA_PERSIST_DIRECTORY = Path(".local") / "chroma"
 DEFAULT_RAG_API_BASE_URL = "https://jsonplaceholder.typicode.com"
 DEFAULT_LLM_PROVIDER = "mock"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
+DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_LLM_TEMPERATURE = 0.2
 DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
 DEFAULT_LLM_MAX_OUTPUT_TOKENS = 350
@@ -128,6 +129,8 @@ class LlmSettings:
     provider: str = DEFAULT_LLM_PROVIDER
     groq_api_key: str | None = None
     groq_model: str = DEFAULT_GROQ_MODEL
+    ollama_base_url: str = DEFAULT_OLLAMA_BASE_URL
+    ollama_model: str | None = None
     temperature: float = DEFAULT_LLM_TEMPERATURE
     timeout_seconds: float = DEFAULT_LLM_TIMEOUT_SECONDS
     max_output_tokens: int = DEFAULT_LLM_MAX_OUTPUT_TOKENS
@@ -143,6 +146,8 @@ class LlmSettings:
             provider=provider.strip().lower(),
             groq_api_key=os.getenv("GROQ_API_KEY") or None,
             groq_model=os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip(),
+            ollama_base_url=os.getenv("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL).strip(),
+            ollama_model=os.getenv("OLLAMA_MODEL") or None,
             temperature=_read_float("LLM_TEMPERATURE", DEFAULT_LLM_TEMPERATURE),
             timeout_seconds=_read_float(
                 "LLM_TIMEOUT_SECONDS", DEFAULT_LLM_TIMEOUT_SECONDS
@@ -155,10 +160,17 @@ class LlmSettings:
         return settings
 
     def validate(self) -> None:
-        if self.provider not in {"mock", "groq"}:
-            raise ValueError("LLM_PROVIDER must be 'mock' or 'groq'")
+        if self.provider not in {"mock", "groq", "ollama"}:
+            raise ValueError("LLM_PROVIDER must be 'mock', 'groq' or 'ollama'")
         if not self.groq_model.strip():
             raise ValueError("GROQ_MODEL must not be empty")
+        parsed_ollama_url = urlsplit(self.ollama_base_url)
+        if parsed_ollama_url.scheme not in {"http", "https"} or not parsed_ollama_url.hostname:
+            raise ValueError("OLLAMA_BASE_URL must be an HTTP(S) URL")
+        if parsed_ollama_url.username or parsed_ollama_url.password:
+            raise ValueError("OLLAMA_BASE_URL must not contain credentials")
+        if self.provider == "ollama" and not (self.ollama_model and self.ollama_model.strip()):
+            raise ValueError("OLLAMA_MODEL is required when LLM_PROVIDER=ollama")
         if not 0 <= self.temperature <= 2:
             raise ValueError("LLM_TEMPERATURE must be between 0 and 2")
         if self.timeout_seconds <= 0:

@@ -92,7 +92,7 @@ flowchart TD
 
 ## Current status
 
-The web/API foundation is implemented: **FastAPI/Pydantic, a Next.js client and a readiness endpoint**. The API exposes `POST /drafts` through a provider-neutral **LangChain** boundary: it stays on the deterministic offline mock by default and can use Groq locally when `LLM_PROVIDER=groq` and `GROQ_API_KEY` are configured. The browser never receives provider credentials.
+The web/API foundation is implemented: **FastAPI/Pydantic, a Next.js client and a readiness endpoint**. The API exposes `POST /drafts` through a provider-neutral **LangChain** boundary: it stays on the deterministic offline mock by default and can use Groq locally when `LLM_PROVIDER=groq` and `GROQ_API_KEY` are configured, or an explicitly installed Ollama model when `LLM_PROVIDER=ollama`. The browser never receives provider credentials.
 
 RAG, images, voice and publishing remain separate capabilities with their own scope and evidence requirements. Progress is tracked in the [roadmap](docs/roadmap.md) and [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
 
