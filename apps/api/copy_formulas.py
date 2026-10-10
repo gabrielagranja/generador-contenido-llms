@@ -112,6 +112,56 @@ def select_copy_approach(brief: GuidedBrief) -> tuple[CopyApproach, str] | None:
     return None
 
 
+FORMULA_CODES = ("AIDA", "PAS", "4CS", "BAB", "4PS", "OPEN_LOOP")
+
+_BY_CODE: dict[str, CopyApproach] = {
+    "AIDA": _DIRECT,
+    "PAS": _PROBLEM,
+    "4CS": _EDUCATIONAL,
+    "BAB": _NARRATIVE,
+    "4PS": _DIRECT_PROOF,
+    "OPEN_LOOP": _DISRUPTIVE,
+}
+_NEEDS_EVIDENCE = {"PAS", "BAB", "4PS"}
+
+_FEEDBACK_PATTERNS: list[tuple[str, str]] = [
+    ("PAS", r"\bpas(?:tor)?\b"),
+    ("AIDA", r"\baida\b"),
+    ("BAB", r"\bbab\b"),
+    ("4CS", r"\b4\s*cs?\b"),
+    ("4PS", r"\b4\s*ps?\b"),
+    ("OPEN_LOOP", r"bucle abierto|open loop"),
+]
+
+
+def formula_from_feedback(feedback: str | None) -> str | None:
+    """Return the formula code a reviewer explicitly named in feedback, if any."""
+
+    text = _normalise(feedback or "")
+    for code, pattern in _FEEDBACK_PATTERNS:
+        if re.search(pattern, text):
+            return code
+    return None
+
+
+def approach_for_formula(code: str, brief: GuidedBrief, *, source: str = "revisión") -> tuple[CopyApproach, str]:
+    """Apply a formula chosen by the human reviewer.
+
+    The reviewer's choice is never blocked. When the formula leans on evidence and the
+    brief has no confirmed facts, the reason says so and the prompt keeps the text to a
+    general, non-factual framing instead of inventing material.
+    """
+
+    key = code.upper().replace(" ", "")
+    if key not in _BY_CODE:
+        raise ValueError(f"unknown copy formula: {code}")
+    approach = _BY_CODE[key]
+    reason = f"Fórmula {approach.formula} elegida en la {source}."
+    if key in _NEEDS_EVIDENCE and not any(fact.status == "CONFIRMED" for fact in brief.facts):
+        reason += " El brief no tiene hechos confirmados: el texto se mantiene en un planteamiento general, sin datos ni pruebas concretas."
+    return approach, reason
+
+
 def approach_prompt_block(approach: CopyApproach) -> str:
     """Prompt guidance: an optional scaffold, never a source of facts."""
 
@@ -124,4 +174,11 @@ def approach_prompt_block(approach: CopyApproach) -> str:
     )
 
 
-__all__ = ["CopyApproach", "approach_prompt_block", "select_copy_approach"]
+__all__ = [
+    "FORMULA_CODES",
+    "CopyApproach",
+    "approach_for_formula",
+    "approach_prompt_block",
+    "formula_from_feedback",
+    "select_copy_approach",
+]

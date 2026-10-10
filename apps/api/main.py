@@ -6,12 +6,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from apps.api.copy_formulas import (
+    FORMULA_CODES,
+    approach_for_formula,
+    formula_from_feedback,
+    select_copy_approach,
+)
 from apps.api.drafting import ChannelAdaptedDraftService, EditableTextDraft
 from apps.api.editorial_review import (
     EditorialContent,
     EditorialReviewService,
     EditorialTransitionError,
     HumanReview,
+    RegenerationRequest,
 )
 from apps.api.editorial_store import EditorialContentStore, EditorialPlanStore
 from apps.api.llm import LlmConfigurationError, build_text_generator
@@ -54,6 +61,20 @@ class ReviewRequest(BaseModel):
     decision: Literal["approve", "request_regeneration"]
     reviewer_ref: str = Field(min_length=1)
     feedback: str | None = Field(default=None, min_length=1)
+
+
+class RegenerateRequest(BaseModel):
+    """Human-requested regeneration of one reviewed draft.
+
+    The browser resends the brief because stored content does not keep it. The
+    feedback must match the feedback already recorded for the draft.
+    """
+
+    brief: GuidedBrief
+    feedback: str = Field(min_length=1)
+    formula: Literal["AIDA", "PAS", "4CS", "BAB", "4PS", "OPEN_LOOP"] | None = None
+    rag_enabled: bool = False
+    top_k: int = 3
 
 
 class ManualEditRequest(BaseModel):
@@ -209,6 +230,58 @@ def record_review(content_id: str, request: ReviewRequest) -> EditorialContent:
     except EditorialTransitionError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     return editorial_store.save(updated)
+
+
+@app.post("/drafts/{content_id}/regenerate", response_model=EditorialContent)
+def regenerate_draft(content_id: str, request: RegenerateRequest) -> EditorialContent:
+    """Create a new draft from recorded human feedback, optionally with a chosen formula.
+
+    The new draft returns to human review linked to its source and is never
+    approved automatically. A formula named by the reviewer (explicitly or in the
+    feedback) is applied as an optional scaffold; otherwise the usual selection runs.
+    """
+
+    content = _get_editorial_content(content_id)
+    brief = request.brief.model_copy(update={"platforms": [content.draft.channel]})
+    code = request.formula or formula_from_feedback(request.feedback)
+    if code is not None and code not in FORMULA_CODES:
+        raise HTTPException(status_code=422, detail="unknown copy formula")
+    override = (
+        approach_for_formula(code, brief, source="solicitud de cambios")
+        if code
+        else select_copy_approach(brief)
+    )
+
+    try:
+        generator = build_text_generator()
+    except LlmConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+    def draft_factory(_content: EditorialContent, _request: RegenerationRequest) -> EditableTextDraft:
+        if request.rag_enabled:
+            if not content.business_id:
+                raise ValueError("business_id is required when rag_enabled=true")
+            index = LocalChromaIndex(RagLocalSettings())
+            return RagGroundedDraftService(index, generator).draft(
+                brief,
+                business_id=content.business_id,
+                top_k=request.top_k,
+                approach_override=override,
+                reviewer_feedback=request.feedback,
+            )[0]
+        return ChannelAdaptedDraftService(generator).draft(
+            brief, approach_override=override, reviewer_feedback=request.feedback
+        )[0]
+
+    try:
+        regenerated = EditorialReviewService.regenerate(
+            content,
+            RegenerationRequest(trigger="human_feedback", feedback=request.feedback),
+            draft_factory=draft_factory,
+        )
+    except EditorialTransitionError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    return editorial_store.create(regenerated)
 
 
 @app.patch("/drafts/{content_id}", response_model=EditorialContent)

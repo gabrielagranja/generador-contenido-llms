@@ -104,6 +104,7 @@ export function Workspace() {
   const [copyApproach, setCopyApproach] = useState<CopyApproachInfo | null>(null);
   const [reviewerName, setReviewerName] = useState("");
   const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewNotice, setReviewNotice] = useState("");
   const [reviewFeedback, setReviewFeedback] = useState("");
   const [planSaveMessage, setPlanSaveMessage] = useState("");
   const [activeBackendId, setActiveBackendId] = useState<string | null>(null);
@@ -120,7 +121,7 @@ export function Workspace() {
     setUnsupportedClaims([]);
     setCopyApproach(null);
     setReviewerName("");
-    setReviewMessage("");
+    setReviewMessage(""); setReviewNotice("");
     setReviewFeedback("");
     setPlanSaveMessage("");
     setActiveBackendId(null);
@@ -181,7 +182,7 @@ export function Workspace() {
         const content = await reviewDraft(activeBackendId, "approve", reviewerName.trim());
         if (requestVersion !== requestSequence.current) return;
         applyBackendContent(content);
-        setReviewMessage("");
+        setReviewMessage(""); setReviewNotice("");
       } catch (error) { setReviewMessage(error instanceof Error ? error.message : "No se pudo aprobar el borrador."); }
       return;
     }
@@ -206,7 +207,7 @@ export function Workspace() {
         const content = await reviewDraft(activeBackendId, "request_regeneration", reviewerName.trim(), reviewFeedback.trim());
         if (requestVersion !== requestSequence.current) return;
         applyBackendContent(content);
-        setReviewMessage("");
+        setReviewMessage(""); setReviewNotice("Feedback registrado. Todavía no se ha generado un texto nuevo: la regeneración se pide por separado.");
       } catch (error) { setReviewMessage(error instanceof Error ? error.message : "No se pudo registrar el feedback."); }
       return;
     }
@@ -302,7 +303,7 @@ export function Workspace() {
     setGenerationState("loading");
     setValidationMessage("");
     setReviewerName("");
-    setReviewMessage("");
+    setReviewMessage(""); setReviewNotice("");
     setPreviewEvidence([]);
     setSupportedClaims([]);
     setUnsupportedClaims([]);
@@ -408,7 +409,7 @@ export function Workspace() {
     setCopyApproach(draft.copyApproach ?? null);
     setReviewerName(draft.reviewer ?? "");
     setReviewFeedback("");
-    setReviewMessage("");
+    setReviewMessage(""); setReviewNotice("");
     setStatus(statusFromDraft(draft.status));
     setActiveSessionDraftId(draft.id.startsWith("session-") ? draft.id : null);
     setActiveBackendId(draft.backendId ?? null);
@@ -503,6 +504,7 @@ export function Workspace() {
           copyApproach={copyApproach}
           reviewerName={reviewerName}
           reviewMessage={reviewMessage}
+          reviewNotice={reviewNotice}
            reviewFeedback={reviewFeedback}
            onReviewFeedbackChange={(value) => { setReviewFeedback(value); setReviewMessage(""); }}
           onReviewerChange={(value) => { setReviewerName(value); setReviewMessage(""); }}

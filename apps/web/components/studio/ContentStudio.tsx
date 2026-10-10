@@ -25,6 +25,7 @@ export function ContentStudio({
   copyApproach,
   reviewerName,
   reviewMessage,
+  reviewNotice,
   reviewFeedback,
   onReviewFeedbackChange,
   onReviewerChange,
@@ -56,6 +57,7 @@ export function ContentStudio({
   copyApproach: CopyApproachInfo | null;
   reviewerName: string;
   reviewMessage: string;
+  reviewNotice: string;
   reviewFeedback: string;
   onReviewFeedbackChange: (value: string) => void;
   onReviewerChange: (value: string) => void;
@@ -139,6 +141,7 @@ export function ContentStudio({
                   <textarea id="review-feedback" className={styles.caption} value={reviewFeedback} onChange={(event) => onReviewFeedbackChange(event.target.value)} placeholder="Motivo de los cambios solicitados" />
                 </>}
                 {reviewMessage && <p className={styles.alert} role="alert">{reviewMessage}</p>}
+                {reviewNotice && !reviewMessage && <p className={styles.saveMessage} role="status">{reviewNotice}</p>}
               </div>
             ) : null}
             <p className={styles.banner}>
