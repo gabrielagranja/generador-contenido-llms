@@ -48,6 +48,7 @@ identity, source traceability and reproducibility.
 
 - The embedding model reads approximately 128 tokens. Validate whether 800 characters improves retrieval quality against the expert's 14 queries.
 - The local index must be rebuilt with `scripts/ingest_collamunt.py` after the Python dependencies are available.
+- The repository does not contain the expert's 14-query evaluation set, so recall, relevance, citation quality and cross-business contamination cannot yet be compared empirically.
 
 ## Verification
 
@@ -60,6 +61,7 @@ identity, source traceability and reproducibility.
 
 - Full pytest, SDD contract validation and `git diff --check` must pass.
 - Retrieval quality must be evaluated with the expert's 14 queries after index rebuild.
+- The configured tokenizer reports a 128-token maximum. With the business-name prefix included, measured chunks are 86 at 500 characters (17 above 128 tokens; 19.8%) and 59 at 800 characters (35 above 128 tokens; 59.3%).
 
 ## Approval
 

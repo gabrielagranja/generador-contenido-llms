@@ -192,6 +192,7 @@ class BusinessSheetChunkingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "source.pdf"
             source.write_bytes(b"official-source")
+            expected_sha256 = sha256_file(source)
             ingestion = build_collamunt_chunks(
                 source,
                 [
@@ -202,8 +203,15 @@ class BusinessSheetChunkingTests(unittest.TestCase):
         sonia = [c for c in ingestion.chunks if c.business_id == "coll-amunt-pelu-sonia"]
         self.assertGreater(len(sonia), 1)
         self.assertTrue(all(c.text.startswith("Pelu Sonia. ") for c in sonia))
-        self.assertTrue(all(len(c.text) <= COLLAMUNT_SHEET_CHUNK_SIZE + len("Pelu Sonia. ") for c in sonia))
+        self.assertTrue(all(len(c.text) <= COLLAMUNT_SHEET_CHUNK_SIZE for c in sonia))
         self.assertTrue(all(c.page_number == 3 for c in sonia))
+        self.assertTrue(all(c.source_id == "collamunt-llibre" for c in sonia))
+        self.assertTrue(all(c.source_version == "2025" for c in sonia))
+        self.assertTrue(all(c.source_sha256 == expected_sha256 for c in sonia))
+        self.assertEqual(
+            [c.chunk_id.rsplit("-c", 1)[-1] for c in sonia],
+            [f"{position:04d}" for position in range(1, len(sonia) + 1)],
+        )
         self.assertEqual(len({c.chunk_id for c in ingestion.chunks}), len(ingestion.chunks))
 
     def test_association_pages_keep_generic_chunking(self) -> None:

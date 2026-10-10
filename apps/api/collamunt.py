@@ -161,14 +161,20 @@ def build_collamunt_chunks(
         business_id = collamunt_business_id_for_page(page_number)
         if page_number in COLLAMUNT_BUSINESS_PAGES:
             name = COLLAMUNT_BUSINESS_PAGES[page_number]
-            for position, piece in enumerate(split_business_sheet(page["text"]), start=1):
+            name_prefix = f"{name}. "
+            content_budget = COLLAMUNT_SHEET_CHUNK_SIZE - len(name_prefix)
+            if content_budget <= 0:
+                raise ValueError("business name leaves no room for sheet content")
+            for position, piece in enumerate(
+                split_business_sheet(page["text"], max_size=content_budget), start=1
+            ):
                 chunks.append(
                     canonical_pdf_chunk(
                         business_id=business_id,
                         source_id=COLLAMUNT_SOURCE_ID,
                         source_version=COLLAMUNT_SOURCE_VERSION,
                         consent_ref=COLLAMUNT_CONSENT_REF,
-                        text=f"{name}. {piece}",
+                        text=f"{name_prefix}{piece}",
                         source_file=COLLAMUNT_SOURCE_FILE,
                         page_number=page_number,
                         chunk_position=position,
