@@ -81,6 +81,8 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "LLM_PROVIDER",
                 "GROQ_API_KEY",
                 "GROQ_MODEL",
+                "OLLAMA_BASE_URL",
+                "OLLAMA_MODEL",
                 "LLM_TEMPERATURE",
                 "LLM_TIMEOUT_SECONDS",
                 "LLM_MAX_OUTPUT_TOKENS",

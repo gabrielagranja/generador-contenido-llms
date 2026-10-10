@@ -60,3 +60,31 @@ def test_create_drafts_surfaces_missing_provider_configuration() -> None:
 
     assert response.status_code == 503
     assert response.json()["detail"] == "provider configuration missing"
+
+
+def test_create_drafts_reports_ollama_model_with_an_injected_generator() -> None:
+    with patch.dict(
+        os.environ,
+        {"LLM_PROVIDER": "ollama", "OLLAMA_MODEL": "local-fixture"},
+        clear=False,
+    ), patch("apps.api.main.build_text_generator", return_value=FakeGenerator()):
+        response = client.post("/drafts", json={"brief": brief_payload()})
+
+    assert response.status_code == 200
+    assert response.json()["provider"] == "ollama"
+    assert response.json()["model"] == "local-fixture"
+
+
+def test_create_drafts_surfaces_an_ollama_generation_failure() -> None:
+    with patch.dict(
+        os.environ,
+        {"LLM_PROVIDER": "ollama", "OLLAMA_MODEL": "local-fixture"},
+        clear=False,
+    ), patch(
+        "apps.api.main.build_text_generator",
+        side_effect=LlmConfigurationError("Ollama is unavailable"),
+    ):
+        response = client.post("/drafts", json={"brief": brief_payload()})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Ollama is unavailable"

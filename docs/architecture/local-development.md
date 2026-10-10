@@ -51,6 +51,17 @@ LLM_TEMPERATURE=0.2
 LLM_TIMEOUT_SECONDS=30
 ```
 
+To use an already installed local Ollama model, configure the API host and model explicitly. The API sends no credentials and does not download models or fall back to a cloud provider:
+
+```text
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=<installed-local-model>
+LLM_TEMPERATURE=0.2
+LLM_TIMEOUT_SECONDS=30
+LLM_MAX_OUTPUT_TOKENS=350
+```
+
 ## Run the foundation
 
 Use two terminals from the repository root.
@@ -62,8 +73,7 @@ python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 The API exposes `/readiness`, `/docs`, `/redoc` and `/openapi.json`.
-With `LLM_PROVIDER=groq`, `POST /drafts` uses the API-side Groq adapter and
-returns editable drafts for human review. The browser never receives the key.
+With `LLM_PROVIDER=groq` or `LLM_PROVIDER=ollama`, `POST /drafts` uses the selected API-side adapter and returns editable drafts for human review. The browser never receives provider credentials.
 
 To ingest the official Coll Amunt! PDF into the ignored local RAG store, place
 the downloaded source at `.local/rag/sources/2025-Coll-Amunt-Llibre-_compressed.pdf`

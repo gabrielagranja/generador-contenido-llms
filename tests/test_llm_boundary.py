@@ -101,3 +101,44 @@ class LlmBoundaryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class OllamaAdapterTests(unittest.TestCase):
+    def _settings(self) -> LlmSettings:
+        return LlmSettings(
+            provider="ollama",
+            ollama_model="llama3.2:3b",
+            ollama_base_url="http://127.0.0.1:11434",
+            temperature=0.4,
+            timeout_seconds=12,
+            max_output_tokens=275,
+        )
+
+    def test_ollama_sends_bounded_nonstreaming_request(self) -> None:
+        class FakeResponse:
+            def raise_for_status(self) -> None:
+                return None
+
+            def json(self) -> dict[str, object]:
+                return {"message": {"content": "respuesta local"}}
+
+        with patch("apps.api.llm.httpx.post", return_value=FakeResponse()) as post:
+            generator = build_text_generator(self._settings())
+            self.assertEqual(generator.generate("brief"), "respuesta local")
+
+        self.assertEqual(post.call_args.args[0], "http://127.0.0.1:11434/api/chat")
+        self.assertEqual(post.call_args.kwargs["timeout"], 12)
+        payload = post.call_args.kwargs["json"]
+        self.assertFalse(payload["stream"])
+        self.assertEqual(payload["options"], {"temperature": 0.4, "num_predict": 275})
+
+    def test_ollama_failure_is_controlled(self) -> None:
+        import httpx
+
+        with patch("apps.api.llm.httpx.post", side_effect=httpx.ConnectError("offline")):
+            generator = build_text_generator(self._settings())
+            with self.assertRaisesRegex(Exception, "Ollama is unavailable"):
+                generator.generate("brief")
+
+    def test_ollama_requires_an_explicit_model(self) -> None:
+        with self.assertRaisesRegex(ValueError, "OLLAMA_MODEL"):
+            LlmSettings(provider="ollama").validate()

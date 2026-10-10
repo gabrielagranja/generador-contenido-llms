@@ -2,9 +2,9 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #102 — Optional local Ollama provider
-- Human approval: pending review of this contract.
+- Human approval: explicit approval in the task conversation on 2026-10-10.
 
 ## Plan objective
 
@@ -39,8 +39,8 @@ Fake HTTP transport and injected generators verify request parameters, response 
 
 ## Open questions and blockers
 
-The installed local model and available hardware are unknown. OLLAMA_MODEL remains explicit rather than assuming a commercial-data-safe or installed model. Contract approval is pending. No installation is necessary for offline implementation verification.
+The installed local model and available hardware are unknown. OLLAMA_MODEL remains explicit rather than assuming a commercial-data-safe or installed model. Contract approved on 2026-10-10. No installation is necessary for offline implementation verification.
 
 ## Approval
 
-Pending. Implementation starts after explicit human approval of this contract.
+Approved. Human approval received in the task conversation on 2026-10-10.
