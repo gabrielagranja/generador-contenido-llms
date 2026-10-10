@@ -48,6 +48,12 @@ const placeholders: Partial<Record<ViewId, string>> = {
   settings: "Configuración de la plataforma y de cada marca, incluidos sus materiales y fuentes.",
 };
 
+type DraftApiResponse = {
+  detail?: string;
+  drafts?: Array<{ caption?: string }>;
+  review_state?: "pending_human_review";
+};
+
 export function Workspace() {
   const [view, setView] = useState<ViewId>("dashboard");
   const [brandId, setBrandId] = useState<BrandId>("panaderia");
@@ -168,7 +174,7 @@ export function Workspace() {
     }
     setIsPreparing(true);
     setValidationMessage("");
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+    const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
 
     try {
@@ -187,11 +193,16 @@ export function Workspace() {
             notes: "Generated from Content Studio local workspace.",
             facts: [],
           },
+          // RAG remains opt-in; the current workspace contexts are synthetic fixtures.
+          rag_enabled: false,
         }),
       });
-      const payload = (await response.json()) as { detail?: string; drafts?: Array<{ caption?: string }> };
+      const payload = (await response.json()) as DraftApiResponse;
       if (!response.ok) {
         throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);
+      }
+      if (payload.review_state !== "pending_human_review") {
+        throw new Error("La API no confirm\u00f3 que el borrador quede pendiente de revisi\u00f3n humana.");
       }
       const copy = payload.drafts?.[0]?.caption?.trim();
       if (!copy) throw new Error("La API no devolvió un borrador editable.");
