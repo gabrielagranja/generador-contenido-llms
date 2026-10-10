@@ -7,12 +7,12 @@ type NavEntry = { id: ViewId; label: string; sub?: boolean; meta?: string };
 const primary: NavEntry[] = [
   { id: "dashboard", label: "Dashboard" },
   { id: "content-studio", label: "Content Studio" },
-  { id: "drafts", label: "Borradores", sub: true },
-  { id: "history", label: "Historial", sub: true },
+  { id: "drafts", label: "Borradores" },
+  { id: "calendar", label: "Calendario" },
+  { id: "history", label: "Historial" },
 ];
 
 const upcoming: NavEntry[] = [
-  { id: "calendar", label: "Calendar" },
   { id: "library", label: "Library" },
   { id: "analytics", label: "Analytics" },
   { id: "brands", label: "Brands & Stores" },
@@ -36,7 +36,7 @@ export function Sidebar({
   sidebarRef: RefObject<HTMLElement | null>;
   id: string;
 }) {
-  function renderItem(entry: NavEntry, meta?: string) {
+  function renderItem(entry: NavEntry, meta?: string, index?: number) {
     return (
       <li key={entry.id}>
         <button
@@ -45,7 +45,10 @@ export function Sidebar({
           aria-current={view === entry.id ? "page" : undefined}
           onClick={() => onNavigate(entry.id)}
         >
-          <span>{entry.label}</span>
+          <span className={styles.navLabel}>
+            {index !== undefined && <span className={styles.navNum} aria-hidden="true">{index}</span>}
+            {entry.label}
+          </span>
           {meta && <span className={styles.navMeta}>{meta}</span>}
         </button>
       </li>
@@ -59,7 +62,7 @@ export function Sidebar({
       <nav className={styles.nav} aria-label="Navegación principal">
         <div className={styles.navGroup}>
           <p className={styles.sectionLabel}>Trabajo editorial</p>
-          <ul>{primary.map((entry) => renderItem(entry, entry.id === "drafts" ? String(draftCount) : undefined))}</ul>
+          <ul>{primary.map((entry, index) => renderItem(entry, entry.id === "drafts" ? String(draftCount) : undefined, index))}</ul>
         </div>
         <div className={styles.navGroup}>
           <p className={styles.sectionLabel}>Próximamente</p>

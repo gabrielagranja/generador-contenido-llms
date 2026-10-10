@@ -74,8 +74,9 @@ export function ContentStudio({
       <header className={styles.head}>
         <div>
           <Kicker>Content Studio</Kicker>
-          <h1 id="view-title" className={styles.title}>Prepara una idea de contenido</h1>
-          <p className={styles.context}>Trabajando en <strong>{contextName}</strong></p>
+          <p className={styles.greeting}>Hola, Gabriela</p>
+          <h1 id="view-title" className={styles.title}>¿Qué historia contamos hoy?</h1>
+          <p className={styles.context}>Marca activa: <strong>{contextName}</strong>. Cuéntame tu idea en el primer paso; tú decides qué se aprueba.</p>
         </div>
         <SyntheticNotice>API local · revisión humana · persistencia local</SyntheticNotice>
       </header>
@@ -127,16 +128,19 @@ export function ContentStudio({
                 {reviewMessage && <p className={styles.alert} role="alert">{reviewMessage}</p>}
               </div>
             ) : null}
-            <p className={styles.note}>
+            <p className={styles.banner}>
               Aprobar solo cambia el estado local del prototipo. No habilita copia, exportación ni publicación.
             </p>
-            <section className={styles.details} aria-labelledby="plan-save-title">
-              <h3 id="plan-save-title" className={styles.colTitle}>Plan editorial</h3>
+            <section className={styles.savePlan} aria-labelledby="plan-save-title">
+              <h3 id="plan-save-title" className={styles.savePlanTitle}>Plan editorial</h3>
               <p className={styles.note}>Guarda el contenido validado como un plan de un ítem para verlo en el calendario.</p>
-              <button className={styles.action} type="button" onClick={onSavePlan} disabled={!canSavePlan}>
+              <button className={styles.savePlanButton} type="button" onClick={onSavePlan} disabled={!canSavePlan} aria-describedby="plan-save-hint">
                 Guardar plan validado
               </button>
-              {planSaveMessage && <p className={styles.note} role="status">{planSaveMessage}</p>}
+              <p id="plan-save-hint" className={styles.note}>
+                {canSavePlan ? "Se guardará en el Calendario editorial." : "Se habilita cuando hay un borrador preparado."}
+              </p>
+              {planSaveMessage && <p className={styles.saveMessage} role="status">{planSaveMessage}</p>}
             </section>
           </section>
 
@@ -152,11 +156,11 @@ export function ContentStudio({
             <p>{contextSummary}</p>
             <dl>
               {contextSector && (<><dt>Sector</dt><dd>{contextSector}</dd></>)}
-              <dt>Restricciones del brief</dt>
+              <dt>Restricciones indicadas</dt>
               <dd>{brief.restrictions || "Sin restricciones indicadas"}</dd>
             </dl>
             <p className={styles.note}>
-              El contexto de marca se aplica en segundo plano; esta vista mantiene la atención en el brief y la revisión.
+              El contexto de marca se aplica en segundo plano; esta vista mantiene la atención en tu idea y la revisión.
             </p>
           </details>
         </aside>

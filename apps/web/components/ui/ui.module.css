@@ -40,7 +40,7 @@
 .step { padding: var(--space-3) var(--space-2) 0 0; font-size: var(--step--1); color: var(--muted); }
 .stepNum { display: block; font-family: var(--font-display); font-size: var(--step-1); color: var(--rule-strong); }
 .stepDone, .stepCurrent { color: var(--ink); }
-.stepDone .stepNum, .stepCurrent .stepNum { color: var(--brand-accent); }
+.stepDone .stepNum, .stepCurrent .stepNum { color: var(--accent); }
 .stepCurrent { font-weight: 700; }
 
 .art {

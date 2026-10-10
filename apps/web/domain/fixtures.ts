@@ -7,7 +7,7 @@ import type {
 } from "./types.ts";
 
 /**
- * Deterministic UI fixtures. The independent bakery remains synthetic; Coll
+ * Deterministic UI fixtures. The Talent Hive sample brand remains synthetic; Coll
  * Amunt! commerce contexts carry only official names and real business IDs.
  * Factual content for those businesses is retrieved by the API RAG boundary.
  */
@@ -15,11 +15,11 @@ import type {
 export const brandContexts: BrandContext[] = [
   {
     id: "panaderia",
-    name: "Panadería La Plaza",
-    account: "panaderialaplaza",
-    kind: "Marca independiente",
-    summary: "Marca independiente de panadería con producto artesano de elaboración diaria. Ficha sintética de ejemplo.",
-    theme: { accent: "#9a5b13", ink: "#3b2a14", tint: "#f3e4c8" },
+    name: "Talent Hive",
+    account: "talenthive",
+    kind: "Soluciones gamificadas para empresas",
+    summary: "Soluciones gamificadas para empresas. Ficha sintética de ejemplo.",
+    theme: { accent: "#2453d4", ink: "#0f1f4d", tint: "#dfe7fb" },
   },
   {
     id: "coll-amunt",
@@ -50,18 +50,18 @@ export const brandContexts: BrandContext[] = [
 ];
 
 export const dashboardFixtures: Record<string, DashboardFixture> = {
-  panaderialaplaza: {
+  talenthive: {
     drafts: 3,
     review: 2,
     approved: 5,
     upcoming: [
-      { id: "plaza-1", title: "Pan del día: proceso artesano", date: "12 jun", platform: "Instagram", format: "Carrusel", campaign: "Mañanas de barrio" },
-      { id: "plaza-2", title: "Selección de desayunos", date: "14 jun", platform: "Facebook", format: "Publicación", campaign: "Sabores del barrio" },
+      { id: "hive-1", title: "Qué es la gamificación en la empresa", date: "12 jun", platform: "Instagram", format: "Carrusel", campaign: "Aprender jugando" },
+      { id: "hive-2", title: "Retos que activan a los equipos", date: "14 jun", platform: "Facebook", format: "Publicación", campaign: "Equipos en juego" },
     ],
     activity: [
-      { id: "plaza-a1", text: "Borrador sintético actualizado: Pan del día", time: "Hoy, 09:40" },
-      { id: "plaza-a2", text: "Contenido sintético aprobado para revisión final", time: "Ayer, 16:20" },
-      { id: "plaza-a3", text: "Nuevo contenido añadido al calendario de ejemplo", time: "10 jun, 11:05" },
+      { id: "hive-a1", text: "Borrador sintético actualizado: Qué es la gamificación", time: "Hoy, 09:40" },
+      { id: "hive-a2", text: "Contenido sintético aprobado para revisión final", time: "Ayer, 16:20" },
+      { id: "hive-a3", text: "Nuevo contenido añadido al calendario de ejemplo", time: "10 jun, 11:05" },
     ],
   },
   "coll-amunt-pelu-sonia": {
@@ -81,13 +81,13 @@ export const dashboardFixtures: Record<string, DashboardFixture> = {
 };
 
 export const briefDefaults: Record<string, BriefForm> = {
-  panaderialaplaza: {
-    objective: "Presentar una novedad de producto artesano",
-    audience: "Personas del barrio interesadas en desayunos artesanos",
+  talenthive: {
+    objective: "Presentar una solución gamificada para equipos",
+    audience: "Responsables de personas y equipos en empresas",
     platform: "Instagram",
     format: "Carrusel",
-    campaign: "Mañanas de barrio",
-    restrictions: "Mantener un tono cercano y no prometer disponibilidad futura.",
+    campaign: "Aprender jugando",
+    restrictions: "Mantener un tono cercano y profesional, sin prometer resultados ni cifras.",
   },
   "coll-amunt-pelu-sonia": {
     objective: "Dar a conocer el comercio seleccionado",
@@ -108,39 +108,39 @@ export const briefDefaults: Record<string, BriefForm> = {
 };
 
 export function getBriefDefaults(account: string): BriefForm {
-  return briefDefaults[account] ?? briefDefaults.panaderialaplaza;
+  return briefDefaults[account] ?? briefDefaults.talenthive;
 }
 
 export const draftFixtures: Record<string, LocalDraft[]> = {
-  panaderialaplaza: [
+  talenthive: [
     {
-      id: "plaza-draft-pan-artesano",
-      title: "Una mañana de pan artesano",
+      id: "hive-draft-aprender-jugando",
+      title: "Aprender jugando: una idea para tu equipo",
       platform: "Instagram",
       format: "Carrusel",
       status: "draft",
       updatedAt: "Hoy · 09:40",
-      brief: { ...briefDefaults.panaderialaplaza, objective: "Presentar una idea de desayuno artesano" },
-      copy: `Borrador sintético · Panadería La Plaza\n\nUna idea de desayuno artesano para compartir con el barrio.\n\nContenido de ejemplo, pendiente de edición.`,
+      brief: { ...briefDefaults.talenthive, objective: "Presentar una idea de aprendizaje gamificado" },
+      copy: `Borrador sintético · Talent Hive\n\nUna idea para que el aprendizaje en la empresa se parezca más a un juego.\n\nContenido de ejemplo, pendiente de edición.`,
     },
     {
-      id: "plaza-review-desayunos",
-      title: "Ideas para empezar el día",
+      id: "hive-review-retos",
+      title: "Retos que motivan a un equipo",
       platform: "Facebook",
       format: "Publicación",
       status: "review",
       updatedAt: "Ayer · 16:20",
-      brief: { ...briefDefaults.panaderialaplaza, platform: "Facebook", format: "Publicación", campaign: "Mañanas de barrio" },
-      copy: `Borrador sintético · Panadería La Plaza\n\nDescubre una propuesta de desayuno para disfrutar con calma.\n\nContenido de ejemplo, pendiente de revisión humana.`,
+      brief: { ...briefDefaults.talenthive, platform: "Facebook", format: "Publicación", campaign: "Aprender jugando" },
+      copy: `Borrador sintético · Talent Hive\n\nDescubre cómo un reto bien diseñado puede activar a un equipo.\n\nContenido de ejemplo, pendiente de revisión humana.`,
     },
     {
-      id: "plaza-approved-temporada",
-      title: "Sabores de temporada",
+      id: "hive-approved-equipos",
+      title: "Equipos en juego",
       platform: "Instagram",
       format: "Publicación",
       status: "approved",
       updatedAt: "8 oct · 12:15",
-      brief: { ...briefDefaults.panaderialaplaza, format: "Publicación", campaign: "Sabores del barrio" },
+      brief: { ...briefDefaults.talenthive, format: "Publicación", campaign: "Equipos en juego" },
       copy: `Texto sintético aprobado en el prototipo para ilustrar el estado editorial.`,
     },
   ],
@@ -150,10 +150,10 @@ export const draftFixtures: Record<string, LocalDraft[]> = {
 
 /** Synthetic editorial activity retained from the existing History screen. */
 export const historyFixtures: Record<string, HistoryEntry[]> = {
-  panaderialaplaza: [
-    { id: "plaza-history-1", text: "Se editó un borrador local.", time: "Hoy · 09:40", status: "draft", draftId: "plaza-draft-pan-artesano" },
-    { id: "plaza-history-2", text: "El contenido se envió a revisión humana.", time: "Ayer · 16:20", status: "review", draftId: "plaza-review-desayunos" },
-    { id: "plaza-history-3", text: "Se marcó como aprobado en el prototipo.", time: "8 oct · 12:15", status: "approved", draftId: "plaza-approved-temporada" },
+  talenthive: [
+    { id: "hive-history-1", text: "Se editó un borrador local.", time: "Hoy · 09:40", status: "draft", draftId: "hive-draft-aprender-jugando" },
+    { id: "hive-history-2", text: "El contenido se envió a revisión humana.", time: "Ayer · 16:20", status: "review", draftId: "hive-review-retos" },
+    { id: "hive-history-3", text: "Se marcó como aprobado en el prototipo.", time: "8 oct · 12:15", status: "approved", draftId: "hive-approved-equipos" },
   ],
   "coll-amunt-pelu-sonia": [],
   "coll-amunt-centre-d-estetica-alma": [],

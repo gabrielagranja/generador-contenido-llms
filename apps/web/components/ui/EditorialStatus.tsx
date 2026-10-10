@@ -45,7 +45,7 @@ export function StudioStatus({ status }: { status: DraftPreparationStatus }) {
   );
 }
 
-const steps = ["Brief", "Borrador", "Revisión", "Aprobación"] as const;
+const steps = ["Idea", "Borrador", "Revisión", "Aprobación"] as const;
 
 function currentStep(status: DraftPreparationStatus): number {
   switch (status) {

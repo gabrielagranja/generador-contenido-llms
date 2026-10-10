@@ -57,24 +57,25 @@ export function BriefEditor({
 
   return (
     <section aria-labelledby="brief-title">
-      <h2 id="brief-title" className={styles.colTitle}>1 · Brief</h2>
+      <h2 id="brief-title" className={styles.colTitle}>1 · ¿Por dónde empezamos?</h2>
+      <p className={`${styles.note} ${styles.briefLead}`}>Cuéntame qué tienes en mente: el objetivo, a quién le hablas y dónde se publicará.</p>
       <div className={styles.fields}>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="brief-objective">Objetivo</label>
+          <label className={styles.label} htmlFor="brief-objective">¿Qué quieres conseguir?</label>
           <textarea id="brief-objective" className={styles.input} rows={3} value={brief.objective} onChange={(e) => onChange("objective", e.target.value)} />
         </div>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="brief-audience">Audiencia</label>
+          <label className={styles.label} htmlFor="brief-audience">¿A quién le hablas?</label>
           <input id="brief-audience" className={styles.input} value={brief.audience} onChange={(e) => onChange("audience", e.target.value)} />
         </div>
-        <Choice legend="Canal" name="platform" options={platforms} value={brief.platform} onChange={(v) => onChange("platform", v)} />
-        <Choice legend="Formato (MVP)" name="format" options={formats} value={brief.format} onChange={(v) => onChange("format", v)} />
+        <Choice legend="¿Dónde lo publicamos?" name="platform" options={platforms} value={brief.platform} onChange={(v) => onChange("platform", v)} />
+        <Choice legend="¿En qué formato?" name="format" options={formats} value={brief.format} onChange={(v) => onChange("format", v)} />
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="brief-campaign">Campaña</label>
+          <label className={styles.label} htmlFor="brief-campaign">¿Hay alguna campaña?</label>
           <input id="brief-campaign" className={styles.input} value={brief.campaign} onChange={(e) => onChange("campaign", e.target.value)} />
         </div>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="brief-restrictions">Restricciones</label>
+          <label className={styles.label} htmlFor="brief-restrictions">¿Algo que debamos evitar?</label>
           <textarea id="brief-restrictions" className={styles.input} rows={3} value={brief.restrictions} onChange={(e) => onChange("restrictions", e.target.value)} />
         </div>
         <button type="button" className={styles.primary} onClick={onPrepare} disabled={isPreparing}>{prepareLabel}</button>

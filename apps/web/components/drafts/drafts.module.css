@@ -14,7 +14,7 @@
 .entryTop { display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; }
 .excerpt { color: var(--ink-soft); font-size: 0.9375rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .open { justify-self: start; min-height: 2.5rem; padding: 0; border: 0; border-bottom: 2px solid var(--ink); background: transparent; font-weight: 700; }
-.open:hover { color: var(--brand-accent); border-color: var(--brand-accent); }
+.open:hover { color: var(--accent); border-color: var(--accent); }
 .empty { padding: var(--space-6) 0; color: var(--muted); }
 .empty strong { display: block; font-family: var(--font-display); font-size: var(--step-1); color: var(--ink); }
 .boundary { margin-top: var(--space-6); font-size: var(--step--1); color: var(--muted); }
