@@ -93,6 +93,7 @@ export type LocalDraft = {
   evidenceProvenance?: DraftEvidence[];
   supportedClaims?: string[];
   unsupportedClaims?: string[];
+  reviewer?: string;
 };
 
 export type DraftEvidence = {

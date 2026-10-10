@@ -22,6 +22,9 @@ export function ContentStudio({
   evidenceProvenance,
   supportedClaims,
   unsupportedClaims,
+  reviewerName,
+  reviewMessage,
+  onReviewerChange,
   onBriefChange,
   onCopyChange,
   onPrepare,
@@ -43,6 +46,9 @@ export function ContentStudio({
   evidenceProvenance: DraftEvidence[];
   supportedClaims: string[];
   unsupportedClaims: string[];
+  reviewerName: string;
+  reviewMessage: string;
+  onReviewerChange: (value: string) => void;
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onCopyChange: (value: string) => void;
   onPrepare: () => void | Promise<void>;
@@ -97,6 +103,13 @@ export function ContentStudio({
               <p className={styles.hint}>{statusCopy[status].hint}</p>
             </div>
             <ReviewActions status={status} onApprove={onApprove} onRequestChanges={onRequestChanges} onResubmit={onResubmit} />
+            {status === "pending-review" || status === "changes-requested" ? (
+              <div className={styles.reviewerField}>
+                <label className={styles.label} htmlFor="reviewer-name">Reviewer</label>
+                <input id="reviewer-name" className={styles.input} value={reviewerName} onChange={(event) => onReviewerChange(event.target.value)} placeholder="Identidad del reviewer" />
+                {reviewMessage && <p className={styles.alert} role="alert">{reviewMessage}</p>}
+              </div>
+            ) : null}
             <p className={styles.note}>
               Aprobar solo cambia el estado local del prototipo. No habilita copia, exportación ni publicación.
             </p>

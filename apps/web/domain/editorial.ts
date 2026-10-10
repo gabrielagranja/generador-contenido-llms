@@ -17,16 +17,20 @@ export function afterTextChange(current: DraftPreparationStatus): DraftPreparati
   return current === "approved" ? "brief-changed" : current;
 }
 
-export function approve(current: DraftPreparationStatus): DraftPreparationStatus {
-  return current === "pending-review" ? "approved" : current;
+export function approve(current: DraftPreparationStatus, reviewer = ""): DraftPreparationStatus {
+  return current === "pending-review" && reviewer.trim() ? "approved" : current;
 }
 
-export function requestChanges(current: DraftPreparationStatus): DraftPreparationStatus {
-  return current === "pending-review" ? "changes-requested" : current;
+export function requestChanges(current: DraftPreparationStatus, reviewer = ""): DraftPreparationStatus {
+  return current === "pending-review" && reviewer.trim() ? "changes-requested" : current;
 }
 
-export function resubmit(current: DraftPreparationStatus): DraftPreparationStatus {
-  return current === "changes-requested" ? "pending-review" : current;
+export function resubmit(current: DraftPreparationStatus, reviewer = ""): DraftPreparationStatus {
+  return current === "changes-requested" && reviewer.trim() ? "pending-review" : current;
+}
+
+export function missingReviewer(reviewer: string): boolean {
+  return !reviewer.trim();
 }
 
 export function statusFromDraft(status: EditorialStatus): DraftPreparationStatus {
