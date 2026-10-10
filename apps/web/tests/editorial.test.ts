@@ -58,7 +58,7 @@ test("opening a stored draft never grants approval it did not have", () => {
 });
 
 test("a brief with empty required fields is rejected", () => {
-  const brief = getBriefDefaults("collamunt_a");
+  const brief = getBriefDefaults("coll-amunt-pelu-sonia");
   assert.equal(missingBriefFields(brief), false);
   assert.equal(missingBriefFields({ ...brief, objective: "  " }), true);
   assert.equal(missingBriefFields({ ...brief, audience: "" }), true);
@@ -66,6 +66,6 @@ test("a brief with empty required fields is rejected", () => {
 });
 
 test("synthetic copy is labelled as a prototype draft", () => {
-  const copy = buildSyntheticCopy("Coll Amunt!", getBriefDefaults("collamunt_a"));
+  const copy = buildSyntheticCopy("Panadería La Plaza", getBriefDefaults("panaderialaplaza"));
   assert.match(copy, /^Borrador de prototipo · datos sintéticos/);
 });

@@ -176,6 +176,7 @@ export function Workspace() {
     setValidationMessage("");
     const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
+    const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
 
     try {
       const response = await fetch(`${apiBaseUrl}/drafts`, {
@@ -193,8 +194,8 @@ export function Workspace() {
             notes: "Generated from Content Studio local workspace.",
             facts: [],
           },
-          // RAG remains opt-in; the current workspace contexts are synthetic fixtures.
-          rag_enabled: false,
+          rag_enabled: Boolean(ragBusinessId),
+          ...(ragBusinessId ? { business_id: ragBusinessId, top_k: 3 } : {}),
         }),
       });
       const payload = (await response.json()) as DraftApiResponse;

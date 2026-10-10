@@ -13,7 +13,7 @@ test("Coll Amunt! is a Barcelona local business association, not an outdoors bra
   const texts = [
     coll.summary,
     ...(coll.commerceOptions ?? []).flatMap((c) => [c.summary, c.sector]),
-    ...["collamunt_a", "collamunt_b"].flatMap((a) => [
+    ...["coll-amunt-pelu-sonia", "coll-amunt-centre-d-estetica-alma"].flatMap((a) => [
       briefDefaults[a].objective,
       briefDefaults[a].audience,
       briefDefaults[a].campaign,
@@ -39,19 +39,20 @@ test("every selectable context has its own brief, dashboard and drafts", () => {
 test("drafts never reference another context", () => {
   for (const [account, drafts] of Object.entries(draftFixtures)) {
     for (const draft of drafts) {
-      if (account === "collamunt_a") assert.doesNotMatch(draft.copy, /Comercio sintético B|La Plaza/);
-      if (account === "collamunt_b") assert.doesNotMatch(draft.copy, /Comercio sintético A|La Plaza/);
       if (account === "panaderialaplaza") assert.doesNotMatch(draft.copy, /Coll Amunt/);
     }
   }
 });
 
-test("associated businesses are explicitly synthetic", () => {
+test("associated businesses carry stable real Coll Amunt IDs", () => {
   const coll = brandContexts.find((brand) => brand.id === "coll-amunt");
-  for (const commerce of coll?.commerceOptions ?? []) assert.match(commerce.name, /sintético/i);
+  for (const commerce of coll?.commerceOptions ?? []) {
+    assert.match(commerce.businessId, /^coll-amunt-/);
+    assert.equal(commerce.account, commerce.businessId);
+  }
 });
 
-test("history entries link to a draft in the same synthetic context", () => {
+test("history entries link to a draft in the same context", () => {
   for (const [account, entries] of Object.entries(historyFixtures)) {
     const draftIds = new Set((draftFixtures[account] ?? []).map((draft) => draft.id));
     for (const entry of entries) assert.ok(draftIds.has(entry.draftId), `${account}: missing ${entry.draftId}`);
