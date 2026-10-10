@@ -6,6 +6,7 @@ export type DraftGenerationResult = {
   evidenceProvenance: DraftEvidence[];
   supportedClaims: string[];
   unsupportedClaims: string[];
+  contentIds: string[];
 };
 
 type DraftApiResponse = {
@@ -17,6 +18,7 @@ type DraftApiResponse = {
     unsupported_claims?: unknown;
   }>;
   review_state?: string;
+  content_ids?: string[];
 };
 
 export const generationStateLabels: Record<GenerationState, string> = {
@@ -64,7 +66,11 @@ export async function parseDraftResponse(
     ? draft.unsupported_claims.filter((claim): claim is string => typeof claim === "string" && claim.trim().length > 0)
     : [];
 
-  return { copy, reviewState: "pending_human_review", evidenceProvenance, supportedClaims, unsupportedClaims };
+  const contentIds = Array.isArray(payload.content_ids) ? payload.content_ids.filter((id): id is string => typeof id === "string" && id.trim().length > 0) : [];
+  if (contentIds.length !== (payload.drafts?.length ?? 0)) {
+    throw new Error("La API no devolvió identificadores para todos los borradores.");
+  }
+  return { copy, reviewState: "pending_human_review", evidenceProvenance, supportedClaims, unsupportedClaims, contentIds };
 }
 
 function normalizeEvidence(item: unknown, expectedBusinessId?: string): DraftEvidence[] {

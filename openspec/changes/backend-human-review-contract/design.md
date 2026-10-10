@@ -22,4 +22,3 @@ segregation only; it is not an authenticated tenant boundary. Because this
 iteration introduces no authentication or identity verification, the API does
 not claim to authorize a caller for a `business_id`, and clients must not treat
 the preserved business metadata as an access-control decision.
-

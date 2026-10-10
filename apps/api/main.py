@@ -215,4 +215,3 @@ def edit_draft(content_id: str, request: ManualEditRequest) -> EditorialContent:
     except EditorialTransitionError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     return editorial_store.save(updated)
-
