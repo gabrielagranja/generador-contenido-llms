@@ -81,13 +81,13 @@ export function ContentPreview({
           <h3 id="grounding-title" className={styles.colTitle}>Verificación editorial</h3>
           {supportedClaims.length > 0 && (
             <ul className={styles.claimList} aria-label="Afirmaciones respaldadas">
-              {supportedClaims.map((claim) => <li key={`supported-${claim}`} className={styles.supported}>SUPPORTED: {claim}</li>)}
+              {supportedClaims.map((claim) => <li key={`supported-${claim}`} className={styles.supported}>Respaldado por fuentes: {claim}</li>)}
             </ul>
           )}
           {unsupportedClaims.length > 0 && (
             <>
               <ul className={styles.claimList} aria-label="Afirmaciones no respaldadas">
-                {unsupportedClaims.map((claim) => <li key={`unsupported-${claim}`} className={styles.unsupported}>UNSUPPORTED: {claim}</li>)}
+                {unsupportedClaims.map((claim) => <li key={`unsupported-${claim}`} className={styles.unsupported}>Sin respaldo en fuentes: {claim}</li>)}
               </ul>
               <p className={styles.warning} role="alert">Esta afirmación no está respaldada por las fuentes disponibles. Revísala antes de aprobar el contenido.</p>
             </>
