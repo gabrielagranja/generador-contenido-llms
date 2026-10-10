@@ -3,11 +3,19 @@ export type GenerationState = "idle" | "loading" | "success" | "error";
 export type DraftGenerationResult = {
   copy: string;
   reviewState: "pending_human_review";
+  evidenceProvenance: DraftEvidence[];
+  supportedClaims: string[];
+  unsupportedClaims: string[];
 };
 
 type DraftApiResponse = {
   detail?: string;
-  drafts?: Array<{ caption?: string }>;
+  drafts?: Array<{
+    caption?: string;
+    evidence_provenance?: unknown;
+    supported_claims?: unknown;
+    unsupported_claims?: unknown;
+  }>;
   review_state?: string;
 };
 
@@ -22,7 +30,10 @@ export function canStartGeneration(state: GenerationState): boolean {
   return state !== "loading";
 }
 
-export async function parseDraftResponse(response: Pick<Response, "ok" | "status" | "json">): Promise<DraftGenerationResult> {
+export async function parseDraftResponse(
+  response: Pick<Response, "ok" | "status" | "json">,
+  expectedBusinessId?: string,
+): Promise<DraftGenerationResult> {
   let payload: DraftApiResponse;
   try {
     payload = (await response.json()) as DraftApiResponse;
@@ -37,10 +48,49 @@ export async function parseDraftResponse(response: Pick<Response, "ok" | "status
     throw new Error("La API no confirmó que el borrador quede pendiente de revisión humana.");
   }
 
-  const copy = payload.drafts?.[0]?.caption?.trim();
-  if (!copy) {
+  const draft = payload.drafts?.[0];
+  const copy = draft?.caption?.trim();
+  if (!draft || !copy) {
     throw new Error("La API no devolvió un borrador editable.");
   }
 
-  return { copy, reviewState: "pending_human_review" };
+  const evidenceProvenance = Array.isArray(draft.evidence_provenance)
+    ? draft.evidence_provenance.flatMap((item) => normalizeEvidence(item, expectedBusinessId))
+    : [];
+  const supportedClaims = Array.isArray(draft.supported_claims)
+    ? draft.supported_claims.filter((claim): claim is string => typeof claim === "string" && claim.trim().length > 0)
+    : [];
+  const unsupportedClaims = Array.isArray(draft.unsupported_claims)
+    ? draft.unsupported_claims.filter((claim): claim is string => typeof claim === "string" && claim.trim().length > 0)
+    : [];
+
+  return { copy, reviewState: "pending_human_review", evidenceProvenance, supportedClaims, unsupportedClaims };
+}
+
+function normalizeEvidence(item: unknown, expectedBusinessId?: string): DraftEvidence[] {
+  if (!item || typeof item !== "object") return [];
+  const value = item as Record<string, unknown>;
+  if (typeof value.business_id !== "string" || !expectedBusinessId || value.business_id !== expectedBusinessId) return [];
+  return [{
+    business_id: value.business_id,
+    ...(typeof value.source_type === "string" ? { source_type: value.source_type } : {}),
+    ...(typeof value.source_id === "string" ? { source_id: value.source_id } : {}),
+    ...(typeof value.source_version === "string" ? { source_version: value.source_version } : {}),
+    ...(typeof value.source_file === "string" ? { source_file: value.source_file } : {}),
+    ...(typeof value.page_number === "number" ? { page_number: value.page_number } : {}),
+    ...(typeof value.source_uri === "string" ? { source_uri: value.source_uri } : {}),
+  }];
+}
+import type { DraftEvidence } from "./types.ts";
+
+
+export function dedupeEvidence(evidence: DraftEvidence[]): DraftEvidence[] {
+  return Array.from(
+    new Map(
+      evidence.map((item) => [
+        `${item.business_id}|${item.source_id ?? ""}|${item.source_file ?? ""}|${item.page_number ?? ""}`,
+        item,
+      ]),
+    ).values(),
+  );
 }

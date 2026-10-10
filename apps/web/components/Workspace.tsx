@@ -8,6 +8,7 @@ import type {
   DraftPreparationStatus,
   HistoryEntry,
   LocalDraft,
+  DraftEvidence,
   ViewId,
 } from "../domain/types.ts";
 import { canStartGeneration, parseDraftResponse, type GenerationState } from "../domain/draft-generation.ts";
@@ -31,7 +32,12 @@ import { PlaceholderView } from "./ui/PlaceholderView";
 
 type DraftApiResponse = {
   detail?: string;
-  drafts?: Array<{ caption?: string }>;
+  drafts?: Array<{
+    caption?: string;
+    evidence_provenance?: unknown;
+    supported_claims?: unknown;
+    unsupported_claims?: unknown;
+  }>;
   review_state?: "pending_human_review";
 };
 
@@ -97,6 +103,9 @@ export function Workspace() {
   const [status, setStatus] = useState<DraftPreparationStatus>("not-prepared");
   const [validationMessage, setValidationMessage] = useState("");
   const [generationState, setGenerationState] = useState<GenerationState>("idle");
+  const [previewEvidence, setPreviewEvidence] = useState<DraftEvidence[]>([]);
+  const [supportedClaims, setSupportedClaims] = useState<string[]>([]);
+  const [unsupportedClaims, setUnsupportedClaims] = useState<string[]>([]);
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
@@ -104,6 +113,9 @@ export function Workspace() {
     setStatus("not-prepared");
     setValidationMessage("");
     setGenerationState("idle");
+    setPreviewEvidence([]);
+    setSupportedClaims([]);
+    setUnsupportedClaims([]);
     setActiveSessionDraftId(null);
   }, [activeContext.account, contextName]);
 
@@ -177,6 +189,9 @@ export function Workspace() {
     }
     setGenerationState("loading");
     setValidationMessage("");
+    setPreviewEvidence([]);
+    setSupportedClaims([]);
+    setUnsupportedClaims([]);
     const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
     const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
@@ -202,7 +217,10 @@ export function Workspace() {
         }),
       });
       const payload = (await response.json()) as DraftApiResponse;
-      const parsed = await parseDraftResponse({ ok: response.ok, status: response.status, json: async () => payload });
+      const parsed = await parseDraftResponse(
+        { ok: response.ok, status: response.status, json: async () => payload },
+        ragBusinessId,
+      );
       if (!response.ok) {
         throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);
       }
@@ -221,6 +239,9 @@ export function Workspace() {
         updatedAt: "Ahora · sesión actual",
         brief,
         copy,
+        evidenceProvenance: parsed.evidenceProvenance,
+        supportedClaims: parsed.supportedClaims,
+        unsupportedClaims: parsed.unsupportedClaims,
       };
       setSessionDraftsByContext((current) => ({
         ...current,
@@ -228,6 +249,9 @@ export function Workspace() {
       }));
       setActiveSessionDraftId(sessionDraft.id);
       setPreviewCopy(copy);
+      setPreviewEvidence(parsed.evidenceProvenance);
+      setSupportedClaims(parsed.supportedClaims);
+      setUnsupportedClaims(parsed.unsupportedClaims);
       setStatus("pending-review");
       setGenerationState("success");
       recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador con la API y quedó pendiente de revisión humana.");
@@ -240,6 +264,9 @@ export function Workspace() {
   function openDraft(draft: LocalDraft) {
     setBrief(draft.brief);
     setPreviewCopy(draft.copy);
+    setPreviewEvidence(draft.evidenceProvenance ?? []);
+    setSupportedClaims(draft.supportedClaims ?? []);
+    setUnsupportedClaims(draft.unsupportedClaims ?? []);
     setStatus(statusFromDraft(draft.status));
     setActiveSessionDraftId(draft.id.startsWith("session-") ? draft.id : null);
     setValidationMessage("");
@@ -318,6 +345,9 @@ export function Workspace() {
           status={status}
           validationMessage={validationMessage}
           generationState={generationState}
+          evidenceProvenance={previewEvidence}
+          supportedClaims={supportedClaims}
+          unsupportedClaims={unsupportedClaims}
           onBriefChange={updateBrief}
           onCopyChange={updateCopy}
           onPrepare={prepareDraft}

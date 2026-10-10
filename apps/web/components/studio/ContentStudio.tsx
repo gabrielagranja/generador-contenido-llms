@@ -1,4 +1,4 @@
-import type { BrandTheme, BriefForm, DraftPreparationStatus } from "../../domain/types.ts";
+import type { BrandTheme, BriefForm, DraftEvidence, DraftPreparationStatus } from "../../domain/types.ts";
 import { generationStateLabels, type GenerationState } from "../../domain/draft-generation.ts";
 import { statusCopy } from "../../domain/editorial.ts";
 import { Kicker, SyntheticNotice } from "../ui/Kicker";
@@ -19,6 +19,9 @@ export function ContentStudio({
   status,
   validationMessage,
   generationState,
+  evidenceProvenance,
+  supportedClaims,
+  unsupportedClaims,
   onBriefChange,
   onCopyChange,
   onPrepare,
@@ -37,6 +40,9 @@ export function ContentStudio({
   status: DraftPreparationStatus;
   validationMessage: string;
   generationState: GenerationState;
+  evidenceProvenance: DraftEvidence[];
+  supportedClaims: string[];
+  unsupportedClaims: string[];
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onCopyChange: (value: string) => void;
   onPrepare: () => void | Promise<void>;
@@ -73,6 +79,9 @@ export function ContentStudio({
           brief={brief}
           copy={previewCopy}
           status={status}
+          evidenceProvenance={evidenceProvenance}
+          supportedClaims={supportedClaims}
+          unsupportedClaims={unsupportedClaims}
           onCopyChange={onCopyChange}
         />
 

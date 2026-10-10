@@ -90,6 +90,19 @@ export type LocalDraft = {
   updatedAt: string;
   brief: BriefForm;
   copy: string;
+  evidenceProvenance?: DraftEvidence[];
+  supportedClaims?: string[];
+  unsupportedClaims?: string[];
+};
+
+export type DraftEvidence = {
+  business_id: string;
+  source_type?: string;
+  source_id?: string;
+  source_version?: string;
+  source_file?: string | null;
+  page_number?: number | null;
+  source_uri?: string | null;
 };
 
 export type HistoryStatus = EditorialStatus | "changes-requested";
