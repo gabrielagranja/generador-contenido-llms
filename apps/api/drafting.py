@@ -55,6 +55,7 @@ class EditableTextDraft(BaseModel):
     assumptions: list[str] = Field(default_factory=list)
     review_notes: list[str] = Field(default_factory=list)
     evidence_provenance: list[dict[str, object]] = Field(default_factory=list)
+    supported_claims: list[str] = Field(default_factory=list)
     unsupported_claims: list[str] = Field(default_factory=list)
 
 
@@ -134,6 +135,7 @@ class ChannelAdaptedDraftService:
             assumptions=assumptions,
             review_notes=review_notes,
             evidence_provenance=[_provenance_dict(context) for context in retrieved_contexts],
+            supported_claims=supported_claims,
             unsupported_claims=unsupported_claims,
         )
 
