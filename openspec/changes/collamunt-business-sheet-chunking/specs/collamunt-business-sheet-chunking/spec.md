@@ -42,3 +42,9 @@ the correct stable business ID, page number and source digest.
 The project MUST and SHALL record validation of the 800-character limit against the
 expert's 14 queries as an open question until the local index is rebuilt and
 the retrieval quality is assessed.
+
+#### Scenario: evaluation queries not yet available
+
+- GIVEN the expert's 14-query evaluation set is unavailable or the local index has not been rebuilt
+- WHEN the proposed 800-character chunk size is reviewed
+- THEN retrieval quality remains explicitly unvalidated and human approval stays pending.
