@@ -24,9 +24,12 @@ export function ContentStudio({
   unsupportedClaims,
   reviewerName,
   reviewMessage,
+  reviewFeedback,
+  onReviewFeedbackChange,
   onReviewerChange,
   onBriefChange,
   onCopyChange,
+  onCopyBlur,
   onPrepare,
   isPreparing,
   onApprove,
@@ -48,9 +51,12 @@ export function ContentStudio({
   unsupportedClaims: string[];
   reviewerName: string;
   reviewMessage: string;
+  reviewFeedback: string;
+  onReviewFeedbackChange: (value: string) => void;
   onReviewerChange: (value: string) => void;
   onBriefChange: (field: keyof BriefForm, value: string) => void;
   onCopyChange: (value: string) => void;
+  onCopyBlur: () => void | Promise<void>;
   onPrepare: () => void | Promise<void>;
   isPreparing: boolean;
   onApprove: () => void;
@@ -88,7 +94,8 @@ export function ContentStudio({
           evidenceProvenance={evidenceProvenance}
           supportedClaims={supportedClaims}
           unsupportedClaims={unsupportedClaims}
-          onCopyChange={onCopyChange}
+           onCopyChange={onCopyChange}
+           onCopyBlur={onCopyBlur}
         />
 
         <aside className={styles.side} aria-label="Estado editorial y contexto">
@@ -107,6 +114,10 @@ export function ContentStudio({
               <div className={styles.reviewerField}>
                 <label className={styles.label} htmlFor="reviewer-name">Reviewer</label>
                 <input id="reviewer-name" className={styles.input} value={reviewerName} onChange={(event) => onReviewerChange(event.target.value)} placeholder="Identidad del reviewer" />
+                {status === "pending-review" && <>
+                  <label className={styles.label} htmlFor="review-feedback">Feedback</label>
+                  <textarea id="review-feedback" className={styles.caption} value={reviewFeedback} onChange={(event) => onReviewFeedbackChange(event.target.value)} placeholder="Motivo de los cambios solicitados" />
+                </>}
                 {reviewMessage && <p className={styles.alert} role="alert">{reviewMessage}</p>}
               </div>
             ) : null}

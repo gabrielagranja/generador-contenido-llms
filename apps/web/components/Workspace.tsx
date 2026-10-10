@@ -12,6 +12,7 @@ import type {
   ViewId,
 } from "../domain/types.ts";
 import { canStartGeneration, parseDraftResponse, type GenerationState } from "../domain/draft-generation.ts";
+import { createDraft, getDraft, reviewDraft, updateDraft, mapBriefToApi, type ApiEditorialContent } from "../domain/review-api.ts";
 import { brandContexts, dashboardFixtures, draftFixtures, getBriefDefaults, historyFixtures } from "../domain/fixtures.ts";
 import {
   afterBriefChange,
@@ -31,16 +32,7 @@ import { HistoryView } from "./history/HistoryView";
 import { ContentStudio } from "./studio/ContentStudio";
 import { PlaceholderView } from "./ui/PlaceholderView";
 
-type DraftApiResponse = {
-  detail?: string;
-  drafts?: Array<{
-    caption?: string;
-    evidence_provenance?: unknown;
-    supported_claims?: unknown;
-    unsupported_claims?: unknown;
-  }>;
-  review_state?: "pending_human_review";
-};
+type DraftApiResponse = { detail?: string; drafts?: Array<{ caption?: string; evidence_provenance?: unknown; supported_claims?: unknown; unsupported_claims?: unknown }>; review_state?: "pending_human_review" };
 
 const viewTitles: Record<ViewId, string> = {
   dashboard: "Dashboard",
@@ -109,6 +101,9 @@ export function Workspace() {
   const [unsupportedClaims, setUnsupportedClaims] = useState<string[]>([]);
   const [reviewerName, setReviewerName] = useState("");
   const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewFeedback, setReviewFeedback] = useState("");
+  const [activeBackendId, setActiveBackendId] = useState<string | null>(null);
+  const requestSequence = useRef(0);
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
@@ -121,7 +116,10 @@ export function Workspace() {
     setUnsupportedClaims([]);
     setReviewerName("");
     setReviewMessage("");
+    setReviewFeedback("");
+    setActiveBackendId(null);
     setActiveSessionDraftId(null);
+    requestSequence.current += 1;
   }, [activeContext.account, contextName]);
 
   function updateBrief(field: keyof BriefForm, value: string) {
@@ -160,12 +158,27 @@ export function Workspace() {
 
   function updateCopy(value: string) {
     setPreviewCopy(value);
+    if (activeBackendId) {
+      updateSessionDraft({ copy: value });
+      return;
+    }
     setStatus(afterTextChange);
     const nextStatus = status === "approved" ? "draft" : status === "pending-review" ? "review" : undefined;
     updateSessionDraft({ copy: value, ...(nextStatus ? { status: nextStatus } : {}) });
   }
 
-  function approveCurrentDraft() {
+  async function approveCurrentDraft() {
+    if (activeBackendId) {
+      if (missingReviewer(reviewerName)) { setReviewMessage("Indica quién revisa el borrador antes de aprobarlo."); return; }
+      const requestVersion = ++requestSequence.current;
+      try {
+        const content = await reviewDraft(activeBackendId, "approve", reviewerName.trim());
+        if (requestVersion !== requestSequence.current) return;
+        applyBackendContent(content);
+        setReviewMessage("");
+      } catch (error) { setReviewMessage(error instanceof Error ? error.message : "No se pudo aprobar el borrador."); }
+      return;
+    }
     if (missingReviewer(reviewerName)) {
       setReviewMessage("Indica quién revisa el borrador antes de aprobarlo.");
       return;
@@ -178,7 +191,19 @@ export function Workspace() {
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "approved", "El borrador fue aprobado en esta sesión.");
   }
 
-  function requestCurrentChanges() {
+  async function requestCurrentChanges() {
+    if (activeBackendId) {
+      if (missingReviewer(reviewerName)) { setReviewMessage("Indica quién revisa el borrador antes de solicitar cambios."); return; }
+      if (!reviewFeedback.trim()) { setReviewMessage("Indica el feedback para solicitar cambios."); return; }
+      const requestVersion = ++requestSequence.current;
+      try {
+        const content = await reviewDraft(activeBackendId, "request_regeneration", reviewerName.trim(), reviewFeedback.trim());
+        if (requestVersion !== requestSequence.current) return;
+        applyBackendContent(content);
+        setReviewMessage("");
+      } catch (error) { setReviewMessage(error instanceof Error ? error.message : "No se pudo registrar el feedback."); }
+      return;
+    }
     if (missingReviewer(reviewerName)) {
       setReviewMessage("Indica quién revisa el borrador antes de solicitar cambios.");
       return;
@@ -192,6 +217,7 @@ export function Workspace() {
   }
 
   function resubmitCurrentDraft() {
+    if (activeBackendId) { setReviewMessage("La API registra la solicitud de cambios; no genera contenido automáticamente."); return; }
     if (missingReviewer(reviewerName)) {
       setReviewMessage("Indica quién revisa el borrador antes de devolverlo a revisión.");
       return;
@@ -202,6 +228,24 @@ export function Workspace() {
     updateSessionDraft({ status: "review" });
     setReviewMessage("");
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "review", "El borrador volvió a revisión humana.");
+  }
+
+  function applyBackendContent(content: ApiEditorialContent) {
+    setActiveBackendId(content.content_id);
+    setPreviewCopy(content.draft.caption);
+    setPreviewEvidence(content.draft.evidence_provenance ?? []);
+    setSupportedClaims(content.draft.supported_claims ?? []);
+    setUnsupportedClaims(content.draft.unsupported_claims ?? []);
+    setStatus(content.state === "approved_final" ? "approved" : "pending-review");
+    setReviewFeedback(content.review?.feedback ?? "");
+    updateSessionDraft({ copy: content.draft.caption, status: content.state === "approved_final" ? "approved" : "review", reviewer: content.review?.reviewer_ref });
+  }
+
+  async function saveCurrentEdit() {
+    if (!activeBackendId || status === "approved") return;
+    const requestVersion = ++requestSequence.current;
+    try { const content = await updateDraft(activeBackendId, previewCopy.trim()); if (requestVersion !== requestSequence.current) return; applyBackendContent(content); setValidationMessage(""); }
+    catch (error) { setValidationMessage(error instanceof Error ? error.message : "No se pudo guardar la edición."); }
   }
 
   async function prepareDraft() {
@@ -220,8 +264,31 @@ export function Workspace() {
     const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
     const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
+    const requestVersion = ++requestSequence.current;
 
     try {
+      {
+      const payload = await createDraft({ brief: mapBriefToApi({ ...brief, restrictions: brief.restrictions.trim() || activeContext.summary }, activeContext.account), brandId: brand.id, businessId: ragBusinessId, ragEnabled: Boolean(ragBusinessId) });
+      if (requestVersion !== requestSequence.current) return;
+      const parsed = await parseDraftResponse({ ok: true, status: 200, json: async () => payload }, ragBusinessId);
+      const parsedDrafts = await Promise.all(payload.drafts!.map((_, index) => parseDraftResponse({ ok: true, status: 200, json: async () => ({ ...payload, drafts: [payload.drafts?.[index]], content_ids: [payload.content_ids?.[index]] }) }, ragBusinessId)));
+      if (payload.review_state !== "pending_human_review" || !payload.drafts?.length || !payload.content_ids?.length) throw new Error("La API no confirmó los borradores pendientes de revisión humana.");
+      if (payload.content_ids.length !== payload.drafts.length) throw new Error("La API no devolvió identificadores para todos los borradores.");
+      const sessionDraft: LocalDraft = {
+        id: `session-${activeContext.account}-${++sessionDraftSequence.current}`,
+        backendId: parsed.contentIds[0], title: brief.campaign.trim() || brief.objective.trim(), platform: brief.platform,
+        format: brief.format, status: "review", updatedAt: "Ahora · sesión actual", brief, copy: parsed.copy,
+        evidenceProvenance: parsed.evidenceProvenance, supportedClaims: parsed.supportedClaims, unsupportedClaims: parsed.unsupportedClaims,
+      };
+      const associatedDrafts = parsedDrafts.map((draft, index) => index === 0 ? sessionDraft : ({ ...sessionDraft, id: `session-${activeContext.account}-${++sessionDraftSequence.current}`, backendId: draft.contentIds[0], copy: draft.copy, evidenceProvenance: draft.evidenceProvenance, supportedClaims: draft.supportedClaims, unsupportedClaims: draft.unsupportedClaims }));
+      setSessionDraftsByContext((current) => ({ ...current, [activeContext.account]: [...associatedDrafts, ...(current[activeContext.account] ?? [])] }));
+      setActiveSessionDraftId(sessionDraft.id); setActiveBackendId(parsed.contentIds[0]);
+      setPreviewCopy(parsed.copy); setPreviewEvidence(parsed.evidenceProvenance); setSupportedClaims(parsed.supportedClaims); setUnsupportedClaims(parsed.unsupportedClaims);
+      setStatus("pending-review"); setGenerationState("success");
+      recordSessionHistory(sessionDraft.id, "review", "Se preparó el borrador con la API y quedó pendiente de revisión humana.");
+      return;
+      }
+
       const response = await fetch(`${apiBaseUrl}/drafts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,18 +353,29 @@ export function Workspace() {
     }
   }
 
-  function openDraft(draft: LocalDraft) {
+  async function openDraft(draft: LocalDraft) {
     setBrief(draft.brief);
     setPreviewCopy(draft.copy);
     setPreviewEvidence(draft.evidenceProvenance ?? []);
     setSupportedClaims(draft.supportedClaims ?? []);
     setUnsupportedClaims(draft.unsupportedClaims ?? []);
     setReviewerName(draft.reviewer ?? "");
+    setReviewFeedback("");
     setReviewMessage("");
     setStatus(statusFromDraft(draft.status));
     setActiveSessionDraftId(draft.id.startsWith("session-") ? draft.id : null);
+    setActiveBackendId(draft.backendId ?? null);
     setValidationMessage("");
     setView("content-studio");
+    if (draft.backendId) {
+      const requestVersion = ++requestSequence.current;
+      try {
+        const content = await getDraft(draft.backendId);
+        if (requestVersion === requestSequence.current) applyBackendContent(content);
+      } catch (error) {
+        if (requestVersion === requestSequence.current) setValidationMessage(error instanceof Error ? error.message : "No se pudo recuperar el borrador.");
+      }
+    }
   }
 
   function selectBrand(nextBrandId: BrandId) {
@@ -377,9 +455,12 @@ export function Workspace() {
           unsupportedClaims={unsupportedClaims}
           reviewerName={reviewerName}
           reviewMessage={reviewMessage}
+           reviewFeedback={reviewFeedback}
+           onReviewFeedbackChange={(value) => { setReviewFeedback(value); setReviewMessage(""); }}
           onReviewerChange={(value) => { setReviewerName(value); setReviewMessage(""); }}
           onBriefChange={updateBrief}
           onCopyChange={updateCopy}
+           onCopyBlur={saveCurrentEdit}
           onPrepare={prepareDraft}
           isPreparing={generationState === "loading"}
           onApprove={approveCurrentDraft}

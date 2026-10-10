@@ -94,6 +94,7 @@ export type LocalDraft = {
   supportedClaims?: string[];
   unsupportedClaims?: string[];
   reviewer?: string;
+  backendId?: string;
 };
 
 export type DraftEvidence = {

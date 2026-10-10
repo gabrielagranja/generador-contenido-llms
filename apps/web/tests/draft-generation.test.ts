@@ -9,6 +9,7 @@ function response(body: unknown, status = 200): Pick<Response, "ok" | "status" |
 test("a valid API response returns editable copy pending human review", async () => {
   const result = await parseDraftResponse(response({
     review_state: "pending_human_review",
+    content_ids: ["content-1"],
     drafts: [{
       caption: " Texto real de la API ",
       evidence_provenance: [
@@ -20,7 +21,8 @@ test("a valid API response returns editable copy pending human review", async ()
     }],
   }), "coll-amunt-pelu-sonia");
   assert.deepEqual(result, {
-    copy: "Texto real de la API",
+     copy: "Texto real de la API",
+     contentIds: ["content-1"],
     reviewState: "pending_human_review",
     evidenceProvenance: [{ business_id: "coll-amunt-pelu-sonia", source_id: "collamunt-llibre", source_file: "official.pdf", page_number: 3 }],
     supportedClaims: ["Afirmación respaldada"],
@@ -42,6 +44,7 @@ test("duplicate provenance entries collapse to one document page", () => {
 test("partial provenance keeps only safe documented fields", async () => {
   const result = await parseDraftResponse(response({
     review_state: "pending_human_review",
+    content_ids: ["content-1"],
     drafts: [{ caption: "Texto", evidence_provenance: [{ business_id: "business-a", source_file: 42, page_number: "3" }] }],
   }), "business-a");
   assert.deepEqual(result.evidenceProvenance, [{ business_id: "business-a" }]);
@@ -52,7 +55,7 @@ test("API errors remain visible to the caller", async () => {
 });
 
 test("an empty response is rejected", async () => {
-  await assert.rejects(parseDraftResponse(response({ review_state: "pending_human_review", drafts: [] })), /borrador editable/);
+  await assert.rejects(parseDraftResponse(response({ review_state: "pending_human_review", content_ids: [], drafts: [] })), /borrador editable/);
 });
 
 test("an invalid editorial state is rejected and cannot auto-approve", async () => {

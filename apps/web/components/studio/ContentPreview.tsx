@@ -14,6 +14,7 @@ export function ContentPreview({
   supportedClaims,
   unsupportedClaims,
   onCopyChange,
+  onCopyBlur,
 }: {
   contextName: string;
   handle: string;
@@ -25,6 +26,7 @@ export function ContentPreview({
   supportedClaims: string[];
   unsupportedClaims: string[];
   onCopyChange: (value: string) => void;
+  onCopyBlur: () => void | Promise<void>;
 }) {
   const readOnly = status === "approved";
   const uniqueEvidence = dedupeEvidence(evidenceProvenance);
@@ -53,6 +55,7 @@ export function ContentPreview({
           className={styles.caption}
           value={copy}
           onChange={(event) => onCopyChange(event.target.value)}
+          onBlur={onCopyBlur}
           placeholder="El borrador de la API aparecerá aquí al preparar el brief."
           readOnly={readOnly}
         />
