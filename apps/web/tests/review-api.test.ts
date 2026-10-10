@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createDraft, reviewDraft, updateDraft, ReviewApiError } from "../domain/review-api.ts";
+import { savePlan } from "../domain/plans-api.ts";
 
 const originalFetch = globalThis.fetch;
 
@@ -31,4 +32,34 @@ test("review and edit use the backend content id and preserve explicit decisions
 test("HTTP transition errors are actionable and retain their status", async () => {
   globalThis.fetch = async () => Response.json({ detail: "cannot approve" }, { status: 409 });
   await assert.rejects(reviewDraft("content-1", "approve", "reviewer-1"), (error: unknown) => error instanceof ReviewApiError && error.status === 409 && /Transición editorial inválida/.test(error.message));
+});
+
+test("savePlan sends a validated plan to the persistence API", async () => {
+  let request: Request | undefined;
+  globalThis.fetch = async (input, init) => {
+    request = new Request(input, init);
+    return Response.json({ plan_id: "plan-1", plan: await request.clone().json() });
+  };
+  const plan = {
+    strategy_id: "eighty_twenty",
+    strategy_version: "1.0.0",
+    total_slots: 1,
+    starts_on: "2026-10-10",
+    ends_on: "2026-10-10",
+    targets: { VALUE: 1 },
+    items: [{
+      source_ref: "content-1",
+      source_kind: "editorial_content" as const,
+      strategy_version: "1.0.0",
+      bucket_key: "VALUE",
+      platform: "instagram" as const,
+      format: "single_image" as const,
+      review_state: "pending_human_review",
+    }],
+  };
+  const saved = await savePlan(plan);
+  assert.equal(request!.method, "POST");
+  assert.equal(request!.url, "http://127.0.0.1:8000/plans");
+  assert.deepEqual(await request!.json(), plan);
+  assert.equal(saved.plan_id, "plan-1");
 });

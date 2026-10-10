@@ -35,6 +35,9 @@ export function ContentStudio({
   onApprove,
   onRequestChanges,
   onResubmit,
+  canSavePlan,
+  planSaveMessage,
+  onSavePlan,
 }: {
   contextName: string;
   contextSummary: string;
@@ -62,6 +65,9 @@ export function ContentStudio({
   onApprove: () => void;
   onRequestChanges: () => void;
   onResubmit: () => void;
+  canSavePlan: boolean;
+  planSaveMessage: string;
+  onSavePlan: () => void | Promise<void>;
 }) {
   return (
     <section aria-labelledby="view-title">
@@ -71,7 +77,7 @@ export function ContentStudio({
           <h1 id="view-title" className={styles.title}>Prepara una idea de contenido</h1>
           <p className={styles.context}>Trabajando en <strong>{contextName}</strong></p>
         </div>
-        <SyntheticNotice>API local · revisión humana · sin persistencia</SyntheticNotice>
+        <SyntheticNotice>API local · revisión humana · persistencia local</SyntheticNotice>
       </header>
 
       <div className={styles.grid}>
@@ -124,6 +130,14 @@ export function ContentStudio({
             <p className={styles.note}>
               Aprobar solo cambia el estado local del prototipo. No habilita copia, exportación ni publicación.
             </p>
+            <section className={styles.details} aria-labelledby="plan-save-title">
+              <h3 id="plan-save-title" className={styles.colTitle}>Plan editorial</h3>
+              <p className={styles.note}>Guarda el contenido validado como un plan de un ítem para verlo en el calendario.</p>
+              <button className={styles.action} type="button" onClick={onSavePlan} disabled={!canSavePlan}>
+                Guardar plan validado
+              </button>
+              {planSaveMessage && <p className={styles.note} role="status">{planSaveMessage}</p>}
+            </section>
           </section>
 
           <section className={styles.details} aria-label="Variantes">
