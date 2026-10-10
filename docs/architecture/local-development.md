@@ -39,6 +39,18 @@ copy .env.example .env
 credentials. Do not add API keys or tokens to `.env.example`, the browser bundle,
 or the repository.
 
+To use the real Groq text provider locally, set these values in `.env` after
+creating a development key in the Groq console. Keep `LLM_PROVIDER=mock` when
+running offline tests:
+
+```text
+LLM_PROVIDER=groq
+GROQ_API_KEY=<local-only-secret>
+GROQ_MODEL=<active-model-id>
+LLM_TEMPERATURE=0.2
+LLM_TIMEOUT_SECONDS=30
+```
+
 ## Run the foundation
 
 Use two terminals from the repository root.
@@ -50,6 +62,8 @@ python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 The API exposes `/readiness`, `/docs`, `/redoc` and `/openapi.json`.
+With `LLM_PROVIDER=groq`, `POST /drafts` uses the API-side Groq adapter and
+returns editable drafts for human review. The browser never receives the key.
 
 Terminal 2 — web client:
 

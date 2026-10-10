@@ -92,9 +92,9 @@ flowchart TD
 
 ## Current status
 
-The web/API foundation is implemented: **FastAPI/Pydantic, a Next.js client and a readiness endpoint**. A provider-neutral boundary uses **LangChain Core with a deterministic offline mock**, supported by tests without real providers or credentials.
+The web/API foundation is implemented: **FastAPI/Pydantic, a Next.js client and a readiness endpoint**. The API exposes `POST /drafts` through a provider-neutral **LangChain** boundary: it stays on the deterministic offline mock by default and can use Groq locally when `LLM_PROVIDER=groq` and `GROQ_API_KEY` are configured. The browser never receives provider credentials.
 
-Live-provider generation, RAG, images, voice and publishing are planned capabilities. Progress is tracked in the [roadmap](docs/roadmap.md) and [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
+RAG, images, voice and publishing remain separate capabilities with their own scope and evidence requirements. Progress is tracked in the [roadmap](docs/roadmap.md) and [GitHub Project](https://github.com/users/gabrielagranja/projects/1).
 
 ## Development and source of truth
 

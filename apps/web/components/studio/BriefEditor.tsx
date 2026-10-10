@@ -38,15 +38,22 @@ export function BriefEditor({
   validationMessage,
   onChange,
   onPrepare,
+  isPreparing,
 }: {
   brief: BriefForm;
   status: DraftPreparationStatus;
   validationMessage: string;
   onChange: (field: keyof BriefForm, value: string) => void;
-  onPrepare: () => void;
+  onPrepare: () => void | Promise<void>;
+  isPreparing: boolean;
 }) {
-  const prepareLabel =
-    status === "pending-review" ? "Preparar otro borrador" : status === "brief-changed" ? "Actualizar borrador" : "Preparar borrador";
+  const prepareLabel = isPreparing
+    ? "Generando borrador…"
+    : status === "pending-review"
+      ? "Preparar otro borrador"
+      : status === "brief-changed"
+        ? "Actualizar borrador"
+        : "Preparar borrador";
 
   return (
     <section aria-labelledby="brief-title">
@@ -70,7 +77,7 @@ export function BriefEditor({
           <label className={styles.label} htmlFor="brief-restrictions">Restricciones</label>
           <textarea id="brief-restrictions" className={styles.input} rows={3} value={brief.restrictions} onChange={(e) => onChange("restrictions", e.target.value)} />
         </div>
-        <button type="button" className={styles.primary} onClick={onPrepare}>{prepareLabel}</button>
+        <button type="button" className={styles.primary} onClick={onPrepare} disabled={isPreparing}>{prepareLabel}</button>
         {validationMessage && <p className={styles.alert} role="alert">{validationMessage}</p>}
         <p className={styles.note}>Marca y comercio se heredan del selector del espacio de trabajo.</p>
       </div>
