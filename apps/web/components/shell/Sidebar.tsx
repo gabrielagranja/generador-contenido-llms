@@ -1,5 +1,6 @@
 import type { RefObject, ReactNode } from "react";
 import type { ViewId } from "../../domain/types.ts";
+import { NavIcon } from "./NavIcon";
 import styles from "./shell.module.css";
 
 type NavEntry = { id: ViewId; label: string; sub?: boolean; meta?: string };
@@ -36,7 +37,7 @@ export function Sidebar({
   sidebarRef: RefObject<HTMLElement | null>;
   id: string;
 }) {
-  function renderItem(entry: NavEntry, meta?: string, index?: number) {
+  function renderItem(entry: NavEntry, meta?: string) {
     return (
       <li key={entry.id}>
         <button
@@ -46,7 +47,7 @@ export function Sidebar({
           onClick={() => onNavigate(entry.id)}
         >
           <span className={styles.navLabel}>
-            {index !== undefined && <span className={styles.navNum} aria-hidden="true">{index}</span>}
+            <NavIcon id={entry.id} />
             {entry.label}
           </span>
           {meta && <span className={styles.navMeta}>{meta}</span>}
@@ -62,7 +63,7 @@ export function Sidebar({
       <nav className={styles.nav} aria-label="Navegación principal">
         <div className={styles.navGroup}>
           <p className={styles.sectionLabel}>Trabajo editorial</p>
-          <ul>{primary.map((entry, index) => renderItem(entry, entry.id === "drafts" ? String(draftCount) : undefined, index))}</ul>
+          <ul>{primary.map((entry) => renderItem(entry, entry.id === "drafts" ? String(draftCount) : undefined))}</ul>
         </div>
         <div className={styles.navGroup}>
           <p className={styles.sectionLabel}>Próximamente</p>
