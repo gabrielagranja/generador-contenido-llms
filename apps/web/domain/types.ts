@@ -10,7 +10,7 @@ export type ViewId =
   | "settings";
 
 export type BrandId = "panaderia" | "coll-amunt";
-export type CommerceId = "synthetic-a" | "synthetic-b";
+export type CommerceId = "pelu-sonia" | "centre-d-estetica-alma";
 
 /** Brand-specific colours. They colour brand artefacts only, never the platform UI. */
 export type BrandTheme = {
@@ -23,6 +23,7 @@ export type CommerceContext = {
   id: CommerceId;
   name: string;
   account: string;
+  businessId: string;
   sector: string;
   summary: string;
   theme?: BrandTheme;
