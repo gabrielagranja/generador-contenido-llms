@@ -27,7 +27,9 @@ TEMPLATES: dict[Platform, TextTemplate] = {
         channel="instagram",
         instructions=(
             "Use a concise hook, scannable caption, direct credible CTA and "
-            "functional keywords only when grounded."
+            "functional keywords only when grounded. Keep the draft concise, "
+            "in Spanish by default or Catalan when configured; preserve source "
+            "grounding and never invent prices, opening hours, promotions or dates."
         ),
     ),
     "facebook": TextTemplate(
@@ -36,7 +38,9 @@ TEMPLATES: dict[Platform, TextTemplate] = {
         channel="facebook",
         instructions=(
             "Use a conversational opening, enough context for the feed, a "
-            "readable structure and a direct credible CTA."
+            "readable structure and a direct credible CTA. Keep it concise, "
+            "in Spanish by default or Catalan when configured; preserve source "
+            "grounding and never invent prices, opening hours, promotions or dates."
         ),
     ),
 }

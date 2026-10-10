@@ -27,6 +27,8 @@ DEFAULT_LLM_PROVIDER = "mock"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-20b"
 DEFAULT_LLM_TEMPERATURE = 0.2
 DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
+DEFAULT_LLM_MAX_OUTPUT_TOKENS = 350
+MAX_LLM_OUTPUT_TOKENS = 600
 
 
 @dataclass(frozen=True)
@@ -128,6 +130,7 @@ class LlmSettings:
     groq_model: str = DEFAULT_GROQ_MODEL
     temperature: float = DEFAULT_LLM_TEMPERATURE
     timeout_seconds: float = DEFAULT_LLM_TIMEOUT_SECONDS
+    max_output_tokens: int = DEFAULT_LLM_MAX_OUTPUT_TOKENS
 
     @classmethod
     def from_environment(cls) -> "LlmSettings":
@@ -144,6 +147,9 @@ class LlmSettings:
             timeout_seconds=_read_float(
                 "LLM_TIMEOUT_SECONDS", DEFAULT_LLM_TIMEOUT_SECONDS
             ),
+            max_output_tokens=_read_int(
+                "LLM_MAX_OUTPUT_TOKENS", DEFAULT_LLM_MAX_OUTPUT_TOKENS
+            ),
         )
         settings.validate()
         return settings
@@ -157,6 +163,11 @@ class LlmSettings:
             raise ValueError("LLM_TEMPERATURE must be between 0 and 2")
         if self.timeout_seconds <= 0:
             raise ValueError("LLM_TIMEOUT_SECONDS must be positive")
+        if not 1 <= self.max_output_tokens <= MAX_LLM_OUTPUT_TOKENS:
+            raise ValueError(
+                "LLM_MAX_OUTPUT_TOKENS must be between 1 and "
+                f"{MAX_LLM_OUTPUT_TOKENS}"
+            )
 
 
 def _read_port() -> int:
@@ -173,6 +184,14 @@ def _read_float(name: str, default: float) -> float:
         return float(raw_value)
     except ValueError as error:
         raise ValueError(f"{name} must be a number") from error
+
+
+def _read_int(name: str, default: int) -> int:
+    raw_value = os.getenv(name, str(default))
+    try:
+        return int(raw_value)
+    except ValueError as error:
+        raise ValueError(f"{name} must be an integer") from error
 
 
 settings = EnvironmentSettings.from_environment()

@@ -81,6 +81,7 @@ def build_text_generator(settings: LlmSettings | None = None) -> TextGenerator:
         model=resolved.groq_model,
         temperature=resolved.temperature,
         timeout=resolved.timeout_seconds,
+        max_tokens=resolved.max_output_tokens,
         api_key=resolved.groq_api_key,
     )
     return LangChainTextGenerator(runnable)

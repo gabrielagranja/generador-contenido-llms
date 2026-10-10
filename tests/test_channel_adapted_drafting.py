@@ -79,6 +79,7 @@ class ChannelAdaptedDraftServiceTests(unittest.TestCase):
             prompt,
         )
         self.assertIn("Never invent business facts", prompt)
+        self.assertIn("in Spanish by default or Catalan when configured", prompt)
         self.assertIn("Do not render media, publish, schedule", prompt)
         self.assertEqual(draft.evidence_refs, ["The diagnosis lasts 15 minutes and is free"])
         self.assertEqual(draft.assumptions, ["A repair will save money"])
@@ -96,6 +97,21 @@ class ChannelAdaptedDraftServiceTests(unittest.TestCase):
         self.assertEqual(draft.evidence_refs, original_evidence)
         self.assertTrue(draft.assumptions)
         self.assertTrue(draft.review_notes)
+
+    def test_channel_contracts_remain_isolated(self) -> None:
+        generator = Mock()
+        generator.generate.side_effect = ["Instagram draft", "Facebook draft"]
+
+        ChannelAdaptedDraftService(generator).draft(
+            make_brief("instagram", "facebook")
+        )
+
+        instagram_prompt = generator.generate.call_args_list[0].args[0]
+        facebook_prompt = generator.generate.call_args_list[1].args[0]
+        self.assertIn("concise hook", instagram_prompt)
+        self.assertNotIn("conversational opening", instagram_prompt)
+        self.assertIn("conversational opening", facebook_prompt)
+        self.assertNotIn("concise hook", facebook_prompt)
 
     def test_empty_provider_output_is_rejected(self) -> None:
         generator = Mock()
