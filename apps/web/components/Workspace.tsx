@@ -70,7 +70,7 @@ export function Workspace() {
   );
   const activeContext = activeCommerce ?? brand;
   const theme = activeCommerce?.theme ?? brand.theme;
-  const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.panaderialaplaza;
+  const dashboard = dashboardFixtures[activeContext.account] ?? dashboardFixtures.talenthive;
   const contextName = activeCommerce ? brand.name + " · " + activeCommerce.name : brand.name;
   const [sessionDraftsByContext, setSessionDraftsByContext] = useState<Record<string, LocalDraft[]>>({});
   const [sessionHistoryByContext, setSessionHistoryByContext] = useState<Record<string, HistoryEntry[]>>({});

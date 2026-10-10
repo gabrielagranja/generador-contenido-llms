@@ -38,7 +38,7 @@ export function ContentPreview({
     <section className={styles.canvas} aria-labelledby="canvas-title">
       <h2 id="canvas-title" className={styles.colTitle}>2 · Publicación</h2>
       {status === "not-prepared" && (
-        <p className={styles.emptyHint}>Aún no hay borrador. Prepáralo desde el brief y aparecerá aquí para tu revisión.</p>
+        <p className={styles.emptyHint}>Aún no hay borrador. Cuéntame tu idea en el primer paso y aparecerá aquí para tu revisión.</p>
       )}
       <div className={styles.stage}>
         <div className={styles.frame} style={{ maxWidth }}>

@@ -39,7 +39,7 @@ test("every selectable context has its own brief, dashboard and drafts", () => {
 test("drafts never reference another context", () => {
   for (const [account, drafts] of Object.entries(draftFixtures)) {
     for (const draft of drafts) {
-      if (account === "panaderialaplaza") assert.doesNotMatch(draft.copy, /Coll Amunt/);
+      if (account === "talenthive") assert.doesNotMatch(draft.copy, /Coll Amunt/);
     }
   }
 });

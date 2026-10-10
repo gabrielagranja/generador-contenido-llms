@@ -72,6 +72,6 @@ test("a brief with empty required fields is rejected", () => {
 });
 
 test("synthetic copy is labelled as a prototype draft", () => {
-  const copy = buildSyntheticCopy("Panadería La Plaza", getBriefDefaults("panaderialaplaza"));
+  const copy = buildSyntheticCopy("Talent Hive", getBriefDefaults("talenthive"));
   assert.match(copy, /^Borrador de prototipo · datos sintéticos/);
 });

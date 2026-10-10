@@ -74,9 +74,9 @@ export function ContentStudio({
       <header className={styles.head}>
         <div>
           <Kicker>Content Studio</Kicker>
-          <h1 id="view-title" className={styles.title}>Prepara una idea de contenido</h1>
-          <p className={styles.ask}>¿Qué historia contamos hoy?</p>
-          <p className={styles.context}>Marca activa: <strong>{contextName}</strong>. Define objetivo y audiencia en el brief; tú decides qué se aprueba.</p>
+          <p className={styles.greeting}>Hola, Gabriela</p>
+          <h1 id="view-title" className={styles.title}>¿Qué historia contamos hoy?</h1>
+          <p className={styles.context}>Marca activa: <strong>{contextName}</strong>. Cuéntame tu idea en el primer paso; tú decides qué se aprueba.</p>
         </div>
         <SyntheticNotice>API local · revisión humana · persistencia local</SyntheticNotice>
       </header>
@@ -156,11 +156,11 @@ export function ContentStudio({
             <p>{contextSummary}</p>
             <dl>
               {contextSector && (<><dt>Sector</dt><dd>{contextSector}</dd></>)}
-              <dt>Restricciones del brief</dt>
+              <dt>Restricciones indicadas</dt>
               <dd>{brief.restrictions || "Sin restricciones indicadas"}</dd>
             </dl>
             <p className={styles.note}>
-              El contexto de marca se aplica en segundo plano; esta vista mantiene la atención en el brief y la revisión.
+              El contexto de marca se aplica en segundo plano; esta vista mantiene la atención en tu idea y la revisión.
             </p>
           </details>
         </aside>

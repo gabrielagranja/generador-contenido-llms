@@ -5,26 +5,29 @@
 :root {
   color-scheme: light;
 
-  --paper: #f7f4ed;
-  --surface: #fffdf8;
-  --sunken: #efebe1;
-  --ink: #1c1b18;
-  --ink-soft: #46433c;
-  --muted: #666158;
-  --rule: #ddd8cb;
-  --rule-strong: #bdb7a7;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --sunken: #f4f6f9;
+  --ink: #1b2430;
+  --ink-soft: #3d4958;
+  --muted: #5b6776;
+  --rule: #e1e6ed;
+  --rule-strong: #c2cad6;
 
-  --status-draft: #6d685d;
+  --status-draft: #5b6776;
   --status-review: #8a5a00;
   --status-approved: #2f6b3f;
   --danger: #a12a2a;
 
+  --accent: #35516f;
+  --accent-ink: #1d2b3c;
+  --accent-tint: #e8eef5;
   --brand-accent: #3a3731;
   --brand-ink: #1c1b18;
   --brand-tint: #e9e5da;
 
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --step--1: 0.8125rem;
   --step-0: 1rem;
@@ -43,6 +46,10 @@
   --space-8: 4.5rem;
 
   --radius: 4px;
+  --radius-control: 0.75rem;
+  --shadow-raised: 0 1px 1px rgba(20, 30, 60, 0.08), 0 4px 10px -2px rgba(20, 30, 60, 0.22);
+  --shadow-raised-hover: 0 2px 2px rgba(20, 30, 60, 0.1), 0 8px 16px -4px rgba(20, 30, 60, 0.28);
+  --shadow-pressed: inset 0 2px 4px rgba(20, 30, 60, 0.25);
   --sidebar-width: 17.5rem;
 }
 
@@ -64,6 +71,7 @@ h1, h2, h3, h4, p, ol, ul, dl, dd, figure { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
+.raised { border-radius: var(--radius-control); box-shadow: var(--shadow-raised); transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease; }
 code { overflow-wrap: anywhere; }
 
 :focus-visible {
