@@ -20,6 +20,7 @@ import {
   missingBriefFields,
   requestChanges,
   resubmit,
+  missingReviewer,
   statusFromDraft,
 } from "../domain/editorial.ts";
 import { AppShell } from "./shell/AppShell";
@@ -106,6 +107,8 @@ export function Workspace() {
   const [previewEvidence, setPreviewEvidence] = useState<DraftEvidence[]>([]);
   const [supportedClaims, setSupportedClaims] = useState<string[]>([]);
   const [unsupportedClaims, setUnsupportedClaims] = useState<string[]>([]);
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewMessage, setReviewMessage] = useState("");
 
   useEffect(() => {
     setBrief(getBriefDefaults(activeContext.account));
@@ -116,6 +119,8 @@ export function Workspace() {
     setPreviewEvidence([]);
     setSupportedClaims([]);
     setUnsupportedClaims([]);
+    setReviewerName("");
+    setReviewMessage("");
     setActiveSessionDraftId(null);
   }, [activeContext.account, contextName]);
 
@@ -161,23 +166,41 @@ export function Workspace() {
   }
 
   function approveCurrentDraft() {
-    if (status !== "pending-review") return;
-    setStatus(approve);
-    updateSessionDraft({ status: "approved" });
+    if (missingReviewer(reviewerName)) {
+      setReviewMessage("Indica quién revisa el borrador antes de aprobarlo.");
+      return;
+    }
+    const nextStatus = approve(status, reviewerName);
+    if (nextStatus === status) return;
+    setStatus(nextStatus);
+    updateSessionDraft({ status: "approved", reviewer: reviewerName.trim() });
+    setReviewMessage("");
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "approved", "El borrador fue aprobado en esta sesión.");
   }
 
   function requestCurrentChanges() {
-    if (status !== "pending-review") return;
-    setStatus(requestChanges);
+    if (missingReviewer(reviewerName)) {
+      setReviewMessage("Indica quién revisa el borrador antes de solicitar cambios.");
+      return;
+    }
+    const nextStatus = requestChanges(status, reviewerName);
+    if (nextStatus === status) return;
+    setStatus(nextStatus);
     updateSessionDraft({ status: "draft" });
+    setReviewMessage("");
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "changes-requested", "Se solicitaron cambios para este borrador.");
   }
 
   function resubmitCurrentDraft() {
-    if (status !== "changes-requested") return;
-    setStatus(resubmit);
+    if (missingReviewer(reviewerName)) {
+      setReviewMessage("Indica quién revisa el borrador antes de devolverlo a revisión.");
+      return;
+    }
+    const nextStatus = resubmit(status, reviewerName);
+    if (nextStatus === status) return;
+    setStatus(nextStatus);
     updateSessionDraft({ status: "review" });
+    setReviewMessage("");
     if (activeSessionDraftId) recordSessionHistory(activeSessionDraftId, "review", "El borrador volvió a revisión humana.");
   }
 
@@ -189,6 +212,8 @@ export function Workspace() {
     }
     setGenerationState("loading");
     setValidationMessage("");
+    setReviewerName("");
+    setReviewMessage("");
     setPreviewEvidence([]);
     setSupportedClaims([]);
     setUnsupportedClaims([]);
@@ -267,6 +292,8 @@ export function Workspace() {
     setPreviewEvidence(draft.evidenceProvenance ?? []);
     setSupportedClaims(draft.supportedClaims ?? []);
     setUnsupportedClaims(draft.unsupportedClaims ?? []);
+    setReviewerName(draft.reviewer ?? "");
+    setReviewMessage("");
     setStatus(statusFromDraft(draft.status));
     setActiveSessionDraftId(draft.id.startsWith("session-") ? draft.id : null);
     setValidationMessage("");
@@ -348,6 +375,9 @@ export function Workspace() {
           evidenceProvenance={previewEvidence}
           supportedClaims={supportedClaims}
           unsupportedClaims={unsupportedClaims}
+          reviewerName={reviewerName}
+          reviewMessage={reviewMessage}
+          onReviewerChange={(value) => { setReviewerName(value); setReviewMessage(""); }}
           onBriefChange={updateBrief}
           onCopyChange={updateCopy}
           onPrepare={prepareDraft}

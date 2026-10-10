@@ -7,6 +7,7 @@ import {
   approve,
   buildSyntheticCopy,
   missingBriefFields,
+  missingReviewer,
   requestChanges,
   resubmit,
   statusFromDraft,
@@ -17,18 +18,23 @@ const all: S[] = ["not-prepared", "draft", "pending-review", "brief-changed", "c
 
 test("approval is only reachable from pending review", () => {
   for (const status of all) {
-    assert.equal(approve(status), status === "pending-review" ? "approved" : status);
+    assert.equal(approve(status), status);
   }
+  assert.equal(approve("pending-review", "reviewer-1"), "approved");
+  assert.equal(missingReviewer("  "), true);
+  assert.equal(missingReviewer("reviewer-1"), false);
 });
 
 test("requesting changes only applies to pending review", () => {
   for (const status of all) {
-    assert.equal(requestChanges(status), status === "pending-review" ? "changes-requested" : status);
+    assert.equal(requestChanges(status), status);
   }
+  assert.equal(requestChanges("pending-review", "reviewer-1"), "changes-requested");
 });
 
 test("resubmitting returns to pending review, never to approved", () => {
-  assert.equal(resubmit("changes-requested"), "pending-review");
+  assert.equal(resubmit("changes-requested"), "changes-requested");
+  assert.equal(resubmit("changes-requested", "reviewer-1"), "pending-review");
   for (const status of all.filter((s) => s !== "changes-requested")) {
     assert.equal(resubmit(status), status);
   }
