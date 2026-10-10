@@ -30,6 +30,7 @@ import { Dashboard } from "./dashboard/Dashboard";
 import { DraftsView } from "./drafts/DraftsView";
 import { HistoryView } from "./history/HistoryView";
 import { ContentStudio } from "./studio/ContentStudio";
+import { CalendarView } from "./calendar/CalendarView";
 import { PlaceholderView } from "./ui/PlaceholderView";
 
 type DraftApiResponse = { detail?: string; drafts?: Array<{ caption?: string; evidence_provenance?: unknown; supported_claims?: unknown; unsupported_claims?: unknown }>; review_state?: "pending_human_review" };
@@ -47,7 +48,6 @@ const viewTitles: Record<ViewId, string> = {
 };
 
 const placeholders: Partial<Record<ViewId, string>> = {
-  calendar: "Planificación de publicaciones por fecha y canal.",
   library: "Biblioteca de contenidos y materiales de la marca.",
   analytics: "Rendimiento real de las publicaciones. Requiere cuentas conectadas, que no existen en el MVP.",
   brands: "Gestión de marcas, comercios asociados y perfiles sociales.",
@@ -468,6 +468,7 @@ export function Workspace() {
           onResubmit={resubmitCurrentDraft}
         />
       )}
+      {view === "calendar" && <CalendarView />}
       {placeholders[view] && <PlaceholderView title={viewTitles[view]} description={placeholders[view]!} />}
     </AppShell>
   );
