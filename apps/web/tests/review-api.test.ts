@@ -38,7 +38,7 @@ test("savePlan sends a validated plan to the persistence API", async () => {
   let request: Request | undefined;
   globalThis.fetch = async (input, init) => {
     request = new Request(input, init);
-    return Response.json({ plan_id: "plan-1", plan: await request.clone().json() });
+    return Response.json({ plan_id: "plan-1", plan: await request!.clone().json() });
   };
   const plan = {
     strategy_id: "eighty_twenty",
