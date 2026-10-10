@@ -89,6 +89,8 @@ class EditorialContent(BaseModel):
     content_id: str = Field(min_length=1)
     state: EditorialState
     draft: EditableTextDraft
+    brand_id: str | None = None
+    business_id: str | None = None
     review: HumanReview | None = None
     lineage: EditorialLineage | None = None
 
@@ -107,7 +109,12 @@ class EditorialReviewService:
 
     @classmethod
     def from_generated_draft(
-        cls, draft: EditableTextDraft, *, content_id: str
+        cls,
+        draft: EditableTextDraft,
+        *,
+        content_id: str,
+        brand_id: str | None = None,
+        business_id: str | None = None,
     ) -> EditorialContent:
         """Wrap provider output as a generated, not-yet-reviewed item."""
 
@@ -115,6 +122,8 @@ class EditorialReviewService:
             content_id=content_id,
             state="generated_draft",
             draft=draft,
+            brand_id=brand_id,
+            business_id=business_id,
         )
 
     @classmethod
@@ -212,6 +221,7 @@ class EditorialReviewService:
                 "assumptions": content.draft.assumptions,
                 "review_notes": content.draft.review_notes,
                 "evidence_provenance": content.draft.evidence_provenance,
+                "supported_claims": content.draft.supported_claims,
                 "unsupported_claims": content.draft.unsupported_claims,
             }
         )
@@ -225,6 +235,8 @@ class EditorialReviewService:
         regenerated = cls.from_generated_draft(
             preserved_draft,
             content_id=f"{content.content_id}:regenerated:{uuid4().hex}",
+            brand_id=content.brand_id,
+            business_id=content.business_id,
         )
         return cls.submit_for_review(regenerated).model_copy(update={"lineage": lineage})
 
