@@ -2,9 +2,9 @@
 
 ## Status and human approval
 
-- Status: Pending
+- Status: Approved
 - Issue: #104 — Persist MVP editorial drafts and plans locally
-- Human approval: pending review of this contract.
+- Human approval: explicit approval in the task conversation on 2026-10-10.
 
 ## Plan objective
 
@@ -39,8 +39,8 @@ Use temporary SQLite files and synthetic data. Run focused persistence/API tests
 
 ## Open questions and blockers
 
-The final deployment storage path is not selected; the MVP uses a configurable local file only. Human approval is pending.
+The final deployment storage path is not selected; the MVP uses a configurable local file only. Human approval was received on 2026-10-10.
 
 ## Approval
 
-Pending. Implementation starts after explicit human approval of this contract.
+Approved. Human approval received in the task conversation on 2026-10-10.

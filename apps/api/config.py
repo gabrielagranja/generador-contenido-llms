@@ -30,6 +30,7 @@ DEFAULT_LLM_TEMPERATURE = 0.2
 DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
 DEFAULT_LLM_MAX_OUTPUT_TOKENS = 350
 MAX_LLM_OUTPUT_TOKENS = 600
+DEFAULT_EDITORIAL_DATABASE_PATH = Path(".local") / "editorial.sqlite3"
 
 
 @dataclass(frozen=True)
@@ -190,6 +191,27 @@ def _read_port() -> int:
         raise ValueError("API_PORT must be an integer") from error
 
 
+@dataclass(frozen=True)
+class EditorialPersistenceSettings:
+    """Local-only database location for the MVP editorial workflow."""
+
+    database_path: Path = DEFAULT_EDITORIAL_DATABASE_PATH
+
+    @classmethod
+    def from_environment(cls) -> "EditorialPersistenceSettings":
+        settings = cls(
+            database_path=Path(
+                os.getenv("EDITORIAL_DATABASE_PATH", str(DEFAULT_EDITORIAL_DATABASE_PATH))
+            )
+        )
+        settings.validate()
+        return settings
+
+    def validate(self) -> None:
+        if self.database_path == Path(".") or not str(self.database_path).strip():
+            raise ValueError("EDITORIAL_DATABASE_PATH must be a file path")
+
+
 def _read_float(name: str, default: float) -> float:
     raw_value = os.getenv(name, str(default))
     try:
@@ -209,4 +231,10 @@ def _read_int(name: str, default: int) -> int:
 settings = EnvironmentSettings.from_environment()
 
 
-__all__ = ["EnvironmentSettings", "LlmSettings", "RagLocalSettings", "settings"]
+__all__ = [
+    "EditorialPersistenceSettings",
+    "EnvironmentSettings",
+    "LlmSettings",
+    "RagLocalSettings",
+    "settings",
+]

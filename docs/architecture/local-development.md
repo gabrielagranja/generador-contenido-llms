@@ -39,6 +39,9 @@ copy .env.example .env
 credentials. Do not add API keys or tokens to `.env.example`, the browser bundle,
 or the repository.
 
+Editorial drafts and plans persist locally by default at `.local/editorial.sqlite3`.
+Set `EDITORIAL_DATABASE_PATH` in `.env` only when a different local file is needed.
+
 To use the real Groq text provider locally, set these values in `.env` after
 creating a development key in the Groq console. Keep `LLM_PROVIDER=mock` when
 running offline tests:
