@@ -13,11 +13,12 @@ from apps.api.editorial_review import (
     EditorialTransitionError,
     HumanReview,
 )
-from apps.api.editorial_store import EditorialContentStore
+from apps.api.editorial_store import EditorialContentStore, EditorialPlanStore
 from apps.api.llm import LlmConfigurationError, build_text_generator
 from apps.api.models import GuidedBrief
-from apps.api.config import RagLocalSettings
+from apps.api.config import EditorialPersistenceSettings, RagLocalSettings
 from apps.api.drafting import RagGroundedDraftService
+from apps.api.editorial_planning import EditorialPlan
 from apps.api.rag import LocalChromaIndex
 
 
@@ -84,7 +85,9 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
-editorial_store = EditorialContentStore()
+persistence_settings = EditorialPersistenceSettings.from_environment()
+editorial_store = EditorialContentStore(persistence_settings.database_path)
+editorial_plan_store = EditorialPlanStore(persistence_settings.database_path)
 
 
 @app.get("/readiness", response_model=ReadinessResponse)
@@ -218,3 +221,35 @@ def edit_draft(content_id: str, request: ManualEditRequest) -> EditorialContent:
     except EditorialTransitionError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     return editorial_store.save(updated)
+
+
+class StoredEditorialPlan(BaseModel):
+    """Validated plan plus its stable local identifier."""
+
+    plan_id: str
+    plan: EditorialPlan
+
+
+@app.post("/plans", response_model=StoredEditorialPlan)
+def save_plan(plan: EditorialPlan) -> StoredEditorialPlan:
+    """Persist an already validated plan for later calendar rendering."""
+
+    plan_id = editorial_plan_store.create_id()
+    editorial_plan_store.save(plan_id, plan)
+    return StoredEditorialPlan(plan_id=plan_id, plan=plan)
+
+
+@app.get("/plans/{plan_id}", response_model=StoredEditorialPlan)
+def get_plan(plan_id: str) -> StoredEditorialPlan:
+    plan = editorial_plan_store.get(plan_id)
+    if plan is None:
+        raise HTTPException(status_code=404, detail="plan_id not found")
+    return StoredEditorialPlan(plan_id=plan_id, plan=plan)
+
+
+@app.get("/plans", response_model=list[StoredEditorialPlan])
+def list_plans() -> list[StoredEditorialPlan]:
+    return [
+        StoredEditorialPlan(plan_id=plan_id, plan=plan)
+        for plan_id, plan in editorial_plan_store.list()
+    ]
