@@ -39,6 +39,10 @@
 .navItem:focus-visible { outline-offset: -2px; }
 .navItem:hover { background: rgba(28, 27, 24, 0.05); color: var(--ink); }
 .navItem[aria-current="page"] { border-left-color: var(--ink); color: var(--ink); font-weight: 700; background: var(--surface); }
+.navLabel { display: inline-flex; align-items: baseline; gap: var(--space-3); }
+.navNum { width: 1rem; font-family: var(--font-display); font-size: var(--step-1); color: var(--muted); }
+.navItem[aria-current="page"] { border-left-color: var(--brand-accent); }
+.navItem[aria-current="page"] .navNum { color: var(--brand-accent); }
 .navSub { padding-left: var(--space-5); }
 .navMeta { font-size: var(--step--1); color: var(--muted); font-weight: 400; }
 

@@ -75,7 +75,8 @@ export function ContentStudio({
         <div>
           <Kicker>Content Studio</Kicker>
           <h1 id="view-title" className={styles.title}>Prepara una idea de contenido</h1>
-          <p className={styles.context}>Trabajando en <strong>{contextName}</strong></p>
+          <p className={styles.ask}>¿Qué historia contamos hoy?</p>
+          <p className={styles.context}>Marca activa: <strong>{contextName}</strong>. Define objetivo y audiencia en el brief; tú decides qué se aprueba.</p>
         </div>
         <SyntheticNotice>API local · revisión humana · persistencia local</SyntheticNotice>
       </header>
@@ -127,7 +128,7 @@ export function ContentStudio({
                 {reviewMessage && <p className={styles.alert} role="alert">{reviewMessage}</p>}
               </div>
             ) : null}
-            <p className={styles.note}>
+            <p className={styles.banner}>
               Aprobar solo cambia el estado local del prototipo. No habilita copia, exportación ni publicación.
             </p>
             <section className={styles.savePlan} aria-labelledby="plan-save-title">
