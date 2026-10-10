@@ -83,6 +83,7 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "GROQ_MODEL",
                 "LLM_TEMPERATURE",
                 "LLM_TIMEOUT_SECONDS",
+                "LLM_MAX_OUTPUT_TOKENS",
                 "RAG_EMBEDDING_MODEL",
                 "RAG_EMBEDDING_REVISION",
                 "RAG_CHROMA_COLLECTION",
