@@ -2,4 +2,4 @@
 - [x] Preserve API content IDs and brand/business/grounding metadata.
 - [x] Synchronize Content Studio after confirmed API responses only.
 - [x] Cover HTTP errors, review validation and request payloads with tests.
-- [ ] Run final build, OpenSpec validation, diff checks and CI verification.
+- [x] Run final build, OpenSpec validation, diff checks and CI verification.
