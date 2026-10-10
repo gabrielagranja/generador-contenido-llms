@@ -19,18 +19,18 @@
 
 .sectionLabel { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: var(--space-3); }
 
-.nav ul { display: grid; gap: 1px; }
+.nav ul { display: grid; gap: var(--space-1); }
 .navGroup + .navGroup { margin-top: var(--space-5); }
 .navItem {
   width: 100%;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: var(--space-2) var(--space-3);
   border: 0;
-  border-left: 3px solid transparent;
+  border-radius: var(--radius-control);
   background: transparent;
   text-align: left;
   font-size: var(--step-0);
@@ -38,13 +38,11 @@
 }
 .navItem:focus-visible { outline-offset: -2px; }
 .navItem:hover { background: rgba(27, 36, 48, 0.05); color: var(--ink); }
-.navItem[aria-current="page"] { border-left-color: var(--ink); color: var(--ink); font-weight: 700; background: var(--surface); }
-.navLabel { display: inline-flex; align-items: baseline; gap: var(--space-3); }
-.navNum { width: 1rem; font-family: var(--font-display); font-size: var(--step-1); color: var(--muted); }
-.navItem[aria-current="page"] { border-left-color: var(--accent); }
-.navItem[aria-current="page"] .navNum { color: var(--accent); }
+.navItem[aria-current="page"] { color: var(--accent); font-weight: 700; background: var(--accent-tint); }
+.navLabel { display: inline-flex; align-items: center; gap: var(--space-3); }
+.navLabel svg { flex: none; }
 .navSub { padding-left: var(--space-5); }
-.navMeta { font-size: var(--step--1); color: var(--muted); font-weight: 400; }
+.navMeta { min-width: 1.5rem; padding: 0 var(--space-2); border-radius: 999px; background: var(--accent); color: #fff; text-align: center; font-size: 0.75rem; font-weight: 700; }
 
 .sidebarFoot { margin-top: auto; padding-top: var(--space-4); border-top: 1px solid var(--rule); font-size: var(--step--1); color: var(--muted); }
 .sidebarFoot strong { display: block; color: var(--ink); font-size: var(--step-0); }
