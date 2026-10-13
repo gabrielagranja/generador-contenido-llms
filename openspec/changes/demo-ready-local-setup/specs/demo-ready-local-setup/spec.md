@@ -1,5 +1,7 @@
 ## ADDED Requirements
 
+The repository MUST keep the demo preparation local-only, deterministic and free of tracked credentials.
+
 ### Requirement: deterministic local demo preparation
 
 The repository SHALL provide an explicit local-only command that prepares a
