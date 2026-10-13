@@ -55,6 +55,24 @@ test("API errors remain visible to the caller", async () => {
   await assert.rejects(parseDraftResponse(response({ detail: "Servicio no disponible" }, 503)), /Servicio no disponible/);
 });
 
+test("a successful HTTP response with a generation error remains actionable", async () => {
+  await assert.rejects(
+    parseDraftResponse(response({ generation_status: "error", error: { message: "Ollama agotó el tiempo de espera" } })),
+    /Ollama agotó el tiempo de espera/,
+  );
+});
+
+test("provider instructions are never accepted as editable copy", async () => {
+  await assert.rejects(
+    parseDraftResponse(response({
+      review_state: "pending_human_review",
+      content_ids: ["content-1"],
+      drafts: [{ caption: "Copy approach: PAS; Scaffold: problem, agitation, solution" }],
+    })),
+    /instrucciones internas/,
+  );
+});
+
 test("an empty response is rejected", async () => {
   await assert.rejects(parseDraftResponse(response({ review_state: "pending_human_review", content_ids: [], drafts: [] })), /borrador editable/);
 });

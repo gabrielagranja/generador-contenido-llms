@@ -17,7 +17,7 @@ from apps.api.auth import (
     resolve_username,
 )
 from apps.api.copy_formulas import approach_for_formula, select_copy_approach
-from apps.api.drafting import ChannelAdaptedDraftService, EditableTextDraft
+from apps.api.drafting import ChannelAdaptedDraftService, DraftOutputError, EditableTextDraft
 from apps.api.editorial_review import (
     EditorialContent,
     EditorialReviewService,
@@ -202,6 +202,8 @@ def create_drafts(
                     top_k=request.top_k,
                     approach_override=approach_override,
                 )
+            except DraftOutputError:
+                raise
             except (ValueError, RuntimeError) as error:
                 raise HTTPException(status_code=503, detail=str(error)) from error
         else:
@@ -210,6 +212,8 @@ def create_drafts(
             )
     except LlmConfigurationError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
+    except DraftOutputError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
     from apps.api.config import LlmSettings
 
     llm_settings = LlmSettings.from_environment()
@@ -351,6 +355,13 @@ def regenerate_draft(
         )
     except EditorialTransitionError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
+    except DraftOutputError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    except (LlmConfigurationError, RuntimeError, ValueError) as error:
+        raise HTTPException(
+            status_code=503,
+            detail=f"No se pudo completar la generación: {error}",
+        ) from error
     return editorial_store.create(regenerated)
 
 

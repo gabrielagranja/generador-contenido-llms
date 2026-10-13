@@ -88,3 +88,26 @@ def test_create_drafts_surfaces_an_ollama_generation_failure() -> None:
 
     assert response.status_code == 503
     assert response.json()["detail"] == "Ollama is unavailable"
+
+
+def test_create_drafts_rejects_invalid_provider_configuration() -> None:
+    with patch.dict(os.environ, {"LLM_PROVIDER": "not-a-provider"}, clear=True):
+        response = client.post("/drafts", json={"brief": brief_payload()})
+
+    assert response.status_code == 503
+    assert "LLM configuration is invalid" in response.json()["detail"]
+
+
+def test_create_drafts_rejects_internal_provider_output() -> None:
+    with patch(
+        "apps.api.main.build_text_generator",
+        return_value=type(
+            "InternalGenerator",
+            (),
+            {"generate": lambda self, prompt: "Safeguard: do not publish this scaffold"},
+        )(),
+    ):
+        response = client.post("/drafts", json={"brief": brief_payload()})
+
+    assert response.status_code == 502
+    assert "instrucciones internas" in response.json()["detail"]
