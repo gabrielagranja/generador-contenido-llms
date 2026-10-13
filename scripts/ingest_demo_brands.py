@@ -20,7 +20,13 @@ def main() -> None:
             f"Falta la fuente corporativa local de WAYDDH: {WAYDDH_PDF_PATH}. "
             "Coloca el PDF existente en .local/rag/sources/ antes de indexar."
         )
-    chunks = load_demo_brand_chunks(WAYDDH_PDF_PATH)
+    cached_pages_path = ROOT / ".local" / "rag" / "collamunt_pages.json"
+    cached_pages = (
+        json.loads(cached_pages_path.read_text(encoding="utf-8"))
+        if cached_pages_path.exists()
+        else None
+    )
+    chunks = load_demo_brand_chunks(WAYDDH_PDF_PATH, pages=cached_pages)
     index = LocalChromaIndex(RagLocalSettings())
     ids = index.ingest(chunks)
     manifest_path = ROOT / ".local" / "rag" / "demo-brands-manifest.json"

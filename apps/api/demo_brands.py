@@ -86,13 +86,14 @@ def build_wayddh_chunks(
 
 def load_demo_brand_chunks(
     pdf_path: str | Path = WAYDDH_PDF_PATH,
+    pages: Sequence[dict[str, Any]] | None = None,
 ) -> list[CanonicalDocumentChunk]:
     """Build Talent Hive and, when present, WAYDDH demo chunks locally."""
 
     chunks = build_talent_hive_chunks()
     path = Path(pdf_path)
     if path.exists():
-        chunks.extend(build_wayddh_chunks(path))
+        chunks.extend(build_wayddh_chunks(path, pages=pages))
     return chunks
 
 
