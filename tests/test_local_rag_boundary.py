@@ -186,6 +186,24 @@ class LocalRagBoundaryTests(unittest.TestCase):
 
             self.assertEqual(index.collection.name, "business-context")
 
+    def test_index_quarantines_an_incompatible_store_and_creates_a_new_one(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
+            path = Path(directory) / "chroma"
+            path.mkdir()
+            (path / "chroma.sqlite3").write_bytes(b"not-a-compatible-chroma-store")
+            settings = RagLocalSettings(chroma_persist_directory=path)
+
+            index = LocalChromaIndex(
+                settings,
+                embedding_function=RealChromaTestEmbedding(),
+            )
+
+            self.assertEqual(index.collection.name, "business-context")
+            self.assertTrue(list(Path(directory).glob("chroma.incompatible-*")))
+            close = getattr(index.client, "close", None)
+            if callable(close):
+                close()
+
     def test_chunk_id_is_deterministic_and_positioned(self) -> None:
         self.assertEqual(chunk_id_for("menu-a", "v1"), "menu-a-v1-0001")
         self.assertEqual(chunk_id_for("menu-a", "v1", 2), "menu-a-v1-0002")
@@ -362,14 +380,17 @@ class LocalRagBoundaryTests(unittest.TestCase):
             set(upsert["metadatas"][0]),
             {
                 "business_id",
+                "brand_id",
                 "source_id",
+                "source_name",
                 "source_version",
                 "consent_ref",
                 "chunk_id",
                 "embedding_model",
                 "source_type",
                 "source_uri",
-                "retrieved_at",
+                "source_url",
+                "language",
             },
         )
         self.assertEqual(self.embedding_calls, [[record.text for record in records]])

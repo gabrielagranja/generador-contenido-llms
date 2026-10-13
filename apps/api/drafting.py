@@ -92,6 +92,7 @@ class ChannelAdaptedDraftService:
         *,
         retrieved_contexts: Sequence[RetrievedBusinessContext] = (),
         business_id: str | None = None,
+        brand_id: str | None = None,
         grounding_enabled: bool = False,
         approach_override: tuple[CopyApproach, str] | None = None,
         reviewer_feedback: str | None = None,
@@ -103,6 +104,10 @@ class ChannelAdaptedDraftService:
             context.business_id != business_id for context in contexts
         ):
             raise ValueError("retrieved context must match the requested business_id")
+        if brand_id is not None and any(
+            context.brand_id != brand_id for context in contexts
+        ):
+            raise ValueError("retrieved context must match the requested brand_id")
         return [
             self._draft_for_channel(
                 brief,
@@ -207,6 +212,8 @@ class ChannelAdaptedDraftService:
             f"[{context.source_type}] {context.text} "
             f"(source_id: {context.source_id}; version: {context.source_version}; "
             f"chunk_id: {context.chunk_id}; business_id: {context.business_id}; "
+            f"brand_id: {context.brand_id or 'n/a'}; "
+            f"source_name: {context.source_name or context.source_id}; "
             f"source_file: {context.source_file or 'n/a'}; "
             f"page_number: {context.page_number or 'n/a'}; "
             f"source_uri: {context.source_uri or 'n/a'})"
@@ -283,13 +290,17 @@ def _validate_editorial_output(text: str) -> None:
 def _provenance_dict(context: RetrievedBusinessContext) -> dict[str, object]:
     return {
         "business_id": context.business_id,
+        "brand_id": context.brand_id,
         "source_type": context.source_type,
         "source_id": context.source_id,
         "source_version": context.source_version,
         "chunk_id": context.chunk_id,
+        "source_name": context.source_name,
         "source_file": context.source_file,
         "page_number": context.page_number,
         "source_uri": context.source_uri,
+        "source_url": context.source_url,
+        "language": context.language,
         "retrieved_at": context.retrieved_at,
         "source_sha256": context.source_sha256,
         "score": context.score,
@@ -309,15 +320,17 @@ class RagGroundedDraftService:
         *,
         business_id: str,
         top_k: int,
+        brand_id: str | None = None,
         approach_override: tuple[CopyApproach, str] | None = None,
         reviewer_feedback: str | None = None,
     ) -> list[EditableTextDraft]:
         query = self.build_query(brief)
-        contexts = self._index.query(query, business_id, top_k)
+        contexts = self._index.query(query, business_id, top_k, brand_id=brand_id)
         return self._draft_service.draft(
             brief,
             retrieved_contexts=contexts,
             business_id=business_id,
+            brand_id=brand_id,
             grounding_enabled=True,
             approach_override=approach_override,
             reviewer_feedback=reviewer_feedback,

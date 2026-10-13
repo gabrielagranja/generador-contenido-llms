@@ -192,6 +192,7 @@ def create_drafts(
                     status_code=422,
                     detail="business_id is required when rag_enabled=true",
                 )
+            rag_brand_id = request.brand_id or request.business_id
             if request.top_k <= 0:
                 raise HTTPException(status_code=422, detail="top_k must be positive")
             try:
@@ -199,6 +200,7 @@ def create_drafts(
                 drafts = RagGroundedDraftService(index, generator).draft(
                     request.brief,
                     business_id=request.business_id,
+                    brand_id=rag_brand_id,
                     top_k=request.top_k,
                     approach_override=approach_override,
                 )
@@ -337,6 +339,7 @@ def regenerate_draft(
             return RagGroundedDraftService(index, generator).draft(
                 brief,
                 business_id=source.business_id,
+                brand_id=source.brand_id or source.business_id,
                 top_k=request.top_k,
                 approach_override=approach,
                 reviewer_feedback=request.feedback,

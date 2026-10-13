@@ -111,6 +111,19 @@ In a second terminal run `npm run dev` from `apps/web`, then open
 provider and refuses non-development environments. See
 [local demo guide](docs/local-demo.md).
 
+For the local RAG demo, ingest the official Coll Amunt! PDF and the
+independent demo sources after placing the existing corporate PDF at
+`.local/rag/sources/2025-Coll-Amunt-Llibre-_compressed.pdf`:
+
+```bash
+python scripts/ingest_collamunt.py
+python scripts/ingest_demo_brands.py
+```
+
+The second command indexes Talent Hive from its two official web sources and
+the WAYDDH page extracted from the corporate PDF. Chroma keeps the brand ID in
+every chunk and filters it before retrieval.
+
 ## Development and source of truth
 
 Development targets **`dev`** and follows OpenSpec-based Specification-Driven Development: **Issue → approved contract → implementation → tests and evidence**. Every Instagram publication requires human confirmation.

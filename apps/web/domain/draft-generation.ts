@@ -41,6 +41,7 @@ export function canStartGeneration(state: GenerationState): boolean {
 export async function parseDraftResponse(
   response: Pick<Response, "ok" | "status" | "json">,
   expectedBusinessId?: string,
+  expectedBrandId?: string,
 ): Promise<DraftGenerationResult> {
   let payload: DraftApiResponse;
   try {
@@ -76,7 +77,7 @@ export async function parseDraftResponse(
   }
 
   const evidenceProvenance = Array.isArray(draft.evidence_provenance)
-    ? draft.evidence_provenance.flatMap((item) => normalizeEvidence(item, expectedBusinessId))
+    ? draft.evidence_provenance.flatMap((item) => normalizeEvidence(item, expectedBusinessId, expectedBrandId))
     : [];
   const supportedClaims = Array.isArray(draft.supported_claims)
     ? draft.supported_claims.filter((claim): claim is string => typeof claim === "string" && claim.trim().length > 0)
@@ -92,18 +93,24 @@ export async function parseDraftResponse(
   return { copy, reviewState: "pending_human_review", evidenceProvenance, supportedClaims, unsupportedClaims, copyApproach: parseCopyApproach(draft), contentIds };
 }
 
-function normalizeEvidence(item: unknown, expectedBusinessId?: string): DraftEvidence[] {
+function normalizeEvidence(item: unknown, expectedBusinessId?: string, expectedBrandId?: string): DraftEvidence[] {
   if (!item || typeof item !== "object") return [];
   const value = item as Record<string, unknown>;
   if (typeof value.business_id !== "string" || !expectedBusinessId || value.business_id !== expectedBusinessId) return [];
+  if (expectedBrandId && value.brand_id !== expectedBrandId) return [];
   return [{
     business_id: value.business_id,
+    ...(typeof value.brand_id === "string" ? { brand_id: value.brand_id } : {}),
     ...(typeof value.source_type === "string" ? { source_type: value.source_type } : {}),
     ...(typeof value.source_id === "string" ? { source_id: value.source_id } : {}),
     ...(typeof value.source_version === "string" ? { source_version: value.source_version } : {}),
+    ...(typeof value.source_name === "string" ? { source_name: value.source_name } : {}),
     ...(typeof value.source_file === "string" ? { source_file: value.source_file } : {}),
     ...(typeof value.page_number === "number" ? { page_number: value.page_number } : {}),
     ...(typeof value.source_uri === "string" ? { source_uri: value.source_uri } : {}),
+    ...(typeof value.source_url === "string" ? { source_url: value.source_url } : {}),
+    ...(typeof value.language === "string" ? { language: value.language } : {}),
+    ...(typeof value.retrieved_at === "string" ? { retrieved_at: value.retrieved_at } : {}),
   }];
 }
 import type { CopyApproachInfo, DraftEvidence } from "./types.ts";
