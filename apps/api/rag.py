@@ -17,6 +17,8 @@ from apps.api.config import RagLocalSettings
 SourceType = Literal["pdf", "api"]
 DEFAULT_PDF_CHUNK_SIZE = 500
 DEFAULT_PDF_CHUNK_OVERLAP = 50
+CHROMA_SCHEMA_VERSION = "2"
+CHROMA_SCHEMA_MARKER = ".rag-schema-2"
 
 
 @dataclass(frozen=True)
@@ -28,6 +30,7 @@ class CanonicalBusinessRecord:
     source_version: str
     consent_ref: str
     text: str
+    brand_id: str | None = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -40,6 +43,10 @@ class CanonicalBusinessRecord:
             value = getattr(self, field_name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} must be a non-empty string")
+        if self.brand_id is None:
+            object.__setattr__(self, "brand_id", self.business_id)
+        elif not isinstance(self.brand_id, str) or not self.brand_id.strip():
+            raise ValueError("brand_id must be a non-empty string")
 
     @classmethod
     def from_mapping(cls, values: dict[str, Any]) -> "CanonicalBusinessRecord":
@@ -51,6 +58,7 @@ class CanonicalBusinessRecord:
             source_version=values["source_version"],
             consent_ref=values["consent_ref"],
             text=values["text"],
+            brand_id=values.get("brand_id"),
         )
 
 
@@ -65,11 +73,15 @@ class CanonicalDocumentChunk:
     consent_ref: str
     text: str
     chunk_id: str
+    brand_id: str | None = None
     source_file: str | None = None
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
     source_sha256: str | None = None
+    source_name: str | None = None
+    source_url: str | None = None
+    language: str | None = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -83,6 +95,20 @@ class CanonicalDocumentChunk:
             value = getattr(self, field_name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} must be a non-empty string")
+        if self.brand_id is None:
+            object.__setattr__(self, "brand_id", self.business_id)
+        elif not isinstance(self.brand_id, str) or not self.brand_id.strip():
+            raise ValueError("brand_id must be a non-empty string")
+        if self.source_name is None:
+            object.__setattr__(self, "source_name", self.source_id)
+        elif not isinstance(self.source_name, str) or not self.source_name.strip():
+            raise ValueError("source_name must be a non-empty string")
+        if self.source_url is None and self.source_uri:
+            object.__setattr__(self, "source_url", self.source_uri)
+        if self.language is None:
+            object.__setattr__(self, "language", "es")
+        elif not isinstance(self.language, str) or not self.language.strip():
+            raise ValueError("language must be a non-empty string")
         if self.source_type not in ("pdf", "api"):
             raise ValueError("source_type must be 'pdf' or 'api'")
         if self.source_type == "pdf":
@@ -100,6 +126,7 @@ def pdf_to_canonical_chunks(
     consent_ref: str,
     pages: Sequence[dict[str, Any]],
     source_file: str,
+    brand_id: str | None = None,
     source_uri: str | None = None,
     source_sha256: str | None = None,
 ) -> list[CanonicalDocumentChunk]:
@@ -120,6 +147,7 @@ def pdf_to_canonical_chunks(
             chunks.append(
                 canonical_pdf_chunk(
                 business_id=business_id,
+                brand_id=brand_id,
                 source_id=source_id,
                 source_version=source_version,
                 consent_ref=consent_ref,
@@ -171,6 +199,7 @@ def parse_pdf_to_canonical_chunks(
     source_id: str,
     source_version: str,
     consent_ref: str,
+    brand_id: str | None = None,
     max_chunk_size: int = DEFAULT_PDF_CHUNK_SIZE,
     overlap: int = DEFAULT_PDF_CHUNK_OVERLAP,
     source_uri: str | None = None,
@@ -201,6 +230,7 @@ def parse_pdf_to_canonical_chunks(
             chunks.append(
                 canonical_pdf_chunk(
                     business_id=business_id,
+                    brand_id=brand_id,
                     source_id=source_id,
                     source_version=source_version,
                     consent_ref=consent_ref,
@@ -321,6 +351,7 @@ def api_response_to_canonical_chunks(
     consent_ref: str,
     response: Sequence[dict[str, Any]],
     source_uri: str,
+    brand_id: str | None = None,
     retrieved_at: str | None = None,
 ) -> list[CanonicalDocumentChunk]:
     """Normalize already retrieved API content; this function performs no I/O."""
@@ -328,6 +359,7 @@ def api_response_to_canonical_chunks(
     return [
         canonical_api_chunk(
             business_id=business_id,
+            brand_id=brand_id,
             source_id=source_id,
             source_version=source_version,
             consent_ref=consent_ref,
@@ -348,6 +380,7 @@ def jsonplaceholder_post_to_canonical_chunks(
     consent_ref: str,
     source_uri: str,
     retrieved_at: str,
+    brand_id: str | None = None,
 ) -> list[CanonicalDocumentChunk]:
     """Turn one structured JSONPlaceholder post into one text document chunk."""
 
@@ -356,6 +389,7 @@ def jsonplaceholder_post_to_canonical_chunks(
     text = f"Title: {post['title']}\n\nBody: {post['body']}"
     return api_response_to_canonical_chunks(
         business_id=business_id,
+        brand_id=brand_id,
         source_id=f"jsonplaceholder-post-{post['id']}",
         source_version=source_version,
         consent_ref=consent_ref,
@@ -393,6 +427,7 @@ class JsonPlaceholderApiConnector:
         *,
         post_id: int,
         business_id: str,
+        brand_id: str | None = None,
         source_version: str,
         consent_ref: str,
         retrieved_at: str | None = None,
@@ -408,6 +443,7 @@ class JsonPlaceholderApiConnector:
         timestamp = retrieved_at or datetime.now(timezone.utc).isoformat()
         return jsonplaceholder_post_to_canonical_chunks(
             business_id=business_id,
+            brand_id=brand_id,
             post=post,
             source_version=source_version,
             consent_ref=consent_ref,
@@ -421,6 +457,7 @@ def _legacy_record_to_chunk(record: CanonicalBusinessRecord) -> CanonicalDocumen
 
     return canonical_api_chunk(
         business_id=record.business_id,
+        brand_id=record.brand_id,
         source_id=record.source_id,
         source_version=record.source_version,
         consent_ref=record.consent_ref,
@@ -452,13 +489,18 @@ def canonical_pdf_chunk(
     source_file: str,
     page_number: int,
     chunk_position: int = 1,
+    brand_id: str | None = None,
     source_uri: str | None = None,
     source_sha256: str | None = None,
+    source_name: str | None = None,
+    source_url: str | None = None,
+    language: str | None = None,
 ) -> CanonicalDocumentChunk:
     """Normalize parser output from one PDF page into the canonical model."""
 
     return CanonicalDocumentChunk(
         business_id=business_id,
+        brand_id=brand_id,
         source_type="pdf",
         source_id=source_id,
         source_version=source_version,
@@ -469,6 +511,9 @@ def canonical_pdf_chunk(
         page_number=page_number,
         source_uri=source_uri,
         source_sha256=source_sha256,
+        source_name=source_name,
+        source_url=source_url,
+        language=language,
     )
 
 
@@ -480,13 +525,18 @@ def canonical_api_chunk(
     consent_ref: str,
     text: str,
     source_uri: str,
+    brand_id: str | None = None,
     retrieved_at: str | None = None,
     chunk_position: int = 1,
+    source_name: str | None = None,
+    source_url: str | None = None,
+    language: str | None = None,
 ) -> CanonicalDocumentChunk:
     """Normalize an already retrieved API payload without making network calls."""
 
     return CanonicalDocumentChunk(
         business_id=business_id,
+        brand_id=brand_id,
         source_type="api",
         source_id=source_id,
         source_version=source_version,
@@ -495,6 +545,9 @@ def canonical_api_chunk(
         chunk_id=chunk_id_for(source_id, source_version, chunk_position),
         source_uri=source_uri,
         retrieved_at=retrieved_at,
+        source_name=source_name,
+        source_url=source_url,
+        language=language,
     )
 
 
@@ -511,12 +564,16 @@ class RetrievedBusinessContext:
     source_version: str
     consent_ref: str
     embedding_model: str
+    brand_id: str | None = None
     source_type: SourceType | None = None
     source_file: str | None = None
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
     source_sha256: str | None = None
+    source_name: str | None = None
+    source_url: str | None = None
+    language: str | None = None
 
 
 @dataclass(frozen=True)
@@ -528,12 +585,16 @@ class GroundingProvenance:
     source_version: str
     chunk_id: str
     consent_ref: str
+    brand_id: str | None = None
     source_type: SourceType | None = None
     source_file: str | None = None
     page_number: int | None = None
     source_uri: str | None = None
     retrieved_at: str | None = None
     source_sha256: str | None = None
+    source_name: str | None = None
+    source_url: str | None = None
+    language: str | None = None
 
 
 @dataclass(frozen=True)
@@ -582,6 +643,7 @@ def ground_claim(
                 evidence=context.text,
                 provenance=GroundingProvenance(
                     business_id=context.business_id,
+                    brand_id=context.brand_id,
                     source_id=context.source_id,
                     source_version=context.source_version,
                     chunk_id=context.chunk_id,
@@ -592,6 +654,9 @@ def ground_claim(
                     source_uri=context.source_uri,
                     retrieved_at=context.retrieved_at,
                     source_sha256=context.source_sha256,
+                    source_name=context.source_name,
+                    source_url=context.source_url,
+                    language=context.language,
                 ),
                 reason="All claim terms are present in the retrieved evidence.",
             )
@@ -688,13 +753,25 @@ class LocalChromaIndex:
     ) -> None:
         settings.validate()
         self.settings = settings
-        self.embedding_function = (
-            embedding_function
-            if embedding_function is not None
-            else build_local_embedding(settings)
-        )
+        if embedding_function is not None:
+            self.embedding_function = embedding_function
+        else:
+            try:
+                self.embedding_function = build_local_embedding(settings)
+            except Exception as error:
+                raise RagInitializationError(
+                    "No se pudo cargar el modelo de embeddings local desde Hugging Face "
+                    f"('{settings.embedding_model}', revision '{settings.embedding_revision}'). "
+                    "Comprueba la caché local, la conectividad inicial y la configuración RAG."
+                ) from error
 
-        if chroma_client is None:
+        using_persistent_store = chroma_client is None
+        if using_persistent_store:
+            marker_path = settings.chroma_persist_directory / CHROMA_SCHEMA_MARKER
+            if settings.chroma_persist_directory.exists() and any(
+                settings.chroma_persist_directory.iterdir()
+            ) and not marker_path.exists():
+                _quarantine_persistent_store(settings)
             chroma_client = _build_persistent_chroma_client(settings)
 
         self.client = chroma_client
@@ -702,8 +779,49 @@ class LocalChromaIndex:
             self.collection = self.client.get_or_create_collection(
                 name=settings.chroma_collection,
                 embedding_function=self.embedding_function,
+                metadata={"rag_schema_version": CHROMA_SCHEMA_VERSION},
             )
+            collection_metadata = getattr(self.collection, "metadata", None)
+            if isinstance(collection_metadata, dict):
+                stored_schema = collection_metadata.get("rag_schema_version")
+                if stored_schema != CHROMA_SCHEMA_VERSION:
+                    raise RagInitializationError(
+                        f"La colección Chroma '{settings.chroma_collection}' usa el esquema "
+                        f"RAG {stored_schema!r}, incompatible con {CHROMA_SCHEMA_VERSION!r}. "
+                        "Recrea la base local e ingesta de nuevo las fuentes aprobadas."
+                    )
+                if using_persistent_store:
+                    marker_path.write_text(CHROMA_SCHEMA_VERSION, encoding="utf-8")
         except Exception as error:
+            if using_persistent_store:
+                try:
+                    old_client = self.client
+                    close_client = getattr(old_client, "close", None)
+                    if callable(close_client):
+                        close_client()
+                    clear_system_cache = getattr(old_client, "clear_system_cache", None)
+                    if callable(clear_system_cache):
+                        clear_system_cache()
+                    self.client = None
+                    import gc
+
+                    gc.collect()
+                    backup_path = _quarantine_persistent_store(settings)
+                    self.client = _build_persistent_chroma_client(settings)
+                    self.collection = self.client.get_or_create_collection(
+                        name=settings.chroma_collection,
+                        embedding_function=self.embedding_function,
+                        metadata={"rag_schema_version": CHROMA_SCHEMA_VERSION},
+                    )
+                    marker_path.write_text(CHROMA_SCHEMA_VERSION, encoding="utf-8")
+                    return
+                except Exception as recovery_error:
+                    raise RagInitializationError(
+                        "La base local de Chroma era incompatible o estaba corrupta y no se "
+                        f"pudo reconstruir. El respaldo queda en '{locals().get('backup_path', 'no disponible')}'."
+                    ) from recovery_error
+            if isinstance(error, RagInitializationError):
+                raise
             raise RagInitializationError(
                 "No se pudo abrir la colección Chroma "
                 f"'{settings.chroma_collection}' en '{settings.chroma_persist_directory}'. "
@@ -731,25 +849,36 @@ class LocalChromaIndex:
         texts = [record.text for record in records]
         embeddings = self.embedding_function(texts)
         embedding_model = f"{self.settings.embedding_model}@{self.settings.embedding_revision}"
-        metadata = [
-            {
+        metadata = []
+        for record, chunk_id in zip(records, chunk_ids):
+            item: dict[str, str | int | float] = {
+                "brand_id": record.brand_id or record.business_id,
                 "business_id": record.business_id,
                 "source_id": record.source_id,
+                "source_name": record.source_name or record.source_id,
                 "source_version": record.source_version,
                 "consent_ref": record.consent_ref,
                 "chunk_id": chunk_id,
                 "embedding_model": embedding_model,
                 "source_type": record.source_type,
-                **(
-                    {"source_file": record.source_file, "page_number": record.page_number}
-                    if record.source_type == "pdf"
-                    else {"source_uri": record.source_uri, "retrieved_at": record.retrieved_at}
-                ),
+                "language": record.language or "es",
             }
-            | ({"source_uri": record.source_uri, "source_sha256": record.source_sha256}
-               if record.source_type == "pdf" else {})
-            for record, chunk_id in zip(records, chunk_ids)
-        ]
+            if record.source_type == "pdf":
+                item.update({"source_file": record.source_file or record.source_id})
+                if record.page_number is not None:
+                    item["page_number"] = record.page_number
+                if record.source_url or record.source_uri:
+                    source_url = record.source_url or record.source_uri or ""
+                    item["source_url"] = source_url
+                    item["source_uri"] = record.source_uri or source_url
+                if record.source_sha256:
+                    item["source_sha256"] = record.source_sha256
+            else:
+                source_url = record.source_url or record.source_uri or ""
+                item.update({"source_url": source_url, "source_uri": record.source_uri or source_url})
+                if record.retrieved_at:
+                    item["retrieved_at"] = record.retrieved_at
+            metadata.append(item)
         self.collection.upsert(
             ids=chunk_ids,
             documents=texts,
@@ -763,6 +892,7 @@ class LocalChromaIndex:
         query: str,
         business_id: str,
         top_k: int,
+        brand_id: str | None = None,
     ) -> list[RetrievedBusinessContext]:
         """Retrieve scoped records with provenance and Chroma distance scores."""
 
@@ -770,14 +900,19 @@ class LocalChromaIndex:
             raise ValueError("query must be a non-empty string")
         if not isinstance(business_id, str) or not business_id.strip():
             raise ValueError("business_id must be a non-empty string")
+        if brand_id is not None and (not isinstance(brand_id, str) or not brand_id.strip()):
+            raise ValueError("brand_id must be a non-empty string when provided")
         if not isinstance(top_k, int) or isinstance(top_k, bool) or top_k <= 0:
             raise ValueError("top_k must be a positive integer")
 
         query_embedding = self.embedding_function([query])[0]
+        where: dict[str, Any] = {"business_id": business_id}
+        if brand_id is not None:
+            where = {"$and": [{"brand_id": brand_id}, {"business_id": business_id}]}
         response = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=top_k,
-            where={"business_id": business_id},
+            where=where,
             include=["documents", "metadatas", "distances"],
         )
         documents = response.get("documents", [[]])[0]
@@ -790,6 +925,9 @@ class LocalChromaIndex:
             zip(documents, metadatas, distances)
         ):
             result_metadata = metadata or {}
+            result_brand_id = result_metadata.get("brand_id")
+            if brand_id is not None and result_brand_id != brand_id:
+                continue
             results.append(
                 RetrievedBusinessContext(
                     query=query,
@@ -801,12 +939,16 @@ class LocalChromaIndex:
                     source_version=result_metadata["source_version"],
                     consent_ref=result_metadata["consent_ref"],
                     embedding_model=result_metadata["embedding_model"],
+                    brand_id=result_brand_id,
                     source_type=result_metadata.get("source_type"),
                     source_file=result_metadata.get("source_file"),
                     page_number=result_metadata.get("page_number"),
-                    source_uri=result_metadata.get("source_uri"),
+                    source_uri=result_metadata.get("source_uri") or result_metadata.get("source_url"),
                     retrieved_at=result_metadata.get("retrieved_at"),
                     source_sha256=result_metadata.get("source_sha256"),
+                    source_name=result_metadata.get("source_name"),
+                    source_url=result_metadata.get("source_url"),
+                    language=result_metadata.get("language"),
                 )
             )
         return results[:top_k]
@@ -814,6 +956,22 @@ class LocalChromaIndex:
 
 class RagInitializationError(RuntimeError):
     """Raised when the local Chroma store cannot be opened safely."""
+
+
+def _quarantine_persistent_store(settings: RagLocalSettings) -> Path:
+    """Move an incompatible local store aside without deleting its evidence."""
+
+    path = settings.chroma_persist_directory
+    backup_path = path.with_name(
+        f"{path.name}.incompatible-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    )
+    suffix = 1
+    while backup_path.exists():
+        backup_path = path.with_name(f"{backup_path.name}-{suffix}")
+        suffix += 1
+    if path.exists():
+        shutil.move(str(path), str(backup_path))
+    return backup_path
 
 
 def _build_persistent_chroma_client(settings: RagLocalSettings) -> Any:
@@ -824,8 +982,14 @@ def _build_persistent_chroma_client(settings: RagLocalSettings) -> Any:
     the original data remains available for diagnosis or manual migration.
     """
 
-    import chromadb
-    from chromadb.config import Settings as ChromaSettings
+    try:
+        import chromadb
+        from chromadb.config import Settings as ChromaSettings
+    except Exception as error:
+        raise RagInitializationError(
+            "No se pudo cargar Chroma para la base RAG local. "
+            "Instala la dependencia compatible con requirements.txt."
+        ) from error
 
     path = settings.chroma_persist_directory
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -841,12 +1005,8 @@ def _build_persistent_chroma_client(settings: RagLocalSettings) -> Any:
     try:
         return create_client()
     except Exception as first_error:
-        backup_path = path.with_name(
-            f"{path.name}.incompatible-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
-        )
         try:
-            if path.exists():
-                shutil.move(str(path), str(backup_path))
+            backup_path = _quarantine_persistent_store(settings)
             return create_client()
         except Exception as recovery_error:
             raise RagInitializationError(
@@ -862,6 +1022,8 @@ __all__ = [
     "CanonicalDocumentChunk",
     "DEFAULT_PDF_CHUNK_OVERLAP",
     "DEFAULT_PDF_CHUNK_SIZE",
+    "CHROMA_SCHEMA_VERSION",
+    "CHROMA_SCHEMA_MARKER",
     "GroundingProvenance",
     "GroundingResult",
     "LocalChromaIndex",

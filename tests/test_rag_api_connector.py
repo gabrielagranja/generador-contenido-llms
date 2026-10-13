@@ -142,6 +142,7 @@ class ApiRagConnectorTests(unittest.TestCase):
             grounded.provenance,
             GroundingProvenance(
                 business_id="business-a",
+                brand_id="business-a",
                 source_id="jsonplaceholder-post-7",
                 source_version="post-v1",
                 chunk_id="jsonplaceholder-post-7-post-v1-0001",
@@ -149,6 +150,9 @@ class ApiRagConnectorTests(unittest.TestCase):
                 source_type="api",
                 source_uri="https://api.example.test/posts/7",
                 retrieved_at="2026-10-06T10:00:00+00:00",
+                source_name="jsonplaceholder-post-7",
+                source_url="https://api.example.test/posts/7",
+                language="es",
             ),
         )
         self.assertFalse(ground_claim("The box costs five euros.", [result]).supported)

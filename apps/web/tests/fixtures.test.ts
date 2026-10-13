@@ -36,6 +36,23 @@ test("every selectable context has its own brief, dashboard and drafts", () => {
   }
 });
 
+test("the demo exposes three isolated selectable brands", () => {
+  assert.deepEqual(
+    brandContexts.map((brand) => [brand.id, brand.name]),
+    [["talent-hive", "Talent Hive"], ["wayddh", "WAYDDH"], ["coll-amunt", "Coll Amunt!"]],
+  );
+  assert.equal(brandContexts.find((brand) => brand.id === "talent-hive")?.ragBusinessId, "talent-hive");
+  assert.equal(brandContexts.find((brand) => brand.id === "wayddh")?.ragBusinessId, "wayddh");
+  assert.equal(brandContexts.find((brand) => brand.id === "coll-amunt")?.ragBusinessId, "coll-amunt");
+});
+
+test("Talent Hive fixture states stay within its team-building identity", () => {
+  const talentHive = brandContexts.find((brand) => brand.id === "talent-hive");
+  assert.ok(talentHive);
+  assert.match(talentHive?.kind ?? "", /gamificadas/);
+  assert.match(briefDefaults.talenthive.restrictions, /sin prometer resultados/);
+});
+
 test("drafts never reference another context", () => {
   for (const [account, drafts] of Object.entries(draftFixtures)) {
     for (const draft of drafts) {

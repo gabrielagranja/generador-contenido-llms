@@ -63,7 +63,7 @@ export function Workspace() {
   const sessionReviewer = auth?.username ?? "";
   const welcomeName = sessionReviewer ? sessionReviewer.charAt(0).toLocaleUpperCase() + sessionReviewer.slice(1) : "";
   const [view, setView] = useState<ViewId>("dashboard");
-  const [brandId, setBrandId] = useState<BrandId>("panaderia");
+  const [brandId, setBrandId] = useState<BrandId>("talent-hive");
   const [commerceId, setCommerceId] = useState<CommerceId | null>(null);
 
   const brand = useMemo(
@@ -240,7 +240,7 @@ export function Workspace() {
       setGenerationState("loading");
       setReviewMessage("");
       const apiBrief = mapBriefToApi({ ...brief, restrictions: brief.restrictions.trim() || activeContext.summary }, activeContext.account);
-      const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
+      const ragBusinessId = activeCommerce?.businessId ?? brand.ragBusinessId;
       try {
         const recorded = await reviewDraft(activeBackendId, "request_regeneration", reviewerName.trim(), reviewFeedback);
         if (requestVersion !== requestSequence.current) return;
@@ -353,7 +353,7 @@ export function Workspace() {
     setCopyApproach(null);
     const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000").replace(/\/+$/, "");
     const format = brief.format === "Reel" ? "reel" : brief.format === "Carrusel" ? "carousel" : "single_image";
-    const ragBusinessId = brand.id === "coll-amunt" ? activeCommerce?.businessId : undefined;
+    const ragBusinessId = activeCommerce?.businessId ?? brand.ragBusinessId;
     const requestVersion = ++requestSequence.current;
     const generation = generationGuard.current.begin();
 
@@ -361,8 +361,8 @@ export function Workspace() {
       {
       const payload = await createDraft({ brief: mapBriefToApi({ ...brief, restrictions: brief.restrictions.trim() || activeContext.summary }, activeContext.account), brandId: brand.id, businessId: ragBusinessId, ragEnabled: Boolean(ragBusinessId), ...(formulaCode !== "AUTO" ? { formula: formulaCode } : {}), signal: generation.signal });
       if (requestVersion !== requestSequence.current || !generation.isCurrent()) return;
-      const parsed = await parseDraftResponse({ ok: true, status: 200, json: async () => payload }, ragBusinessId);
-      const parsedDrafts = await Promise.all(payload.drafts!.map((_, index) => parseDraftResponse({ ok: true, status: 200, json: async () => ({ ...payload, drafts: [payload.drafts?.[index]], content_ids: [payload.content_ids?.[index]] }) }, ragBusinessId)));
+      const parsed = await parseDraftResponse({ ok: true, status: 200, json: async () => payload }, ragBusinessId, brand.id);
+      const parsedDrafts = await Promise.all(payload.drafts!.map((_, index) => parseDraftResponse({ ok: true, status: 200, json: async () => ({ ...payload, drafts: [payload.drafts?.[index]], content_ids: [payload.content_ids?.[index]] }) }, ragBusinessId, brand.id)));
       if (requestVersion !== requestSequence.current || !generation.isCurrent()) return;
       if (payload.review_state !== "pending_human_review" || !payload.drafts?.length || !payload.content_ids?.length) throw new Error("La API no confirmó los borradores pendientes de revisión humana.");
       if (payload.content_ids.length !== payload.drafts.length) throw new Error("La API no devolvió identificadores para todos los borradores.");
@@ -404,6 +404,7 @@ export function Workspace() {
       const parsed = await parseDraftResponse(
         { ok: response.ok, status: response.status, json: async () => payload },
         ragBusinessId,
+        brand.id,
       );
       if (!response.ok) {
         throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);

@@ -9,7 +9,7 @@ export type ViewId =
   | "brands"
   | "settings";
 
-export type BrandId = "panaderia" | "coll-amunt";
+export type BrandId = "talent-hive" | "wayddh" | "coll-amunt";
 export type CommerceId = "pelu-sonia" | "centre-d-estetica-alma";
 
 /** Brand-specific colours. They colour brand artefacts only, never the platform UI. */
@@ -36,6 +36,7 @@ export type BrandContext = {
   kind: string;
   summary: string;
   theme: BrandTheme;
+  ragBusinessId?: string;
   commerceOptions?: CommerceContext[];
 };
 
@@ -102,12 +103,17 @@ export type CopyApproachInfo = { approach: string; formula: string; rationale: s
 
 export type DraftEvidence = {
   business_id: string;
+  brand_id?: string | null;
   source_type?: string;
   source_id?: string;
   source_version?: string;
+  source_name?: string | null;
   source_file?: string | null;
   page_number?: number | null;
   source_uri?: string | null;
+  source_url?: string | null;
+  language?: string | null;
+  retrieved_at?: string | null;
 };
 
 export type HistoryStatus = EditorialStatus | "changes-requested";

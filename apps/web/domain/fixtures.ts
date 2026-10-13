@@ -7,19 +7,28 @@ import type {
 } from "./types.ts";
 
 /**
- * Deterministic UI fixtures. The Talent Hive sample brand remains synthetic; Coll
- * Amunt! commerce contexts carry only official names and real business IDs.
- * Factual content for those businesses is retrieved by the API RAG boundary.
+ * Deterministic UI fixtures. Each selectable brand has its own RAG identity;
+ * factual content is retrieved by the API RAG boundary.
  */
 
 export const brandContexts: BrandContext[] = [
   {
-    id: "panaderia",
+    id: "talent-hive",
     name: "Talent Hive",
     account: "talenthive",
     kind: "Soluciones gamificadas para empresas",
     summary: "Soluciones gamificadas para empresas. Ficha sintética de ejemplo.",
     theme: { accent: "#2453d4", ink: "#0f1f4d", tint: "#dfe7fb" },
+    ragBusinessId: "talent-hive",
+  },
+  {
+    id: "wayddh",
+    name: "WAYDDH",
+    account: "wayddh",
+    kind: "Marketing digital y soluciones para empresas",
+    summary: "Contexto recuperable desde la fuente corporativa local de WAYDDH; la interfaz no añade servicios ni cifras no documentados.",
+    theme: { accent: "#1f7a70", ink: "#123d3a", tint: "#ddf1ee" },
+    ragBusinessId: "wayddh",
   },
   {
     id: "coll-amunt",
@@ -28,6 +37,7 @@ export const brandContexts: BrandContext[] = [
     kind: "Asociación de comercio local · Barcelona",
     summary: "Asociación de comercios locales de Barcelona. El contexto factual se recupera del PDF oficial de Coll Amunt!.",
     theme: { accent: "#176b9a", ink: "#12354b", tint: "#dceef7" },
+    ragBusinessId: "coll-amunt",
     commerceOptions: [
       {
         id: "pelu-sonia",
@@ -64,6 +74,13 @@ export const dashboardFixtures: Record<string, DashboardFixture> = {
       { id: "hive-a3", text: "Nuevo contenido añadido al calendario de ejemplo", time: "10 jun, 11:05" },
     ],
   },
+  wayddh: {
+    drafts: 0,
+    review: 0,
+    approved: 0,
+    upcoming: [],
+    activity: [],
+  },
   "coll-amunt-pelu-sonia": {
     drafts: 0,
     review: 0,
@@ -88,6 +105,14 @@ export const briefDefaults: Record<string, BriefForm> = {
     format: "Carrusel",
     campaign: "Aprender jugando",
     restrictions: "Mantener un tono cercano y profesional, sin prometer resultados ni cifras.",
+  },
+  wayddh: {
+    objective: "Presentar un servicio documentado de WAYDDH",
+    audience: "Empresas que necesitan apoyo digital",
+    platform: "Instagram",
+    format: "Carrusel",
+    campaign: "Presencia digital con evidencia",
+    restrictions: "Usar únicamente información de la fuente corporativa; si falta evidencia, indicarlo y no inventar servicios, clientes ni cifras.",
   },
   "coll-amunt-pelu-sonia": {
     objective: "Dar a conocer el comercio seleccionado",
@@ -144,6 +169,7 @@ export const draftFixtures: Record<string, LocalDraft[]> = {
       copy: `Texto sintético aprobado en el prototipo para ilustrar el estado editorial.`,
     },
   ],
+  wayddh: [],
   "coll-amunt-pelu-sonia": [],
   "coll-amunt-centre-d-estetica-alma": [],
 };
@@ -155,6 +181,7 @@ export const historyFixtures: Record<string, HistoryEntry[]> = {
     { id: "hive-history-2", text: "El contenido se envió a revisión humana.", time: "Ayer · 16:20", status: "review", draftId: "hive-review-retos" },
     { id: "hive-history-3", text: "Se marcó como aprobado en el prototipo.", time: "8 oct · 12:15", status: "approved", draftId: "hive-approved-equipos" },
   ],
+  wayddh: [],
   "coll-amunt-pelu-sonia": [],
   "coll-amunt-centre-d-estetica-alma": [],
 };

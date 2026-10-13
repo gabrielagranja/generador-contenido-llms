@@ -171,6 +171,7 @@ def build_collamunt_chunks(
                 chunks.append(
                     canonical_pdf_chunk(
                         business_id=business_id,
+                        brand_id="coll-amunt",
                         source_id=COLLAMUNT_SOURCE_ID,
                         source_version=COLLAMUNT_SOURCE_VERSION,
                         consent_ref=COLLAMUNT_CONSENT_REF,
@@ -185,6 +186,7 @@ def build_collamunt_chunks(
             continue
         page_chunks = pdf_to_canonical_chunks(
             business_id=business_id,
+            brand_id="coll-amunt",
             source_id=COLLAMUNT_SOURCE_ID,
             source_version=COLLAMUNT_SOURCE_VERSION,
             consent_ref=COLLAMUNT_CONSENT_REF,
