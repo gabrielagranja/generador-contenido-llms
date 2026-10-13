@@ -13,6 +13,19 @@ from apps.api.models import GuidedBrief, Platform
 from apps.api.rag import LocalChromaIndex, RetrievedBusinessContext, ground_claim
 
 
+class DraftOutputError(ValueError):
+    """Raised when a provider returns internal instructions instead of editorial copy."""
+
+
+_INTERNAL_OUTPUT_MARKERS = (
+    "copy approach",
+    "scaffold",
+    "safeguard",
+    "retrieved evidence",
+    "prompting instructions",
+)
+
+
 @dataclass(frozen=True)
 class TextTemplate:
     template_id: str
@@ -129,6 +142,7 @@ class ChannelAdaptedDraftService:
         generated_text = self._generator.generate(prompt).strip()
         if not generated_text:
             raise ValueError("text generator returned an empty draft")
+        _validate_editorial_output(generated_text)
 
         evidence_refs = (
             [context.text for context in retrieved_contexts]
@@ -229,6 +243,8 @@ class ChannelAdaptedDraftService:
             "present them as current facts unless the evidence says they are current. "
             "Keep inferred and unknown information out of factual claims. "
             "Do not render media, publish, schedule or request credentials."
+            " Return only the final editorial copy; never include labels such as "
+            "Copy approach, Scaffold, Safeguard, Retrieved evidence or prompting instructions."
         )
 
 
@@ -250,6 +266,18 @@ def _ground_brief_claims(
         result = ground_claim(fact.statement, contexts)
         (supported if result.supported else unsupported).append(fact.statement)
     return supported, unsupported
+
+
+def _validate_editorial_output(text: str) -> None:
+    """Reject provider responses that expose the prompt's internal scaffolding."""
+
+    normalized = " ".join(text.casefold().split())
+    marker = next((item for item in _INTERNAL_OUTPUT_MARKERS if item in normalized), None)
+    if marker:
+        raise DraftOutputError(
+            "El proveedor devolvió instrucciones internas en lugar de contenido editorial "
+            f"(marcador detectado: {marker})."
+        )
 
 
 def _provenance_dict(context: RetrievedBusinessContext) -> dict[str, object]:
@@ -307,6 +335,7 @@ class RagGroundedDraftService:
 __all__ = [
     "ChannelAdaptedDraftService",
     "EditableTextDraft",
+    "DraftOutputError",
     "RagGroundedDraftService",
     "TEMPLATES",
 ]

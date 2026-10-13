@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
 import re
+import shutil
 import unicodedata
 from typing import Any, Literal
 
@@ -694,17 +695,21 @@ class LocalChromaIndex:
         )
 
         if chroma_client is None:
-            import chromadb
-
-            chroma_client = chromadb.PersistentClient(
-                path=str(settings.chroma_persist_directory)
-            )
+            chroma_client = _build_persistent_chroma_client(settings)
 
         self.client = chroma_client
-        self.collection = self.client.get_or_create_collection(
-            name=settings.chroma_collection,
-            embedding_function=self.embedding_function,
-        )
+        try:
+            self.collection = self.client.get_or_create_collection(
+                name=settings.chroma_collection,
+                embedding_function=self.embedding_function,
+            )
+        except Exception as error:
+            raise RagInitializationError(
+                "No se pudo abrir la colección Chroma "
+                f"'{settings.chroma_collection}' en '{settings.chroma_persist_directory}'. "
+                "La base local puede estar corrupta o ser incompatible con la versión "
+                "instalada de Chroma; elimina o renombra esa carpeta y vuelve a intentarlo."
+            ) from error
 
     def ingest(
         self,
@@ -807,6 +812,51 @@ class LocalChromaIndex:
         return results[:top_k]
 
 
+class RagInitializationError(RuntimeError):
+    """Raised when the local Chroma store cannot be opened safely."""
+
+
+def _build_persistent_chroma_client(settings: RagLocalSettings) -> Any:
+    """Open Chroma with explicit local tenancy and recover an incompatible store.
+
+    Chroma has changed its tenant metadata across releases. A failed open is
+    isolated by moving the old directory aside before creating a fresh store;
+    the original data remains available for diagnosis or manual migration.
+    """
+
+    import chromadb
+    from chromadb.config import Settings as ChromaSettings
+
+    path = settings.chroma_persist_directory
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    def create_client() -> Any:
+        return chromadb.PersistentClient(
+            path=str(path),
+            settings=ChromaSettings(anonymized_telemetry=False),
+            tenant="default_tenant",
+            database="default_database",
+        )
+
+    try:
+        return create_client()
+    except Exception as first_error:
+        backup_path = path.with_name(
+            f"{path.name}.incompatible-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+        )
+        try:
+            if path.exists():
+                shutil.move(str(path), str(backup_path))
+            return create_client()
+        except Exception as recovery_error:
+            raise RagInitializationError(
+                "No se pudo inicializar Chroma en "
+                f"'{path}'. La base local es incompatible o está corrupta. "
+                f"El respaldo queda en '{backup_path}'. "
+                "Revisa la instalación de Chroma y vuelve a intentarlo."
+            ) from recovery_error
+
+
 __all__ = [
     "CanonicalBusinessRecord",
     "CanonicalDocumentChunk",
@@ -815,6 +865,7 @@ __all__ = [
     "GroundingProvenance",
     "GroundingResult",
     "LocalChromaIndex",
+    "RagInitializationError",
     "LocalEmbeddingFunction",
     "JsonPlaceholderApiConnector",
     "RetrievedBusinessContext",

@@ -95,7 +95,10 @@ class OllamaTextGenerator:
 def build_text_generator(settings: LlmSettings | None = None) -> TextGenerator:
     """Build the configured generator while keeping provider details behind one boundary."""
 
-    resolved = settings or LlmSettings.from_environment()
+    try:
+        resolved = settings or LlmSettings.from_environment()
+    except ValueError as error:
+        raise LlmConfigurationError(f"LLM configuration is invalid: {error}") from error
     if resolved.provider == "mock":
         return DeterministicMockAdapter()
 

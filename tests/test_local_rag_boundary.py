@@ -48,6 +48,19 @@ class FakeEmbeddingModel:
         return [[float(len(text))] for text in texts]
 
 
+class RealChromaTestEmbedding:
+    def __call__(self, input: list[str]) -> list[list[float]]:
+        return [[float(len(text)), 0.0] for text in input]
+
+    @staticmethod
+    def name() -> str:
+        return "real_chroma_test_embedding"
+
+    @staticmethod
+    def get_config() -> dict[str, str]:
+        return {}
+
+
 class FakeChromaCollection:
     def __init__(self) -> None:
         self.upserts: list[dict[str, object]] = []
@@ -159,6 +172,19 @@ class LocalRagBoundaryTests(unittest.TestCase):
             self.client.calls,
             [(self.settings.chroma_collection, embedding)],
         )
+
+    def test_index_initializes_a_new_persistent_chroma_store(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
+            settings = RagLocalSettings(
+                chroma_persist_directory=Path(directory),
+                chroma_collection="business-context",
+            )
+            index = LocalChromaIndex(
+                settings,
+                embedding_function=RealChromaTestEmbedding(),
+            )
+
+            self.assertEqual(index.collection.name, "business-context")
 
     def test_chunk_id_is_deterministic_and_positioned(self) -> None:
         self.assertEqual(chunk_id_for("menu-a", "v1"), "menu-a-v1-0001")

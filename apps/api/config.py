@@ -138,11 +138,12 @@ class LlmSettings:
 
     @classmethod
     def from_environment(cls) -> "LlmSettings":
-        # A local key opts into Groq for the developer workflow; CI remains on
-        # the deterministic mock unless LLM_PROVIDER is explicitly configured.
-        provider = os.getenv("LLM_PROVIDER") or (
-            "groq" if os.getenv("GROQ_API_KEY") else DEFAULT_LLM_PROVIDER
-        )
+        raw_provider = os.getenv("LLM_PROVIDER")
+        if raw_provider is None or not raw_provider.strip():
+            raise ValueError(
+                "LLM_PROVIDER must be explicitly set to 'mock', 'groq' or 'ollama'"
+            )
+        provider = raw_provider
         settings = cls(
             provider=provider.strip().lower(),
             groq_api_key=os.getenv("GROQ_API_KEY") or None,
@@ -163,7 +164,7 @@ class LlmSettings:
     def validate(self) -> None:
         if self.provider not in {"mock", "groq", "ollama"}:
             raise ValueError("LLM_PROVIDER must be 'mock', 'groq' or 'ollama'")
-        if not self.groq_model.strip():
+        if self.provider == "groq" and not self.groq_model.strip():
             raise ValueError("GROQ_MODEL must not be empty")
         parsed_ollama_url = urlsplit(self.ollama_base_url)
         if parsed_ollama_url.scheme not in {"http", "https"} or not parsed_ollama_url.hostname:
