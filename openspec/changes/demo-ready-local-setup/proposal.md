@@ -7,7 +7,7 @@
 - Human approval: the user explicitly requested a stable local demo login and
   an MVP ready for testing/demo on 2026-10-13.
 
-## Plan objective
+## Objective
 
 Make the offline MVP demo reproducible on a developer machine without relying
 on a conflicting default port, external LLM credentials or manually copied
@@ -42,7 +42,7 @@ random local passwords.
 - C1.2: supports a reproducible functional demo and fallback preparation.
 - C4: supports offline MVP validation but does not claim a real-model run.
 
-## Tests and evidence
+## Tests and verification
 
 - Focused Python tests verify generated config, hash validation, web URL,
   credential file and production refusal.
@@ -53,3 +53,7 @@ random local passwords.
 - The helper chooses 18000 to avoid the observed local collision on 8000; it
   cannot guarantee any arbitrary computer has that port free.
 - Real Groq and Ollama smoke tests remain a separate credential/service task.
+
+## Approval
+
+Approved by the user's explicit request to finish the project and make the local MVP demo and delivery checks reproducible on 2026-10-13.
