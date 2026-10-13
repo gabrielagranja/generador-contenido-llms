@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import Mock
 
-from apps.api.drafting import ChannelAdaptedDraftService
+from apps.api.drafting import ChannelAdaptedDraftService, DraftOutputError
 from apps.api.models import GuidedBrief
 
 
@@ -119,6 +119,15 @@ class ChannelAdaptedDraftServiceTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ChannelAdaptedDraftService(generator).draft(make_brief("facebook"))
+
+    def test_internal_scaffold_is_rejected_as_publicable_copy(self) -> None:
+        generator = Mock()
+        generator.generate.return_value = (
+            "Copy approach: PAS\nScaffold: problem, agitation, solution"
+        )
+
+        with self.assertRaisesRegex(DraftOutputError, "instrucciones internas"):
+            ChannelAdaptedDraftService(generator).draft(make_brief("instagram"))
 
 
 if __name__ == "__main__":

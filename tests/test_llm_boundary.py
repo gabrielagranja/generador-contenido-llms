@@ -19,6 +19,40 @@ from apps.api.llm import (
 
 
 class LlmBoundaryTests(unittest.TestCase):
+    def test_ollama_provider_is_selected_from_environment(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {
+                "LLM_PROVIDER": "ollama",
+                "OLLAMA_BASE_URL": "http://127.0.0.1:11434",
+                "OLLAMA_MODEL": "qwen2.5:3b-instruct",
+            },
+            clear=True,
+        ):
+            settings = LlmSettings.from_environment()
+
+        self.assertEqual(settings.provider, "ollama")
+        self.assertEqual(settings.ollama_model, "qwen2.5:3b-instruct")
+
+    def test_invalid_or_empty_provider_fails_without_mock_fallback(self) -> None:
+        for provider in (None, "invalid", ""):
+            with self.subTest(provider=provider), patch.dict(
+                "os.environ",
+                {} if provider is None else {"LLM_PROVIDER": provider},
+                clear=True,
+            ):
+                with self.assertRaisesRegex(ValueError, "LLM_PROVIDER"):
+                    LlmSettings.from_environment()
+
+    def test_ollama_requires_model_from_environment(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {"LLM_PROVIDER": "ollama", "OLLAMA_MODEL": ""},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(ValueError, "OLLAMA_MODEL"):
+                LlmSettings.from_environment()
+
     def test_mock_is_deterministic_and_matches_neutral_contract(self) -> None:
         generator = DeterministicMockAdapter()
 

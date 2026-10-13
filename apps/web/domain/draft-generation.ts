@@ -12,6 +12,8 @@ export type DraftGenerationResult = {
 
 type DraftApiResponse = {
   detail?: string;
+  error?: { code?: unknown; message?: unknown } | string;
+  generation_status?: string;
   drafts?: Array<{
     caption?: string;
     evidence_provenance?: unknown;
@@ -50,6 +52,14 @@ export async function parseDraftResponse(
   if (!response.ok) {
     throw new Error(payload.detail || `La API respondió con estado ${response.status}.`);
   }
+  const generationError = typeof payload.error === "string"
+    ? payload.error
+    : payload.error && typeof payload.error.message === "string"
+      ? payload.error.message
+      : undefined;
+  if (payload.generation_status === "error" || generationError) {
+    throw new Error(generationError || "La generación falló en la API.");
+  }
   if (payload.review_state !== "pending_human_review") {
     throw new Error("La API no confirmó que el borrador quede pendiente de revisión humana.");
   }
@@ -58,6 +68,11 @@ export async function parseDraftResponse(
   const copy = draft?.caption?.trim();
   if (!draft || !copy) {
     throw new Error("La API no devolvió un borrador editable.");
+  }
+  const internalMarker = ["copy approach", "scaffold", "safeguard", "retrieved evidence", "prompting instructions"]
+    .find((marker) => copy.toLowerCase().includes(marker));
+  if (internalMarker) {
+    throw new Error("La API devolvió instrucciones internas en lugar de contenido editorial.");
   }
 
   const evidenceProvenance = Array.isArray(draft.evidence_provenance)
