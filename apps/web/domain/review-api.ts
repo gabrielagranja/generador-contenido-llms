@@ -41,6 +41,13 @@ export type DraftApiResponse = {
   review_state?: ApiEditorialState;
 };
 
+export class RequestCancelledError extends Error {
+  constructor() {
+    super("Solicitud cancelada.");
+    this.name = "RequestCancelledError";
+  }
+}
+
 export class ReviewApiError extends Error {
   readonly status: number | null;
   constructor(message: string, status: number | null = null) {
@@ -66,8 +73,9 @@ export function mapBriefToApi(brief: BriefForm, businessContextRef: string) {
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl()}${path}`, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), ...authHeaders() }, signal: init.signal ?? AbortSignal.timeout(10000) });
+    response = await fetch(`${apiBaseUrl()}${path}`, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), ...authHeaders() }, signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000) });
   } catch (error) {
+    if (init.signal?.aborted) throw new RequestCancelledError();
     throw new ReviewApiError(error instanceof Error && error.name === "TimeoutError" ? "La API agotó el tiempo de espera." : "No se pudo conectar con la API.");
   }
   let payload: unknown = null;
@@ -86,8 +94,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return payload as T;
 }
 
-export function createDraft(body: { brief: ReturnType<typeof mapBriefToApi>; brandId?: string; businessId?: string; ragEnabled: boolean; formula?: FormulaCode }) {
-  return request<DraftApiResponse>("/drafts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+export function createDraft(body: { brief: ReturnType<typeof mapBriefToApi>; brandId?: string; businessId?: string; ragEnabled: boolean; formula?: FormulaCode; signal?: AbortSignal }) {
+  return request<DraftApiResponse>("/drafts", { method: "POST", signal: body.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({
     brief: body.brief, rag_enabled: body.ragEnabled, ...(body.brandId ? { brand_id: body.brandId } : {}),
     ...(body.businessId ? { business_id: body.businessId, top_k: 3 } : {}),
     ...(body.formula ? { formula: body.formula } : {}),
