@@ -13,6 +13,10 @@ Make the offline MVP demo reproducible on a developer machine without relying
 on a conflicting default port, external LLM credentials or manually copied
 random local passwords.
 
+## Objective
+
+Make the offline MVP demo reproducible on a developer machine without relying on a conflicting default port, external LLM credentials or manually copied random local passwords.
+
 ## Scope
 
 ### Included
