@@ -8,6 +8,7 @@ rapidocr-onnxruntime>=1.2,<2
 langchain-groq>=0.3,<1
 langchain-core>=0.3,<2
 pydantic>=2.7,<3
+Pillow>=10,<12
 pytest>=8,<9
 python-dotenv>=1.0,<2
 sentence-transformers>=3,<6

@@ -4,6 +4,7 @@ from datetime import date
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -25,10 +26,12 @@ from apps.api.editorial_review import (
     HumanReview,
     RegenerationRequest,
 )
-from apps.api.editorial_store import EditorialContentStore, EditorialPlanStore
+from apps.api.editorial_store import CreativeStore, EditorialContentStore, EditorialPlanStore
 from apps.api.llm import LlmConfigurationError, build_text_generator
 from apps.api.models import GuidedBrief
-from apps.api.config import EditorialPersistenceSettings, RagLocalSettings
+from apps.api.config import CreativeStorageSettings, EditorialPersistenceSettings, OpenAiImageSettings, RagLocalSettings
+from apps.api.creative_formats import get_meta_creative_format
+from apps.api.creatives import CreativeGenerationError, CreativeRecord, CreativeService, OpenAiImageGenerator
 from apps.api.drafting import RagGroundedDraftService
 from apps.api.editorial_planning import EditorialPlan, reschedule_item
 from apps.api.rag import LocalChromaIndex
@@ -61,6 +64,36 @@ class DraftResponse(BaseModel):
     provider: str
     model: str
     review_state: Literal["pending_human_review"] = "pending_human_review"
+
+
+class CreativeRequest(BaseModel):
+    """Inputs for one non-published visual asset."""
+
+    brand_id: Literal["coll-amunt", "talent-hive", "wayddh"]
+    brief: str = Field(min_length=1)
+    platform: Literal["instagram", "facebook"]
+    placement: str = Field(min_length=1)
+    format: Literal["single_image", "carousel", "reel"]
+    copy_text: str = Field(min_length=1, alias="copy")
+    style: str = Field(min_length=1)
+
+
+class CreativeResponse(BaseModel):
+    id: str
+    image_url: str
+    prompt: str
+    brand_id: str
+    platform: str
+    placement: str
+    format: str
+    width: int
+    height: int
+    aspect_ratio: str
+    model: str
+    generated_at: str
+    review_state: Literal["pending-review", "approved-prototype", "discarded"]
+    provenance: list[dict[str, object]]
+    source_creative_id: str | None = None
 
 
 class ReviewRequest(BaseModel):
@@ -111,6 +144,7 @@ app.add_middleware(
 persistence_settings = EditorialPersistenceSettings.from_environment()
 editorial_store = EditorialContentStore(persistence_settings.database_path)
 editorial_plan_store = EditorialPlanStore(persistence_settings.database_path)
+creative_store = CreativeStore(persistence_settings.database_path)
 
 
 @app.get("/readiness", response_model=ReadinessResponse)
@@ -118,6 +152,133 @@ def readiness() -> ReadinessResponse:
     """Report local API readiness without contacting external providers."""
 
     return ReadinessResponse()
+
+
+def build_creative_service() -> CreativeService:
+    """Construct the image provider only when a creative is requested."""
+    return CreativeService(
+        OpenAiImageGenerator(OpenAiImageSettings.from_environment()),
+        CreativeStorageSettings.from_environment(),
+    )
+
+
+def _creative_response(creative: CreativeRecord) -> CreativeResponse:
+    return CreativeResponse(
+        id=creative.id,
+        image_url=f"/creatives/{creative.id}/image",
+        prompt=creative.prompt,
+        brand_id=creative.brand_id,
+        platform=creative.platform,
+        placement=creative.placement,
+        format=creative.format,
+        width=creative.width,
+        height=creative.height,
+        aspect_ratio=creative.aspect_ratio,
+        model=creative.model,
+        generated_at=creative.generated_at.isoformat(),
+        review_state=creative.review_state,
+        provenance=[item.model_dump() for item in creative.provenance],
+        source_creative_id=creative.source_creative_id,
+    )
+
+
+def _get_creative(creative_id: str, username: str) -> CreativeRecord:
+    creative = creative_store.get(creative_id, owner_username=username)
+    if creative is None:
+        raise HTTPException(status_code=404, detail="creative_id not found")
+    return creative
+
+
+def _creative_contexts(request: CreativeRequest):
+    """Retrieve only selected-brand context; missing evidence is explicit in the prompt."""
+    try:
+        index = LocalChromaIndex(RagLocalSettings())
+        return index.query(
+            f"{request.brief} {request.copy_text}",
+            business_id=request.brand_id,
+            brand_id=request.brand_id,
+            top_k=3,
+        )
+    except (ValueError, RuntimeError) as error:
+        raise HTTPException(status_code=503, detail=f"No se pudo recuperar el contexto RAG: {error}") from error
+
+
+def _create_creative(
+    request: CreativeRequest,
+    username: str,
+    *,
+    source_creative_id: str | None = None,
+) -> CreativeResponse:
+    try:
+        target = get_meta_creative_format(request.platform, request.placement, request.format)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    contexts = _creative_contexts(request)
+    try:
+        service = build_creative_service()
+        creative = service.generate(
+            creative_id=creative_store.create_id(),
+            brand_id=request.brand_id,
+            brief=request.brief,
+            copy=request.copy_text,
+            style=request.style,
+            target=target,
+            contexts=contexts,
+            owner_username=username,
+            source_creative_id=source_creative_id,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except CreativeGenerationError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    creative_store.create(creative)
+    return _creative_response(creative)
+
+
+@app.post("/creatives", response_model=CreativeResponse)
+def create_creative(request: CreativeRequest, username: str = Depends(require_session)) -> CreativeResponse:
+    """Generate one review-only image from an isolated brand RAG scope."""
+    return _create_creative(request, username)
+
+
+@app.get("/creatives/{creative_id}", response_model=CreativeResponse)
+def get_creative(creative_id: str, username: str = Depends(require_session)) -> CreativeResponse:
+    return _creative_response(_get_creative(creative_id, username))
+
+
+@app.get("/creatives/{creative_id}/image")
+def get_creative_image(creative_id: str, username: str = Depends(require_session)) -> FileResponse:
+    creative = _get_creative(creative_id, username)
+    path = CreativeStorageSettings.from_environment().directory / creative.image_filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="creative image file not found")
+    return FileResponse(path, media_type="image/png")
+
+
+@app.post("/creatives/{creative_id}/regenerate", response_model=CreativeResponse)
+def regenerate_creative(creative_id: str, request: CreativeRequest, username: str = Depends(require_session)) -> CreativeResponse:
+    source = _get_creative(creative_id, username)
+    if source.review_state == "discarded":
+        raise HTTPException(status_code=409, detail="discarded creatives cannot be regenerated")
+    if source.brand_id != request.brand_id:
+        raise HTTPException(status_code=422, detail="brand_id must match the creative being regenerated")
+    return _create_creative(request, username, source_creative_id=source.id)
+
+
+@app.post("/creatives/{creative_id}/discard", response_model=CreativeResponse)
+def discard_creative(creative_id: str, username: str = Depends(require_session)) -> CreativeResponse:
+    creative = _get_creative(creative_id, username)
+    if creative.review_state == "approved-prototype":
+        raise HTTPException(status_code=409, detail="approved creatives cannot be discarded")
+    return _creative_response(creative_store.save(creative.model_copy(update={"review_state": "discarded"})))
+
+
+@app.post("/creatives/{creative_id}/approve", response_model=CreativeResponse)
+def approve_creative(creative_id: str, username: str = Depends(require_session)) -> CreativeResponse:
+    creative = _get_creative(creative_id, username)
+    if creative.review_state == "discarded":
+        raise HTTPException(status_code=409, detail="discarded creatives cannot be approved")
+    return _creative_response(creative_store.save(creative.model_copy(update={"review_state": "approved-prototype"})))
 
 
 class LoginRequest(BaseModel):

@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from apps.api.editorial_planning import EditorialPlan
 from apps.api.editorial_review import EditorialContent
+from apps.api.creatives import CreativeRecord
 
 
 class EditorialContentStore:
@@ -158,4 +159,56 @@ class EditorialPlanStore:
         ]
 
 
-__all__ = ["EditorialContentStore", "EditorialPlanStore"]
+class CreativeStore:
+    """Persist visual assets' review metadata, never credentials or image bytes."""
+
+    def __init__(self, database_path: str | Path = ":memory:") -> None:
+        self._database_path = str(database_path)
+        if self._database_path != ":memory:":
+            Path(self._database_path).parent.mkdir(parents=True, exist_ok=True)
+        self._memory_connection = sqlite3.connect(self._database_path) if self._database_path == ":memory:" else None
+        with self._connection() as connection:
+            connection.execute("CREATE TABLE IF NOT EXISTS creative (creative_id TEXT PRIMARY KEY, payload TEXT NOT NULL)")
+
+    def _connect(self) -> sqlite3.Connection:
+        return self._memory_connection or sqlite3.connect(self._database_path)
+
+    @contextmanager
+    def _connection(self):
+        connection = self._connect()
+        try:
+            with connection:
+                yield connection
+        finally:
+            if self._memory_connection is None:
+                connection.close()
+
+    def create_id(self) -> str:
+        return uuid4().hex
+
+    def create(self, creative: CreativeRecord) -> CreativeRecord:
+        with self._connection() as connection:
+            connection.execute("INSERT INTO creative (creative_id, payload) VALUES (?, ?)", (creative.id, creative.model_dump_json()))
+        return creative
+
+    def get(self, creative_id: str, *, owner_username: str | None = None) -> CreativeRecord | None:
+        with self._connection() as connection:
+            row = connection.execute("SELECT payload FROM creative WHERE creative_id = ?", (creative_id,)).fetchone()
+        creative = CreativeRecord.model_validate_json(row[0]) if row else None
+        if creative and owner_username and creative.owner_username and creative.owner_username.casefold() != owner_username.casefold():
+            return None
+        return creative
+
+    def save(self, creative: CreativeRecord) -> CreativeRecord:
+        with self._connection() as connection:
+            result = connection.execute("UPDATE creative SET payload = ? WHERE creative_id = ?", (creative.model_dump_json(), creative.id))
+        if result.rowcount != 1:
+            raise KeyError(creative.id)
+        return creative
+
+    def clear(self) -> None:
+        with self._connection() as connection:
+            connection.execute("DELETE FROM creative")
+
+
+__all__ = ["CreativeStore", "EditorialContentStore", "EditorialPlanStore"]

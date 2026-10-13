@@ -576,6 +576,7 @@ export function Workspace() {
           canSavePlan={Boolean(activeBackendId)}
           planSaveMessage={planSaveMessage}
           onSavePlan={saveValidatedPlan}
+              brandId={brand.id}
         />
       )}
       {view === "calendar" && <CalendarView welcomeName={welcomeName} />}

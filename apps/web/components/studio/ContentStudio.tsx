@@ -6,6 +6,7 @@ import { EditorialProgress, StudioStatus } from "../ui/EditorialStatus";
 import { BriefEditor } from "./BriefEditor";
 import { ContentPreview } from "./ContentPreview";
 import { ReviewActions } from "./ReviewActions";
+import { CreativePanel } from "./CreativePanel";
 import type { FormulaCode } from "../../domain/review-api.ts";
 import styles from "./studio.module.css";
 
@@ -45,6 +46,7 @@ export function ContentStudio({
   canSavePlan,
   planSaveMessage,
   onSavePlan,
+  brandId,
 }: {
   welcomeName: string;
   contextName: string;
@@ -81,6 +83,7 @@ export function ContentStudio({
   canSavePlan: boolean;
   planSaveMessage: string;
   onSavePlan: () => void | Promise<void>;
+  brandId: string;
 }) {
   return (
     <section aria-labelledby="view-title">
@@ -117,6 +120,8 @@ export function ContentStudio({
            onCopyChange={onCopyChange}
            onCopyBlur={onCopyBlur}
         />
+
+        <CreativePanel brandId={brandId} brief={brief} copy={previewCopy} />
 
         <aside className={styles.side} aria-label="Estado editorial y contexto">
           <section aria-labelledby="state-title">
