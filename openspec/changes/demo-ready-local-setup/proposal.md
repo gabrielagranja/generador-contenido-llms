@@ -7,7 +7,7 @@
 - Human approval: the user explicitly requested a stable local demo login and
   an MVP ready for testing/demo on 2026-10-13.
 
-## Objective
+## Plan objective
 
 Make the offline MVP demo reproducible on a developer machine without relying
 on a conflicting default port, external LLM credentials or manually copied
