@@ -31,6 +31,9 @@ DEFAULT_LLM_TIMEOUT_SECONDS = 30.0
 DEFAULT_LLM_MAX_OUTPUT_TOKENS = 350
 MAX_LLM_OUTPUT_TOKENS = 600
 DEFAULT_EDITORIAL_DATABASE_PATH = Path(".local") / "editorial.sqlite3"
+DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-2.5-flare"
+DEFAULT_OPENAI_IMAGE_TIMEOUT_SECONDS = 60.0
+DEFAULT_CREATIVE_STORAGE_DIRECTORY = Path(".local") / "creatives"
 
 
 @dataclass(frozen=True)
@@ -213,6 +216,51 @@ class EditorialPersistenceSettings:
             raise ValueError("EDITORIAL_DATABASE_PATH must be a file path")
 
 
+@dataclass(frozen=True)
+class OpenAiImageSettings:
+    """Backend-only configuration for the OpenAI image boundary."""
+
+    api_key: str | None = None
+    model: str = DEFAULT_OPENAI_IMAGE_MODEL
+    timeout_seconds: float = DEFAULT_OPENAI_IMAGE_TIMEOUT_SECONDS
+
+    @classmethod
+    def from_environment(cls) -> "OpenAiImageSettings":
+        settings = cls(
+            api_key=os.getenv("OPENAI_API_KEY") or None,
+            model=os.getenv("OPENAI_IMAGE_MODEL", DEFAULT_OPENAI_IMAGE_MODEL).strip(),
+            timeout_seconds=_read_float(
+                "OPENAI_IMAGE_TIMEOUT_SECONDS", DEFAULT_OPENAI_IMAGE_TIMEOUT_SECONDS
+            ),
+        )
+        settings.validate()
+        return settings
+
+    def validate(self) -> None:
+        if not self.api_key or not self.api_key.strip():
+            raise ValueError("OPENAI_API_KEY is required to generate creatives")
+        if not self.model or not self.model.strip():
+            raise ValueError("OPENAI_IMAGE_MODEL must not be empty")
+        if self.model.strip().lower() == "dall-e-3":
+            raise ValueError("OPENAI_IMAGE_MODEL must use a GPT Image model, not DALL·E 3")
+        if self.timeout_seconds <= 0:
+            raise ValueError("OPENAI_IMAGE_TIMEOUT_SECONDS must be positive")
+
+
+@dataclass(frozen=True)
+class CreativeStorageSettings:
+    """Local non-public storage for generated review assets."""
+
+    directory: Path = DEFAULT_CREATIVE_STORAGE_DIRECTORY
+
+    @classmethod
+    def from_environment(cls) -> "CreativeStorageSettings":
+        settings = cls(directory=Path(os.getenv("CREATIVE_STORAGE_DIRECTORY", str(DEFAULT_CREATIVE_STORAGE_DIRECTORY))))
+        if settings.directory == Path(".") or not str(settings.directory).strip():
+            raise ValueError("CREATIVE_STORAGE_DIRECTORY must be a directory path")
+        return settings
+
+
 def _read_float(name: str, default: float) -> float:
     raw_value = os.getenv(name, str(default))
     try:
@@ -234,8 +282,10 @@ settings = EnvironmentSettings.from_environment()
 
 __all__ = [
     "EditorialPersistenceSettings",
+    "CreativeStorageSettings",
     "EnvironmentSettings",
     "LlmSettings",
+    "OpenAiImageSettings",
     "RagLocalSettings",
     "settings",
 ]

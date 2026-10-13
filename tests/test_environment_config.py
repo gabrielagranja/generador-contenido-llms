@@ -86,6 +86,10 @@ class EnvironmentConfigTests(unittest.TestCase):
                 "LLM_TEMPERATURE",
                 "LLM_TIMEOUT_SECONDS",
                 "LLM_MAX_OUTPUT_TOKENS",
+                "OPENAI_API_KEY",
+                "OPENAI_IMAGE_MODEL",
+                "OPENAI_IMAGE_TIMEOUT_SECONDS",
+                "CREATIVE_STORAGE_DIRECTORY",
                 "EDITORIAL_DATABASE_PATH",
                 "RAG_EMBEDDING_MODEL",
                 "RAG_EMBEDDING_REVISION",
@@ -104,6 +108,7 @@ class EnvironmentConfigTests(unittest.TestCase):
             },
         )
         self.assertRegex(assignment_text, r"(?m)^GROQ_API_KEY=$")
+        self.assertRegex(assignment_text, r"(?m)^OPENAI_API_KEY=$")
         self.assertNotRegex(assignment_text, r"(?i)(token|secret|password)=[^\\n]+\\S")
         self.assertNotRegex(assignment_text, r"(?i)(sk-[a-z0-9]|ghp_[a-z0-9]|ya29\.[a-z0-9])")
 
